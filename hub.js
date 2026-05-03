@@ -7,7 +7,7 @@
 /* ─── CREDENTIALS ────────────────────────────────────────── */
 const CREDENTIALS = {
   username: 'doug',
-  password: 'JPG2024'
+  password: 'JPG2026'
 };
 
 /* ─── SPOKE DESTINATIONS ─────────────────────────────────── */
