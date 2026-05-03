@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jones Performance Group — Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="hub.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <img src="./assets/jpg-logo.png" class="login-logo" alt="Jones Performance Group">
+  <div class="login-card">
+    <div class="login-title">CENTRAL COMMAND</div>
+    <div class="login-sub">Jones Performance Group LLC</div>
+    <label>USERNAME</label>
+    <input type="text" id="login-user" placeholder="Enter username">
+    <label>PASSWORD</label>
+    <input type="password" id="login-pass" class="last" placeholder="Enter password">
+    <button class="login-btn" onclick="doLogin()">ENTER</button>
+    <div class="login-footer">JPG-PROJECTS-HUB · Jones Performance Group LLC · CONFIDENTIAL</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MAIN SCREEN
+═══════════════════════════════════════════════════════ -->
+<div id="screen-main" class="screen">
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-logo-wrap" onclick="showView('wheel')">
+      <img src="./assets/jpg-logo.png" alt="JPG">
+      <div class="role">COACH VIEW</div>
+    </div>
+    <div class="nav-items">
+      <div class="nav-item active" id="nav-dashboard" onclick="showView('wheel')"><div class="dot"></div>DASHBOARD</div>
+      <div class="nav-item" id="nav-clients" onclick="showView('clients')"><div class="dot"></div>CLIENTS</div>
+      <div class="nav-item" id="nav-messages" onclick="showView('messages')"><div class="dot"></div>MESSAGES</div>
+      <div class="nav-item" id="nav-reports" onclick="showView('reports')"><div class="dot"></div>REPORTS</div>
+      <div class="nav-item" id="nav-settings" onclick="showView('settings')"><div class="dot"></div>SETTINGS</div>
+    </div>
+    <div class="never-twice">
+      <div class="nt-label">CORE PHRASE</div>
+      <div class="nt-phrase">NEVER TWICE</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" id="main-content">
+    <div class="topbar">
+      <div class="topbar-row topbar-row1">
+        <div class="topbar-title">CENTRAL COMMAND HUB</div>
+        <button class="topbar-logout" onclick="doLogout()">LOGOUT</button>
+      </div>
+      <div class="topbar-row">
+        <div class="topbar-jpg">JONES PERFORMANCE GROUP</div>
+        <div class="topbar-coach">Coach: <b>DOUG JONES</b></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD / WHEEL VIEW -->
+    <div id="view-wheel" class="view active">
+      <svg class="wheel" viewBox="0 0 720 720" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="360" cy="360" r="285" fill="none" stroke="#252525" stroke-width="1"/>
+        <circle cx="360" cy="360" r="285" fill="none" stroke="#B8860B" stroke-width="0.5" stroke-dasharray="3,12" opacity="0.25"/>
+        <circle cx="360" cy="360" r="190" fill="none" stroke="#222" stroke-width="0.5"/>
+        <line x1="360" y1="360" x2="360" y2="75" stroke="#333" stroke-width="1.5"/>
+        <line x1="360" y1="360" x2="528" y2="129" stroke="#333" stroke-width="1.5"/>
+        <line x1="360" y1="360" x2="631" y2="272" stroke="#333" stroke-width="1.5"/>
+        <line x1="360" y1="360" x2="631" y2="448" stroke="#333" stroke-width="1.5"/>
+        <line x1="360" y1="360" x2="528" y2="591" stroke="#333" stroke-width="1.5"/>
+        <line x1="360" y1="360" x2="360" y2="645" stroke="#2a2a2a" stroke-width="1" stroke-dasharray="3,6"/>
+        <line x1="360" y1="360" x2="192" y2="591" stroke="#333" stroke-width="1.5"/>
+        <line x1="360" y1="360" x2="89" y2="448" stroke="#333" stroke-width="1.5"/>
+        <line x1="360" y1="360" x2="89" y2="272" stroke="#333" stroke-width="1.5"/>
+        <line x1="360" y1="360" x2="192" y2="129" stroke="#333" stroke-width="1.5"/>
+        <!-- HUB CENTER -->
+        <circle cx="360" cy="360" r="92" fill="#B8860B" stroke="rgba(0,0,0,0.2)" stroke-width="3"/>
+        <text x="360" y="354" text-anchor="middle" fill="#000" font-size="38" font-weight="900" letter-spacing="8" font-family="Lato">HUB</text>
+        <line x1="312" y1="368" x2="408" y2="368" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+        <text x="360" y="390" text-anchor="middle" fill="#000" font-size="10" font-weight="700" letter-spacing="3" font-family="Lato">CENTRAL COMMAND</text>
+        <!-- SPOKES -->
+        <g class="spoke-node-g" onclick="spokeClick('tracker')">
+          <circle cx="360" cy="75" r="62" fill="#1C3A5C" stroke="#B8860B" stroke-width="2"/>
+          <text x="360" y="60" text-anchor="middle" fill="#B8860B" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">14-DAY</text>
+          <text x="360" y="80" text-anchor="middle" fill="#fff" font-size="13" font-weight="900" letter-spacing="2" font-family="Lato">TRACKER</text>
+          <text x="360" y="95" text-anchor="middle" fill="#bbb" font-size="9" letter-spacing="1.5" font-family="Lato">ONBOARDING</text>
+        </g>
+        <g class="spoke-node-g" onclick="spokeClick('legal')">
+          <circle cx="528" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" stroke-width="2"/>
+          <text x="528" y="114" text-anchor="middle" fill="#B8860B" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">LEGAL</text>
+          <text x="528" y="134" text-anchor="middle" fill="#fff" font-size="13" font-weight="900" letter-spacing="2" font-family="Lato">DOCS</text>
+          <text x="528" y="149" text-anchor="middle" fill="#bbb" font-size="9" letter-spacing="1.5" font-family="Lato">AGREEMENTS</text>
+        </g>
+        <g class="spoke-node-g" onclick="spokeClick('dop')">
+          <circle cx="631" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" stroke-width="2"/>
+          <text x="631" y="257" text-anchor="middle" fill="#B8860B" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">DAILY OPS</text>
+          <text x="631" y="277" text-anchor="middle" fill="#fff" font-size="16" font-weight="900" letter-spacing="4" font-family="Lato">DOP</text>
+          <text x="631" y="292" text-anchor="middle" fill="#bbb" font-size="9" letter-spacing="1.5" font-family="Lato">PROCESS</text>
+        </g>
+        <g class="spoke-node-g" onclick="spokeClick('pit')">
+          <circle cx="631" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" stroke-width="2"/>
+          <text x="631" y="433" text-anchor="middle" fill="#B8860B" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">PERSONAL</text>
+          <text x="631" y="453" text-anchor="middle" fill="#fff" font-size="16" font-weight="900" letter-spacing="4" font-family="Lato">PIT</text>
+          <text x="631" y="468" text-anchor="middle" fill="#bbb" font-size="9" letter-spacing="1.5" font-family="Lato">TIME INVEST.</text>
+        </g>
+        <g class="spoke-node-g" onclick="spokeClick('daily')">
+          <circle cx="528" cy="591" r="62" fill="#1C3A5C" stroke="#B8860B" stroke-width="2"/>
+          <text x="528" y="576" text-anchor="middle" fill="#B8860B" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">DAILY</text>
+          <text x="528" y="596" text-anchor="middle" fill="#fff" font-size="13" font-weight="900" letter-spacing="2" font-family="Lato">TRACKER</text>
+          <text x="528" y="611" text-anchor="middle" fill="#bbb" font-size="9" letter-spacing="1.5" font-family="Lato">ONGOING</text>
+        </g>
+        <!-- LOCKED / FUTURE SPOKE -->
+        <g class="spoke-node-g locked">
+          <circle cx="360" cy="645" r="62" fill="#161616" stroke="#3a3a3a" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <text x="360" y="637" text-anchor="middle" fill="#555" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">FUTURE</text>
+          <text x="360" y="655" text-anchor="middle" fill="#444" font-size="9" letter-spacing="1.5" font-family="Lato">DEVELOPMENT</text>
+        </g>
+        <g class="spoke-node-g" onclick="spokeClick('edu')">
+          <circle cx="192" cy="591" r="62" fill="#1C3A5C" stroke="#B8860B" stroke-width="2"/>
+          <text x="192" y="576" text-anchor="middle" fill="#B8860B" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">EDUCATION</text>
+          <text x="192" y="596" text-anchor="middle" fill="#fff" font-size="13" font-weight="900" letter-spacing="2" font-family="Lato">REFERENCE</text>
+          <text x="192" y="611" text-anchor="middle" fill="#bbb" font-size="9" letter-spacing="1.5" font-family="Lato">LIBRARY</text>
+        </g>
+        <g class="spoke-node-g" onclick="spokeClick('checkin')">
+          <circle cx="89" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" stroke-width="2"/>
+          <text x="89" y="433" text-anchor="middle" fill="#B8860B" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">CLIENT</text>
+          <text x="89" y="453" text-anchor="middle" fill="#fff" font-size="13" font-weight="900" letter-spacing="2.5" font-family="Lato">CHECK-IN</text>
+          <text x="89" y="468" text-anchor="middle" fill="#bbb" font-size="9" letter-spacing="1.5" font-family="Lato">TOOL</text>
+        </g>
+        <g class="spoke-node-g" onclick="spokeClick('messaging')">
+          <circle cx="89" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" stroke-width="2"/>
+          <text x="89" y="257" text-anchor="middle" fill="#B8860B" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">COMMS</text>
+          <text x="89" y="277" text-anchor="middle" fill="#fff" font-size="13" font-weight="900" letter-spacing="2" font-family="Lato">MESSAGING</text>
+          <text x="89" y="292" text-anchor="middle" fill="#bbb" font-size="9" letter-spacing="1.5" font-family="Lato">CHAT/BCAST</text>
+        </g>
+        <g class="spoke-node-g" onclick="spokeClick('resources')">
+          <circle cx="192" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" stroke-width="2"/>
+          <text x="192" y="114" text-anchor="middle" fill="#B8860B" font-size="10" font-weight="700" letter-spacing="2" font-family="Lato">RESOURCES</text>
+          <text x="192" y="134" text-anchor="middle" fill="#fff" font-size="13" font-weight="900" letter-spacing="2" font-family="Lato">VAULT</text>
+          <text x="192" y="149" text-anchor="middle" fill="#bbb" font-size="9" letter-spacing="1.5" font-family="Lato">DOWNLOADS</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- CLIENTS VIEW -->
+    <div id="view-clients" class="view">
+      <div class="clients-scroll">
+        <div class="page-hdr">
+          <h2>ACTIVE CLIENTS</h2>
+          <p>Select a client for quick reference. Open full profile for complete detail.</p>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="sl">ACTIVE CLIENTS</div><div class="sv">7</div><div class="ss">across all phases</div></div>
+          <div class="stat-box"><div class="sl">CHECK-INS TODAY</div><div class="sv">4</div><div class="ss">3 pending review</div></div>
+          <div class="stat-box"><div class="sl">UNREAD MESSAGES</div><div class="sv">2</div><div class="ss">from clients</div></div>
+          <div class="stat-box"><div class="sl">ALERTS</div><div class="sv alert">1</div><div class="ss">missed tracking day</div></div>
+        </div>
+        <div class="section-bar">
+          <h3>CLIENT ROSTER</h3>
+          <span>SHOWING 5 OF 7</span>
+        </div>
+        <div class="client-table">
+          <div class="ct-grid ct-head">
+            <span>NAME</span><span>PHASE</span><span>LAST ACTIVITY</span><span>STREAK</span><span>STATUS</span>
+          </div>
+          <div class="ct-grid ct-row" onclick="openPanel('alvarez')">
+            <div class="cn">M. Alvarez</div>
+            <div><span class="phase-tag pt-warm">WARM-UP</span></div>
+            <div class="cm">Today, 6:42 AM</div>
+            <div class="cm">Day 4 / 14</div>
+            <div class="ca">▶ VIEW</div>
+          </div>
+          <div class="ct-grid ct-row" onclick="openPanel('patel')">
+            <div class="cn">J. Patel</div>
+            <div><span class="phase-tag pt-found">FOUNDATION</span></div>
+            <div class="cm">Today, 5:15 AM</div>
+            <div class="cm">12 days</div>
+            <div class="ca">▶ VIEW</div>
+          </div>
+          <div class="ct-grid ct-row" onclick="openPanel('reynolds')">
+            <div class="cn">K. Reynolds</div>
+            <div><span class="phase-tag pt-perf">PERFORMANCE</span></div>
+            <div class="cm">Yesterday, 9:30 PM</div>
+            <div class="cm">38 days</div>
+            <div class="ca">▶ VIEW</div>
+          </div>
+          <div class="ct-grid ct-row" onclick="openPanel('cole')">
+            <div class="cn">D. Cole</div>
+            <div><span class="phase-tag pt-stop">UNSTOPPABLE</span></div>
+            <div class="cm">Today, 4:22 AM</div>
+            <div class="cm">94 days</div>
+            <div class="ca">▶ VIEW</div>
+          </div>
+          <div class="ct-grid ct-row" onclick="openPanel('chen')">
+            <div class="cn">R. Chen</div>
+            <div><span class="phase-tag pt-warm">WARM-UP</span></div>
+            <div class="cm">2 days ago</div>
+            <div class="cm">Day 9 / 14</div>
+            <div class="cw">⚠ MISSED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLACEHOLDER VIEWS -->
+    <div id="view-messages" class="view">
+      <div class="empty-view">
+        <div class="coming-soon-icon">✉</div>
+        <div class="es-label">MESSAGING</div>
+        <div class="es-sub">Spoke under development</div>
+      </div>
+    </div>
+    <div id="view-reports" class="view">
+      <div class="empty-view">
+        <div class="coming-soon-icon">▦</div>
+        <div class="es-label">REPORTS</div>
+        <div class="es-sub">Under development</div>
+      </div>
+    </div>
+    <div id="view-settings" class="view">
+      <div class="empty-view">
+        <div class="coming-soon-icon">⚙</div>
+        <div class="es-label">SETTINGS</div>
+        <div class="es-sub">Under development</div>
+      </div>
+    </div>
+
+    <div class="app-footer">
+      JPG-PROJECTS-HUB · JONES PERFORMANCE GROUP LLC · CENTRAL COMMAND · <span class="conf">CONFIDENTIAL</span> · v4
+    </div>
+  </div><!-- /main-content -->
+
+</div><!-- /screen-main -->
+
+<!-- SLIDE PANEL -->
+<div class="slide-panel" id="slide-panel">
+  <div class="sp-header">
+    <h3 id="sp-name">CLIENT NAME</h3>
+    <button class="sp-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="sp-body" id="sp-body"></div>
+  <div class="sp-footer">
+    <button class="sp-full-btn">OPEN FULL PROFILE ▶</button>
+  </div>
+</div>
+
+<script src="hub.js"></script>
+</body>
+</html>
