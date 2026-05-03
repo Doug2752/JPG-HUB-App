@@ -40,6 +40,7 @@ body { font-family: 'Lato', sans-serif; }
   width: 260px;
   margin-bottom: 28px;
   display: block;
+  mix-blend-mode: multiply;
 }
 #screen-login .login-card {
   background: #fff;
@@ -127,7 +128,7 @@ body { font-family: 'Lato', sans-serif; }
   border-bottom: 1px solid var(--border-dk);
   cursor: pointer;
 }
-.nav-logo-wrap img { width: 130px; display: block; }
+.nav-logo-wrap img { width: 130px; display: block; mix-blend-mode: multiply; }
 .nav-logo-wrap .role {
   color: var(--text-role);
   font-size: 9px;
