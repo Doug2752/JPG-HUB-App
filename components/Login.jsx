@@ -40,10 +40,10 @@ export default function Login({ onLogin }) {
             src="/jpglogo.png"
             style={{ width: '260px', display: 'block', marginLeft: 'auto', marginRight: 'auto', marginBottom: '0px', position: 'relative', left: '-14px' }}
           />
-          <div style={{ fontSize: '42px', fontWeight: 900, letterSpacing: '0.08em', color: '#000000', textAlign: 'center', margin: 0, padding: 0, marginTop: '0px', marginLeft: '-28px' }}>
+          <div style={{ fontSize: '42px', fontWeight: 900, letterSpacing: '0.08em', color: '#000000', textAlign: 'center', margin: 0, padding: 0, marginTop: '-12px', marginLeft: '-28px' }}>
             HUB
           </div>
-          <div style={{ fontSize: '13px', letterSpacing: '0.15em', color: '#555555', textAlign: 'center', marginTop: '4px', marginBottom: '20px', marginLeft: '-28px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.15em', color: '#555555', textAlign: 'center', marginTop: '4px', marginBottom: '20px', marginLeft: '-28px' }}>
             COMMAND HUB
           </div>
           <form onSubmit={handleSubmit}>
@@ -69,6 +69,15 @@ export default function Login({ onLogin }) {
               autoComplete="current-password"
               style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CCCCCC', background: '#F0F0F0', color: '#2A2A2A', fontSize: '14px', boxSizing: 'border-box' }}
             />
+            <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.15em', color: '#B8860B', textAlign: 'center', marginTop: '16px', marginBottom: '12px' }}>
+              EXISTING OUTSIDE OF BOUNDARIES
+            </div>
+
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '12px', color: '#CCCCCC', cursor: 'pointer' }}>
+              <input type="checkbox" style={{ margin: 0 }} />
+              Stay logged in for 30 days
+            </label>
+
             {error && (
               <div style={{ color: '#B02020', fontSize: '12px', textAlign: 'center', marginTop: '10px' }}>
                 {error}
