@@ -9,8 +9,9 @@ export default function Login({ onLogin }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    const expected = VALID_CREDENTIALS[username.trim()];
-    if (!expected || password !== expected) {
+    const key = Object.keys(VALID_CREDENTIALS).find(k => k.toLowerCase() === username.trim().toLowerCase());
+    const expected = key ? VALID_CREDENTIALS[key] : undefined;
+    if (!expected || password.toLowerCase() !== expected.toLowerCase()) {
       setError('Invalid username or password.');
       return;
     }
