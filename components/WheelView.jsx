@@ -2,9 +2,16 @@ import React from 'react';
 import { S } from '../utils/styles';
 import { SPOKE_URLS } from '../utils/constants';
 
-function spokeClick(spokeId) {
-  const url = SPOKE_URLS[spokeId];
+// Spokes that bypass their own login when opened from HUB
+const HUB_AUTH_SPOKES = ['dop', 'pit', 'tracker'];
+
+function spokeClick(spokeId, hubUser) {
+  let url = SPOKE_URLS[spokeId];
   if (url) {
+    if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {
+      const sep = url.includes('?') ? '&' : '?';
+      url = url + sep + 'hub_user=' + encodeURIComponent(hubUser);
+    }
     window.open(url, '_blank');
   } else {
     alert(
@@ -17,7 +24,7 @@ function spokeClick(spokeId) {
 const spokeG = { cursor: 'pointer' };
 const lockedG = { cursor: 'not-allowed', opacity: 0.4 };
 
-export default function WheelView() {
+export default function WheelView({ hubUser }) {
   return (
     <div style={S.wheelView}>
       <svg style={S.wheelSvg} viewBox="0 0 720 720" xmlns="http://www.w3.org/2000/svg">
@@ -46,7 +53,7 @@ export default function WheelView() {
         <text x="360" y="390" textAnchor="middle" fill="#000" fontSize="10" fontWeight="700" letterSpacing="3" fontFamily="Lato">CENTRAL COMMAND</text>
 
         {/* 14-DAY TRACKER */}
-        <g style={spokeG} onClick={() => spokeClick('tracker')}>
+        <g style={spokeG} onClick={() => spokeClick('tracker', hubUser)}>
           <circle cx="360" cy="75" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="360" y="60"  textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">14-DAY</text>
           <text x="360" y="80"  textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">TRACKER</text>
@@ -62,7 +69,7 @@ export default function WheelView() {
         </g>
 
         {/* DOP */}
-        <g style={spokeG} onClick={() => spokeClick('dop')}>
+        <g style={spokeG} onClick={() => spokeClick('dop', hubUser)}>
           <circle cx="631" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="631" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">DAILY OPS</text>
           <text x="631" y="277" textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">DOP</text>
@@ -70,7 +77,7 @@ export default function WheelView() {
         </g>
 
         {/* PIT */}
-        <g style={spokeG} onClick={() => spokeClick('pit')}>
+        <g style={spokeG} onClick={() => spokeClick('pit', hubUser)}>
           <circle cx="631" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="631" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">PERSONAL</text>
           <text x="631" y="453" textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">PIT</text>

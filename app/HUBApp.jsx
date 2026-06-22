@@ -5,6 +5,7 @@ import Nav from '../components/Nav.jsx';
 import Topbar from '../components/Topbar.jsx';
 import WheelView from '../components/WheelView.jsx';
 import ClientsView from '../components/ClientsView.jsx';
+import ClientViewMode from '../components/ClientViewMode.jsx';
 import SlidePanel from '../components/SlidePanel.jsx';
 import PlaceholderView from '../components/PlaceholderView.jsx';
 
@@ -27,11 +28,12 @@ export default function HUBApp() {
   }
 
   function renderView() {
-    if (activeView === 'wheel')    return <WheelView />;
-    if (activeView === 'clients')  return <ClientsView onOpenPanel={setPanelClient} />;
-    if (activeView === 'messages') return <PlaceholderView icon="✉" label="MESSAGING" sub="Spoke under development" />;
-    if (activeView === 'reports')  return <PlaceholderView icon="▦" label="REPORTS" sub="Under development" />;
-    if (activeView === 'settings') return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
+    if (activeView === 'wheel')      return <WheelView hubUser={user} />;
+    if (activeView === 'clients')    return <ClientsView onOpenPanel={setPanelClient} />;
+    if (activeView === 'messages')   return <PlaceholderView icon="✉" label="MESSAGING" sub="Spoke under development" />;
+    if (activeView === 'reports')    return <PlaceholderView icon="▦" label="REPORTS" sub="Under development" />;
+    if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
+    if (activeView === 'clientview') return <ClientViewMode key="clientview" />;
     return null;
   }
 

@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
 import { S } from '../utils/styles';
-import { NAV_ITEMS, LOGO } from '../utils/constants';
+import { NAV_ITEMS, LOGO, BORDER_DK } from '../utils/constants';
 
 export default function Nav({ activeView, onViewChange }) {
   const [hovered, setHovered] = useState(null);
+
+  const isClientView  = activeView === 'clientview';
+  const cvHovered     = hovered === 'clientview';
+  const cvStyle = {
+    ...S.navItem,
+    ...(isClientView ? { color: '#6B9BD3', borderLeft: '3px solid #6B9BD3', background: 'rgba(44,74,107,0.15)' } : {}),
+    ...(!isClientView && cvHovered ? { color: '#6B9BD3', background: 'rgba(44,74,107,0.08)' } : {})
+  };
 
   return (
     <div style={S.nav}>
@@ -34,6 +42,22 @@ export default function Nav({ activeView, onViewChange }) {
             </div>
           );
         })}
+
+        {/* Client View mode switcher */}
+        <div style={{ borderTop: `1px solid ${BORDER_DK}`, marginTop: '8px', paddingTop: '8px' }}>
+          <div
+            style={cvStyle}
+            onClick={() => onViewChange('clientview')}
+            onMouseEnter={() => setHovered('clientview')}
+            onMouseLeave={() => setHovered(null)}
+          >
+            <div style={{
+              ...S.navDot,
+              background: isClientView ? '#6B9BD3' : BORDER_DK,
+            }} />
+            CLIENT VIEW
+          </div>
+        </div>
       </div>
 
       <div style={S.neverTwice}>

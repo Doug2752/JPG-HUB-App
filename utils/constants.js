@@ -16,7 +16,8 @@ export const LOGO = 'jpglogo.png';
 
 // ── CREDENTIALS ───────────────────────────────────────────────
 export const USERS = {
-  doug: 'JPG2026'
+  doug: 'JPG2026',
+  test: 'JPG2026'
 };
 
 // ── SPOKE URLS ────────────────────────────────────────────────
@@ -46,7 +47,7 @@ export const CLIENTS = [
   {
     id: 'alvarez',
     name: 'M. ALVAREZ',
-    phase: 'WARM-UP',
+    phase: 'APPRENTICE',
     phaseKey: 'warm',
     day: 'Day 4 / 14',
     lastActivity: 'Today, 6:42 AM',
@@ -94,7 +95,7 @@ export const CLIENTS = [
   {
     id: 'chen',
     name: 'R. CHEN',
-    phase: 'WARM-UP',
+    phase: 'APPRENTICE',
     phaseKey: 'warm',
     day: 'Day 9 / 14',
     lastActivity: '2 days ago',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const VALID_CREDENTIALS = { Doug: 'JPG2026' };
+const VALID_CREDENTIALS = { Doug: 'JPG2026', Test: 'JPG2026' };
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');
