@@ -7,6 +7,10 @@ export default defineConfig({
       include: '**/*.{jsx,js}',
     }),
   ],
+  server: {
+    open: false,
+    port: 5176,
+  },
   optimizeDeps: {
     esbuildOptions: {
       loader: {
