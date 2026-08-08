@@ -15,7 +15,24 @@ function getClientRecord(hubUser) {
   }
 }
 
-function isSpokeUnlocked(spokeId, hubUser) {
+function getCyclePhase(hubUser) {
+  if (!hubUser || !hubUser.id) return null;
+  const client = getClientRecord(hubUser);
+  if (!client || !client.tracking_start_date) return null;
+  try {
+    const today = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z');
+    const start = new Date(client.tracking_start_date + 'T00:00:00Z');
+    const cycleDay = Math.floor((today - start) / 86400000) + 1;
+    if (cycleDay <= 14) return 'foundation';
+    if (cycleDay <= 21) return 'analysis';
+    if (cycleDay <= 30) return 'onramp';
+    return 'full';
+  } catch (_) {
+    return null;
+  }
+}
+
+function isSpokeUnlocked(spokeId, hubUser, role) {
   if (!hubUser || !hubUser.id) return false;
   const client = getClientRecord(hubUser);
   if (!client) return false;
@@ -28,18 +45,25 @@ function isSpokeUnlocked(spokeId, hubUser) {
     legal: 'agreements_unlocked',
   };
   const flag = flagMap[spokeId];
-  return flag ? !!client[flag] : false;
+  if (!flag || !client[flag]) return false;
+
+  if (role === 'client' && (spokeId === 'dop' || spokeId === 'pit')) {
+    const phase = getCyclePhase(hubUser);
+    if (phase === 'foundation' || phase === 'analysis') return false;
+  }
+
+  return true;
 }
 
 function spokeStyle(spokeId, hubUser, role) {
   if (role === 'coach') return { cursor: 'pointer' };
-  return isSpokeUnlocked(spokeId, hubUser)
+  return isSpokeUnlocked(spokeId, hubUser, role)
     ? { cursor: 'pointer' }
     : { cursor: 'not-allowed', opacity: 0.4 };
 }
 
 function spokeClick(spokeId, hubUser, role) {
-  if (role === 'client' && !isSpokeUnlocked(spokeId, hubUser)) return;
+  if (role === 'client' && !isSpokeUnlocked(spokeId, hubUser, role)) return;
   let url = SPOKE_URLS[spokeId];
   if (url) {
     if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {
