@@ -15,6 +15,7 @@ export default function HUBApp() {
   const [activeView, setActiveView] = useState('wheel');
   const [panelClient, setPanelClient] = useState(null);
   const [loading, setLoading]       = useState(true);
+  const [clientRosterKey, setClientRosterKey] = useState(0);
 
   useEffect(() => {
     getSession().then(session => {
@@ -40,7 +41,7 @@ export default function HUBApp() {
 
   function renderView() {
     if (activeView === 'wheel')      return <WheelView hubUser={user} role={user.role} />;
-    if (activeView === 'clients')    return <ClientsView onOpenPanel={setPanelClient} />;
+    if (activeView === 'clients')    return <ClientsView key={clientRosterKey} onOpenPanel={setPanelClient} />;
     if (activeView === 'messages')   return <PlaceholderView icon="✉" label="MESSAGING" sub="Spoke under development" />;
     if (activeView === 'reports')    return <PlaceholderView icon="▦" label="REPORTS" sub="Under development" />;
     if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
@@ -71,7 +72,19 @@ export default function HUBApp() {
         </div>
       </div>
 
-      <SlidePanel client={panelClient} onClose={() => setPanelClient(null)} />
+      <SlidePanel
+        client={panelClient}
+        onClose={() => setPanelClient(null)}
+        onUpdate={() => {
+          setClientRosterKey(k => k + 1);
+          try {
+            const raw = localStorage.getItem('hub_clients');
+            const clients = raw ? JSON.parse(raw) : [];
+            const updated = clients.find(c => c.id === panelClient?.id);
+            if (updated) setPanelClient(updated);
+          } catch (_) {}
+        }}
+      />
     </div>
   );
 }

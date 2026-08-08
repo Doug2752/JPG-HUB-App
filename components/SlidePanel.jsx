@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from '../utils/styles';
 import { GOLD, TEXT_DIM } from '../utils/constants';
+import { updateClient } from '../services/clients';
 
 const SPOKE_LABELS = [
   { key: 'obt_unlocked',        label: 'OBT' },
@@ -11,8 +12,13 @@ const SPOKE_LABELS = [
   { key: 'agreements_unlocked', label: 'AGREEMENTS' },
 ];
 
-export default function SlidePanel({ client, onClose }) {
+export default function SlidePanel({ client, onClose, onUpdate }) {
   const isOpen = !!client;
+
+  async function handleToggleSpoke(flagKey) {
+    await updateClient(client.id, { [flagKey]: !client[flagKey] });
+    if (onUpdate) onUpdate();
+  }
 
   return (
     <div style={{ ...S.slidePanel, right: isOpen ? 0 : -420 }}>
@@ -47,20 +53,35 @@ export default function SlidePanel({ client, onClose }) {
           <div style={S.spRow}>
             <div style={S.spRowLbl}>SPOKES UNLOCKED</div>
             <div style={{ marginTop: '8px' }}>
-              {SPOKE_LABELS.map(spoke => {
+              {SPOKE_LABELS.map((spoke, i) => {
                 const unlocked = !!client[spoke.key];
+                const isLast = i === SPOKE_LABELS.length - 1;
                 return (
                   <div key={spoke.key} style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '6px 0', fontSize: '12px', fontWeight: 700,
-                    letterSpacing: '1px',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '8px 0',
+                    borderBottom: isLast ? 'none' : '1px solid #222',
                   }}>
-                    <span style={{ color: unlocked ? GOLD : TEXT_DIM, fontSize: '14px' }}>
-                      {unlocked ? '✓' : '—'}
-                    </span>
-                    <span style={{ color: unlocked ? '#fff' : TEXT_DIM }}>
+                    <span style={{
+                      color: unlocked ? '#fff' : TEXT_DIM,
+                      fontSize: '12px', fontWeight: 700, letterSpacing: '1px',
+                    }}>
                       {spoke.label}
                     </span>
+                    <button
+                      onClick={() => handleToggleSpoke(spoke.key)}
+                      style={unlocked ? {
+                        background: GOLD, color: '#000', fontWeight: 700, fontSize: 11,
+                        padding: '4px 12px', borderRadius: 3, border: 'none',
+                        cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '1px',
+                      } : {
+                        background: 'transparent', color: '#888', fontWeight: 700, fontSize: 11,
+                        padding: '4px 12px', borderRadius: 3, border: '1px solid #444',
+                        cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '1px',
+                      }}
+                    >
+                      {unlocked ? 'REVOKE' : 'UNLOCK'}
+                    </button>
                   </div>
                 );
               })}
