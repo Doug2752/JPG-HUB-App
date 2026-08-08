@@ -2,6 +2,7 @@ import React from 'react';
 import { S } from '../utils/styles';
 import { GOLD, TEXT_DIM } from '../utils/constants';
 import { updateClient } from '../services/clients';
+import { todayISO } from '../utils/date';
 
 const SPOKE_LABELS = [
   { key: 'obt_unlocked',        label: 'OBT' },
@@ -16,7 +17,11 @@ export default function SlidePanel({ client, onClose, onUpdate }) {
   const isOpen = !!client;
 
   async function handleToggleSpoke(flagKey) {
-    await updateClient(client.id, { [flagKey]: !client[flagKey] });
+    if (flagKey === 'obt_unlocked' && !client[flagKey]) {
+      await updateClient(client.id, { obt_unlocked: true, program_start_date: todayISO() });
+    } else {
+      await updateClient(client.id, { [flagKey]: !client[flagKey] });
+    }
     if (onUpdate) onUpdate();
   }
 
