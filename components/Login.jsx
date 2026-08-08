@@ -1,22 +1,20 @@
 import React, { useState } from 'react';
-
-const VALID_CREDENTIALS = { Doug: 'JPG2026', Test: 'JPG2026' };
+import { login } from '../services/clients';
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const key = Object.keys(VALID_CREDENTIALS).find(k => k.toLowerCase() === username.trim().toLowerCase());
-    const expected = key ? VALID_CREDENTIALS[key] : undefined;
-    if (!expected || password.toLowerCase() !== expected.toLowerCase()) {
+    const session = await login(username.trim(), password);
+    if (!session) {
       setError('Invalid username or password.');
       return;
     }
     setError('');
-    onLogin(username.trim());
+    onLogin(session);
   }
 
   return (

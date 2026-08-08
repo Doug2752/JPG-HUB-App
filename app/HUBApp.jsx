@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { S } from '../utils/styles';
+import { getSession, logout as logoutService } from '../services/clients';
 import Login from '../components/Login.jsx';
 import Nav from '../components/Nav.jsx';
 import Topbar from '../components/Topbar.jsx';
@@ -13,7 +14,16 @@ export default function HUBApp() {
   const [user, setUser]             = useState(null);
   const [activeView, setActiveView] = useState('wheel');
   const [panelClient, setPanelClient] = useState(null);
+  const [loading, setLoading]       = useState(true);
 
+  useEffect(() => {
+    getSession().then(session => {
+      if (session) setUser(session);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return null;
   if (!user) return <Login onLogin={setUser} />;
 
   function handleViewChange(viewId) {
@@ -21,14 +31,15 @@ export default function HUBApp() {
     setPanelClient(null);
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    await logoutService();
     setUser(null);
     setActiveView('wheel');
     setPanelClient(null);
   }
 
   function renderView() {
-    if (activeView === 'wheel')      return <WheelView hubUser={user} />;
+    if (activeView === 'wheel')      return <WheelView hubUser={user} role={user.role} />;
     if (activeView === 'clients')    return <ClientsView onOpenPanel={setPanelClient} />;
     if (activeView === 'messages')   return <PlaceholderView icon="✉" label="MESSAGING" sub="Spoke under development" />;
     if (activeView === 'reports')    return <PlaceholderView icon="▦" label="REPORTS" sub="Under development" />;
