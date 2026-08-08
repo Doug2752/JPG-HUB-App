@@ -22,10 +22,10 @@ export const USERS = {
 
 // ── SPOKE URLS ────────────────────────────────────────────────
 export const SPOKE_URLS = {
-  tracker:   'http://localhost:5176',
+  tracker:   'http://localhost:5175',
+  dop:       'http://localhost:5173',
+  pit:       'http://localhost:5174',
   legal:     '',
-  dop:       'http://localhost:5174',
-  pit:       'http://localhost:5175',
   daily:     '',
   edu:       '',
   checkin:   '',

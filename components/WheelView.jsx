@@ -2,10 +2,44 @@ import React from 'react';
 import { S } from '../utils/styles';
 import { SPOKE_URLS } from '../utils/constants';
 
-// Spokes that bypass their own login when opened from HUB
 const HUB_AUTH_SPOKES = ['dop', 'pit', 'tracker'];
 
-function spokeClick(spokeId, hubUser) {
+function getClientRecord(hubUser) {
+  try {
+    const raw = localStorage.getItem('hub_clients');
+    if (!raw) return null;
+    const clients = JSON.parse(raw);
+    return clients.find(c => c.id === hubUser.id) || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function isSpokeUnlocked(spokeId, hubUser) {
+  if (!hubUser || !hubUser.id) return false;
+  const client = getClientRecord(hubUser);
+  if (!client) return false;
+  const flagMap = {
+    tracker: 'obt_unlocked',
+    dop: 'dop_unlocked',
+    pit: 'pit_unlocked',
+    edu: 'edu_unlocked',
+    messaging: 'comms_unlocked',
+    legal: 'agreements_unlocked',
+  };
+  const flag = flagMap[spokeId];
+  return flag ? !!client[flag] : false;
+}
+
+function spokeStyle(spokeId, hubUser, role) {
+  if (role === 'coach') return { cursor: 'pointer' };
+  return isSpokeUnlocked(spokeId, hubUser)
+    ? { cursor: 'pointer' }
+    : { cursor: 'not-allowed', opacity: 0.4 };
+}
+
+function spokeClick(spokeId, hubUser, role) {
+  if (role === 'client' && !isSpokeUnlocked(spokeId, hubUser)) return;
   let url = SPOKE_URLS[spokeId];
   if (url) {
     if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {
@@ -21,10 +55,9 @@ function spokeClick(spokeId, hubUser) {
   }
 }
 
-const spokeG = { cursor: 'pointer' };
 const lockedG = { cursor: 'not-allowed', opacity: 0.4 };
 
-export default function WheelView({ hubUser }) {
+export default function WheelView({ hubUser, role }) {
   return (
     <div style={S.wheelView}>
       <svg style={S.wheelSvg} viewBox="0 0 720 720" xmlns="http://www.w3.org/2000/svg">
@@ -53,7 +86,7 @@ export default function WheelView({ hubUser }) {
         <text x="360" y="390" textAnchor="middle" fill="#000" fontSize="10" fontWeight="700" letterSpacing="3" fontFamily="Lato">CENTRAL COMMAND</text>
 
         {/* 14-DAY TRACKER */}
-        <g style={spokeG} onClick={() => spokeClick('tracker', hubUser)}>
+        <g style={spokeStyle('tracker', hubUser, role)} onClick={() => spokeClick('tracker', hubUser, role)}>
           <circle cx="360" cy="75" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="360" y="60"  textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">14-DAY</text>
           <text x="360" y="80"  textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">TRACKER</text>
@@ -61,7 +94,7 @@ export default function WheelView({ hubUser }) {
         </g>
 
         {/* LEGAL DOCS */}
-        <g style={spokeG} onClick={() => spokeClick('legal')}>
+        <g style={spokeStyle('legal', hubUser, role)} onClick={() => spokeClick('legal', hubUser, role)}>
           <circle cx="528" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="528" y="114" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">LEGAL</text>
           <text x="528" y="134" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">DOCS</text>
@@ -69,7 +102,7 @@ export default function WheelView({ hubUser }) {
         </g>
 
         {/* DOP */}
-        <g style={spokeG} onClick={() => spokeClick('dop', hubUser)}>
+        <g style={spokeStyle('dop', hubUser, role)} onClick={() => spokeClick('dop', hubUser, role)}>
           <circle cx="631" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="631" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">DAILY OPS</text>
           <text x="631" y="277" textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">DOP</text>
@@ -77,7 +110,7 @@ export default function WheelView({ hubUser }) {
         </g>
 
         {/* PIT */}
-        <g style={spokeG} onClick={() => spokeClick('pit', hubUser)}>
+        <g style={spokeStyle('pit', hubUser, role)} onClick={() => spokeClick('pit', hubUser, role)}>
           <circle cx="631" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="631" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">PERSONAL</text>
           <text x="631" y="453" textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">PIT</text>
@@ -85,7 +118,7 @@ export default function WheelView({ hubUser }) {
         </g>
 
         {/* DAILY TRACKER */}
-        <g style={spokeG} onClick={() => spokeClick('daily')}>
+        <g style={spokeStyle('daily', hubUser, role)} onClick={() => spokeClick('daily', hubUser, role)}>
           <circle cx="528" cy="591" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="528" y="576" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">DAILY</text>
           <text x="528" y="596" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">TRACKER</text>
@@ -100,7 +133,7 @@ export default function WheelView({ hubUser }) {
         </g>
 
         {/* EDUCATION REFERENCE */}
-        <g style={spokeG} onClick={() => spokeClick('edu')}>
+        <g style={spokeStyle('edu', hubUser, role)} onClick={() => spokeClick('edu', hubUser, role)}>
           <circle cx="192" cy="591" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="192" y="576" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EDUCATION</text>
           <text x="192" y="596" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">REFERENCE</text>
@@ -108,7 +141,7 @@ export default function WheelView({ hubUser }) {
         </g>
 
         {/* CLIENT CHECK-IN */}
-        <g style={spokeG} onClick={() => spokeClick('checkin')}>
+        <g style={spokeStyle('checkin', hubUser, role)} onClick={() => spokeClick('checkin', hubUser, role)}>
           <circle cx="89" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2"   fontFamily="Lato">CLIENT</text>
           <text x="89" y="453" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2.5" fontFamily="Lato">CHECK-IN</text>
@@ -116,7 +149,7 @@ export default function WheelView({ hubUser }) {
         </g>
 
         {/* MESSAGING */}
-        <g style={spokeG} onClick={() => spokeClick('messaging')}>
+        <g style={spokeStyle('messaging', hubUser, role)} onClick={() => spokeClick('messaging', hubUser, role)}>
           <circle cx="89" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">COMMS</text>
           <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">MESSAGING</text>
@@ -124,7 +157,7 @@ export default function WheelView({ hubUser }) {
         </g>
 
         {/* RESOURCES VAULT */}
-        <g style={spokeG} onClick={() => spokeClick('resources')}>
+        <g style={spokeStyle('resources', hubUser, role)} onClick={() => spokeClick('resources', hubUser, role)}>
           <circle cx="192" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="192" y="114" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">RESOURCES</text>
           <text x="192" y="134" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">VAULT</text>
