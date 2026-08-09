@@ -9,6 +9,7 @@ import ClientsView from '../components/ClientsView.jsx';
 import ClientViewMode from '../components/ClientViewMode.jsx';
 import SlidePanel from '../components/SlidePanel.jsx';
 import PlaceholderView from '../components/PlaceholderView.jsx';
+import CommunicationView from '../components/CommunicationView.jsx';
 
 export default function HUBApp() {
   const [user, setUser]             = useState(null);
@@ -40,9 +41,9 @@ export default function HUBApp() {
   }
 
   function renderView() {
-    if (activeView === 'wheel')      return <WheelView hubUser={user} role={user.role} />;
-    if (activeView === 'clients')    return <ClientsView key={clientRosterKey} onOpenPanel={setPanelClient} />;
-    if (activeView === 'messages')   return <PlaceholderView icon="✉" label="MESSAGING" sub="Spoke under development" />;
+    if (activeView === 'wheel')         return <WheelView hubUser={user} role={user.role} onNavigate={handleViewChange} />;
+    if (activeView === 'clients')      return <ClientsView key={clientRosterKey} onOpenPanel={setPanelClient} />;
+    if (activeView === 'communication') return <CommunicationView user={user} />;
     if (activeView === 'reports')    return <PlaceholderView icon="▦" label="REPORTS" sub="Under development" />;
     if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
     if (activeView === 'clientview') return <ClientViewMode key="clientview" />;

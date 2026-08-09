@@ -31,7 +31,7 @@ export const SPOKE_URLS = {
 export const NAV_ITEMS = [
   { id: 'wheel',    label: 'DASHBOARD' },
   { id: 'clients',  label: 'CLIENTS' },
-  { id: 'messages', label: 'MESSAGES' },
+  { id: 'communication', label: 'MESSAGES' },
   { id: 'reports',  label: 'REPORTS' },
   { id: 'settings', label: 'SETTINGS' }
 ];
