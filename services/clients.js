@@ -43,6 +43,9 @@ export function createClientRecord(firstName, lastName, phone, email, programSta
     edu_unlocked: false,
     comms_unlocked: false,
     agreements_unlocked: false,
+    eventsboard_unlocked: false,
+    daily_unlocked: false,
+    resources_unlocked: false,
   };
 }
 
