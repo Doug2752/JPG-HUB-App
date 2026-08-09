@@ -71,7 +71,7 @@ function spokeClick(spokeId, hubUser, role) {
   if (url) {
     if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {
       const sep = url.includes('?') ? '&' : '?';
-      url = url + sep + 'hub_user=' + encodeURIComponent(hubUser);
+      url = url + sep + 'hub_user=' + encodeURIComponent(hubUser.username || hubUser);
     }
     window.open(url, '_blank');
   } else {
