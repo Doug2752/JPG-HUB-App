@@ -5,7 +5,7 @@ export default function Topbar({ onLogout }) {
   return (
     <div style={S.topbar}>
       <div style={{ ...S.topbarRow, ...S.topbarRow1 }}>
-        <div style={S.topbarTitle}>CENTRAL COMMAND HUB</div>
+        <div style={S.topbarTitle}>CENTRAL HUB</div>
         <button style={S.topbarLogout} onClick={onLogout}>LOGOUT</button>
       </div>
       <div style={S.topbarRow}>

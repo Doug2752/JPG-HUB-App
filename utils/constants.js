@@ -22,15 +22,15 @@ export const USERS = {
 
 // ── SPOKE URLS ────────────────────────────────────────────────
 export const SPOKE_URLS = {
-  tracker:   'http://localhost:5175',
-  dop:       'http://localhost:5173',
-  pit:       'http://localhost:5174',
-  legal:     '',
-  daily:     '',
-  edu:       '',
-  checkin:   '',
-  messaging: '',
-  resources: ''
+  dop:           'http://localhost:5173',
+  pit:           'http://localhost:5174',
+  tracker:       'http://localhost:5175',
+  communication: '',
+  agreements:    '',
+  eventsboard:   '',
+  daily:         '',
+  edu:           '',
+  resources:     '',
 };
 
 // ── NAV ITEMS ─────────────────────────────────────────────────

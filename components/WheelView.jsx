@@ -37,12 +37,15 @@ function isSpokeUnlocked(spokeId, hubUser, role) {
   const client = getClientRecord(hubUser);
   if (!client) return false;
   const flagMap = {
-    tracker: 'obt_unlocked',
-    dop: 'dop_unlocked',
-    pit: 'pit_unlocked',
-    edu: 'edu_unlocked',
-    messaging: 'comms_unlocked',
-    legal: 'agreements_unlocked',
+    tracker:       'obt_unlocked',
+    dop:           'dop_unlocked',
+    pit:           'pit_unlocked',
+    edu:           'edu_unlocked',
+    communication: 'comms_unlocked',
+    agreements:    'agreements_unlocked',
+    eventsboard:   'eventsboard_unlocked',
+    daily:         'daily_unlocked',
+    resources:     'resources_unlocked',
   };
   const flag = flagMap[spokeId];
   if (!flag || !client[flag]) return false;
@@ -105,48 +108,47 @@ export default function WheelView({ hubUser, role }) {
 
         {/* HUB CENTER */}
         <circle cx="360" cy="360" r="92" fill="#B8860B" stroke="rgba(0,0,0,0.2)" strokeWidth="3"/>
-        <text x="360" y="354" textAnchor="middle" fill="#000" fontSize="38" fontWeight="900" letterSpacing="8" fontFamily="Lato">HUB</text>
-        <line x1="312" y1="368" x2="408" y2="368" stroke="rgba(0,0,0,0.3)" strokeWidth="1"/>
-        <text x="360" y="390" textAnchor="middle" fill="#000" fontSize="10" fontWeight="700" letterSpacing="3" fontFamily="Lato">CENTRAL COMMAND</text>
-
-        {/* 14-DAY TRACKER */}
-        <g style={spokeStyle('tracker', hubUser, role)} onClick={() => spokeClick('tracker', hubUser, role)}>
-          <circle cx="360" cy="75" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="360" y="60"  textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">14-DAY</text>
-          <text x="360" y="80"  textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">TRACKER</text>
-          <text x="360" y="95"  textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">ONBOARDING</text>
-        </g>
-
-        {/* LEGAL DOCS */}
-        <g style={spokeStyle('legal', hubUser, role)} onClick={() => spokeClick('legal', hubUser, role)}>
-          <circle cx="528" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="528" y="114" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">LEGAL</text>
-          <text x="528" y="134" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">DOCS</text>
-          <text x="528" y="149" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">AGREEMENTS</text>
-        </g>
+        <text x="360" y="340" textAnchor="middle" fill="#000" fontSize="30" fontWeight="900" letterSpacing="8" fontFamily="Lato">JPG</text>
+        <text x="360" y="388" textAnchor="middle" fill="#000" fontSize="42" fontWeight="900" letterSpacing="10" fontFamily="Lato">HUB</text>
 
         {/* DOP */}
         <g style={spokeStyle('dop', hubUser, role)} onClick={() => spokeClick('dop', hubUser, role)}>
-          <circle cx="631" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="631" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">DAILY OPS</text>
-          <text x="631" y="277" textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">DOP</text>
-          <text x="631" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">PROCESS</text>
+          <circle cx="360" cy="75" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <text x="360" y="60"  textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">DAILY OPS</text>
+          <text x="360" y="80"  textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">DOP</text>
+          <text x="360" y="95"  textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">PROCESS</text>
         </g>
 
         {/* PIT */}
         <g style={spokeStyle('pit', hubUser, role)} onClick={() => spokeClick('pit', hubUser, role)}>
-          <circle cx="631" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="631" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">PERSONAL</text>
-          <text x="631" y="453" textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">PIT</text>
-          <text x="631" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">TIME INVEST.</text>
+          <circle cx="528" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <text x="528" y="114" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">PERSONAL</text>
+          <text x="528" y="134" textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">PIT</text>
+          <text x="528" y="149" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">TIME INVEST.</text>
         </g>
 
-        {/* DAILY TRACKER */}
-        <g style={spokeStyle('daily', hubUser, role)} onClick={() => spokeClick('daily', hubUser, role)}>
+        {/* 14-DAY TRACKER */}
+        <g style={spokeStyle('tracker', hubUser, role)} onClick={() => spokeClick('tracker', hubUser, role)}>
+          <circle cx="631" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <text x="631" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">14-DAY</text>
+          <text x="631" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">TRACKER</text>
+          <text x="631" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">ONBOARDING</text>
+        </g>
+
+        {/* COMMUNICATION */}
+        <g style={spokeStyle('communication', hubUser, role)} onClick={() => spokeClick('communication', hubUser, role)}>
+          <circle cx="631" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <text x="631" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">COACH</text>
+          <text x="631" y="453" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">COMMUNICATION</text>
+          <text x="631" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">MESSAGES</text>
+        </g>
+
+        {/* AGREEMENTS */}
+        <g style={spokeStyle('agreements', hubUser, role)} onClick={() => spokeClick('agreements', hubUser, role)}>
           <circle cx="528" cy="591" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="528" y="576" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">DAILY</text>
-          <text x="528" y="596" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">TRACKER</text>
-          <text x="528" y="611" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">ONGOING</text>
+          <text x="528" y="576" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">CLIENT</text>
+          <text x="528" y="596" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">AGREEMENTS</text>
+          <text x="528" y="611" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">DOCS &amp; FORMS</text>
         </g>
 
         {/* FUTURE (locked) */}
@@ -156,36 +158,36 @@ export default function WheelView({ hubUser, role }) {
           <text x="360" y="655" textAnchor="middle" fill="#444" fontSize="9"  letterSpacing="1.5" fontFamily="Lato">DEVELOPMENT</text>
         </g>
 
+        {/* EVENTS BOARD */}
+        <g style={spokeStyle('eventsboard', hubUser, role)} onClick={() => spokeClick('eventsboard', hubUser, role)}>
+          <circle cx="192" cy="591" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <text x="192" y="576" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EVENTS</text>
+          <text x="192" y="596" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">BOARD</text>
+          <text x="192" y="611" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">COMMUNITY</text>
+        </g>
+
+        {/* DAILY TRACKER */}
+        <g style={spokeStyle('daily', hubUser, role)} onClick={() => spokeClick('daily', hubUser, role)}>
+          <circle cx="89" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">DAILY</text>
+          <text x="89" y="453" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">TRACKER</text>
+          <text x="89" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">APPS</text>
+        </g>
+
         {/* EDUCATION REFERENCE */}
         <g style={spokeStyle('edu', hubUser, role)} onClick={() => spokeClick('edu', hubUser, role)}>
-          <circle cx="192" cy="591" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="192" y="576" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EDUCATION</text>
-          <text x="192" y="596" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">REFERENCE</text>
-          <text x="192" y="611" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">LIBRARY</text>
-        </g>
-
-        {/* CLIENT CHECK-IN */}
-        <g style={spokeStyle('checkin', hubUser, role)} onClick={() => spokeClick('checkin', hubUser, role)}>
-          <circle cx="89" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2"   fontFamily="Lato">CLIENT</text>
-          <text x="89" y="453" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2.5" fontFamily="Lato">CHECK-IN</text>
-          <text x="89" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">TOOL</text>
-        </g>
-
-        {/* MESSAGING */}
-        <g style={spokeStyle('messaging', hubUser, role)} onClick={() => spokeClick('messaging', hubUser, role)}>
-          <circle cx="89" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">COMMS</text>
-          <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">MESSAGING</text>
-          <text x="89" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">CHAT/BCAST</text>
+          <circle cx="192" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <text x="192" y="114" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EDUCATION</text>
+          <text x="192" y="134" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">REFERENCE</text>
+          <text x="192" y="149" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">LIBRARY</text>
         </g>
 
         {/* RESOURCES VAULT */}
         <g style={spokeStyle('resources', hubUser, role)} onClick={() => spokeClick('resources', hubUser, role)}>
-          <circle cx="192" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="192" y="114" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">RESOURCES</text>
-          <text x="192" y="134" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">VAULT</text>
-          <text x="192" y="149" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">DOWNLOADS</text>
+          <circle cx="89" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">RESOURCES</text>
+          <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">VAULT</text>
+          <text x="89" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">DOWNLOADS</text>
         </g>
 
       </svg>

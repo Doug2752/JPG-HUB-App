@@ -53,7 +53,7 @@ export default function HUBApp() {
 
   return (
     <div style={S.appShell}>
-      <Nav activeView={activeView} onViewChange={handleViewChange} />
+      <Nav activeView={activeView} onViewChange={handleViewChange} role={user.role} />
 
       <div style={{
         ...S.mainContent,
