@@ -124,7 +124,7 @@ export default function WheelView({ hubUser, role }) {
           <circle cx="528" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
           <text x="528" y="114" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">PERSONAL</text>
           <text x="528" y="134" textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">PIT</text>
-          <text x="528" y="149" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">TIME INVEST.</text>
+          <text x="528" y="149" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">INVEST. TIME</text>
         </g>
 
         {/* 14-DAY TRACKER */}
