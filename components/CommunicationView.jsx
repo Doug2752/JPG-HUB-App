@@ -344,7 +344,16 @@ export default function CommunicationView({ user }) {
     const thread = singleSelected ? getThreadForClient(singleSelected.id) : null;
 
     return (
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+        <div style={{
+          width: '100%', background: DARKER, borderTop: `1px solid ${GOLD}`,
+          padding: '8px 20px', boxSizing: 'border-box', flexShrink: 0,
+        }}>
+          <span style={{ color: TEXT_DIM, fontSize: 11, fontStyle: 'italic', letterSpacing: '0.5px' }}>
+            In-app messages only — clients must be logged into HUB to receive messages. This is not email or text.
+          </span>
+        </div>
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <div style={{
           width: 240, flexShrink: 0, borderRight: `1px solid ${BORDER_DK}`,
           overflowY: 'auto', background: DARKER,
@@ -520,6 +529,7 @@ export default function CommunicationView({ user }) {
               Select a client to view messages
             </div>
           )}
+        </div>
         </div>
       </div>
     );

@@ -53,6 +53,27 @@ export default function SlidePanel({ client, onClose, onUpdate }) {
             <div style={S.spRowVal}>{client.password}</div>
           </div>
 
+          <div style={S.spRow}>
+            <div style={S.spRowLbl}>RESIDENTIAL ADDRESS</div>
+            <div style={S.spRowVal}>
+              {(() => {
+                const street = (client.residential_street || '').trim();
+                const city   = (client.residential_city   || '').trim();
+                const state  = (client.residential_state  || '').trim();
+                const zip    = (client.residential_zip    || '').trim();
+                if (!street && !city && !state && !zip) return '—';
+                const line2Parts = [city, state && zip ? state + ' ' + zip : state || zip].filter(Boolean);
+                const line2 = line2Parts.join(', ');
+                return (
+                  <>
+                    {street && <div>{street}</div>}
+                    {line2  && <div>{line2}</div>}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
           <hr style={S.spDivider} />
 
           <div style={S.spRow}>
