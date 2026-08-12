@@ -37,15 +37,15 @@ export function createClientRecord(firstName, lastName, phone, email, programSta
     onramp_end: null,
     tier: 4,
     tier_name: 'Apprentice',
-    obt_unlocked: false,
+    obt_unlocked: true,
     dop_unlocked: false,
     pit_unlocked: false,
-    edu_unlocked: false,
-    comms_unlocked: false,
-    agreements_unlocked: false,
-    eventsboard_unlocked: false,
-    daily_unlocked: false,
-    resources_unlocked: false,
+    edu_unlocked: true,
+    comms_unlocked: true,
+    agreements_unlocked: true,
+    eventsboard_unlocked: true,
+    daily_unlocked: true,
+    resources_unlocked: true,
   };
 }
 
