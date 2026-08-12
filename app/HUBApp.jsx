@@ -10,6 +10,7 @@ import ClientViewMode from '../components/ClientViewMode.jsx';
 import SlidePanel from '../components/SlidePanel.jsx';
 import PlaceholderView from '../components/PlaceholderView.jsx';
 import CommunicationView from '../components/CommunicationView.jsx';
+import FullProfileView from '../components/FullProfileView.jsx';
 
 export default function HUBApp() {
   const [user, setUser]             = useState(null);
@@ -17,6 +18,7 @@ export default function HUBApp() {
   const [panelClient, setPanelClient] = useState(null);
   const [loading, setLoading]       = useState(true);
   const [clientRosterKey, setClientRosterKey] = useState(0);
+  const [selectedProfileClient, setSelectedProfileClient] = useState(null);
 
   useEffect(() => {
     getSession().then(session => {
@@ -33,6 +35,17 @@ export default function HUBApp() {
     setPanelClient(null);
   }
 
+  function handleOpenFullProfile(client) {
+    setSelectedProfileClient(client);
+    setActiveView('fullprofile');
+    setPanelClient(null);
+  }
+
+  function handleBackFromProfile() {
+    setActiveView('clients');
+    setSelectedProfileClient(null);
+  }
+
   async function handleLogout() {
     await logoutService();
     setUser(null);
@@ -44,6 +57,7 @@ export default function HUBApp() {
     if (activeView === 'wheel')         return <WheelView hubUser={user} role={user.role} onNavigate={handleViewChange} />;
     if (activeView === 'clients')      return <ClientsView key={clientRosterKey} onOpenPanel={setPanelClient} />;
     if (activeView === 'communication') return <CommunicationView user={user} />;
+    if (activeView === 'fullprofile')   return <FullProfileView client={selectedProfileClient} onBack={handleBackFromProfile} />;
     if (activeView === 'reports')    return <PlaceholderView icon="▦" label="REPORTS" sub="Under development" />;
     if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
     if (activeView === 'clientview') return <ClientViewMode key="clientview" />;
@@ -76,6 +90,7 @@ export default function HUBApp() {
       <SlidePanel
         client={panelClient}
         onClose={() => setPanelClient(null)}
+        onOpenFullProfile={handleOpenFullProfile}
         onUpdate={() => {
           setClientRosterKey(k => k + 1);
           try {

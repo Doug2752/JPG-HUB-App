@@ -16,7 +16,7 @@ const SPOKE_LABELS = [
   { key: 'resources_unlocked',   label: 'RESOURCES VAULT' },
 ];
 
-export default function SlidePanel({ client, onClose, onUpdate }) {
+export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfile }) {
   const isOpen = !!client;
 
   async function handleToggleSpoke(flagKey) {
@@ -120,7 +120,7 @@ export default function SlidePanel({ client, onClose, onUpdate }) {
       )}
 
       <div style={S.spFooter}>
-        <button style={S.spFullBtn}>OPEN FULL PROFILE ▶</button>
+        <button style={S.spFullBtn} onClick={() => onOpenFullProfile && onOpenFullProfile(client)}>OPEN FULL PROFILE ▶</button>
       </div>
     </div>
   );
