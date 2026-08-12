@@ -1,187 +1,216 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { S } from '../utils/styles';
 import { GOLD, BORDER_DK, TEXT_DIM, TEXT_MID, DARKER } from '../utils/constants';
 
-const DEMO = {
-  name: 'DEMO CLIENT',
-  phase: 'APPRENTICE',
-  day: 'Day 3 / 14',
-  streak: '3 days',
-  goal: 'Habit Formation / Energy',
-  lastActivity: 'Today, 8:00 AM',
-  habits: [
-    { label: 'Morning Check-In', done: true },
-    { label: 'Water Goal (100 oz)', done: true },
-    { label: 'Sleep Log', done: false },
-    { label: 'Evening Reflection', done: false },
-  ],
-};
-
-function HabitRow({ habit }) {
-  const [checked, setChecked] = useState(habit.done);
-  return (
-    <div
-      onClick={() => setChecked(c => !c)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: '12px',
-        padding: '12px 16px', borderBottom: `1px solid ${BORDER_DK}`,
-        cursor: 'pointer', background: checked ? 'rgba(184,134,11,0.05)' : 'transparent',
-      }}
-    >
-      <div style={{
-        width: '18px', height: '18px', borderRadius: '3px', flexShrink: 0,
-        border: `2px solid ${checked ? GOLD : '#444'}`,
-        background: checked ? GOLD : 'transparent',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '11px', color: '#000', fontWeight: 900,
-      }}>
-        {checked ? '✓' : ''}
-      </div>
-      <span style={{
-        fontSize: '12px', fontWeight: 700, letterSpacing: '1px',
-        color: checked ? '#fff' : TEXT_MID,
-        textDecoration: checked ? 'none' : 'none',
-      }}>
-        {habit.label}
-      </span>
-      <span style={{
-        marginLeft: 'auto', fontSize: '10px', letterSpacing: '1px',
-        color: checked ? GOLD : TEXT_DIM, fontWeight: 700,
-      }}>
-        {checked ? 'DONE' : 'PENDING'}
-      </span>
-    </div>
-  );
+function getPhaseInfo(trackingStartDate) {
+  if (!trackingStartDate) return null;
+  try {
+    const today = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z');
+    const start = new Date(trackingStartDate + 'T00:00:00Z');
+    const cycleDay = Math.floor((today - start) / 86400000) + 1;
+    let phase;
+    if (cycleDay <= 14) phase = 'Foundation Tracking';
+    else if (cycleDay <= 21) phase = 'Analysis Week';
+    else if (cycleDay <= 30) phase = 'Onramp';
+    else phase = 'Active';
+    return { cycleDay, phase };
+  } catch (_) {
+    return null;
+  }
 }
 
-export default function ClientViewMode() {
-  const progress = Math.round((3 / 14) * 100);
+export default function ClientViewMode({ onBack }) {
+  const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [selectValue, setSelectValue] = useState('');
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('hub_clients');
+      setClients(raw ? JSON.parse(raw) : []);
+    } catch (_) {
+      setClients([]);
+    }
+  }, []);
+
+  if (!selectedClient) {
+    return (
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{
+          background: DARKER, border: `1px solid ${BORDER_DK}`, borderRadius: 6,
+          padding: '36px 40px', width: 360, textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: '2px', color: '#fff', marginBottom: 24 }}>
+            Select a Client
+          </div>
+          <select
+            value={selectValue}
+            onChange={e => setSelectValue(e.target.value)}
+            style={{
+              width: '100%', padding: '10px 12px', background: '#1a1a1a',
+              border: '1px solid #333', borderRadius: 4, color: '#fff', fontSize: 13,
+              fontFamily: 'inherit', marginBottom: 20, boxSizing: 'border-box', appearance: 'auto',
+            }}
+          >
+            <option value="">— Select Client —</option>
+            {clients.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.first_name + ' ' + c.last_name}
+              </option>
+            ))}
+          </select>
+          <button
+            disabled={!selectValue}
+            onClick={() => {
+              const c = clients.find(cl => cl.id === selectValue);
+              if (c) setSelectedClient(c);
+            }}
+            style={{
+              width: '100%', padding: '12px', borderRadius: 4, border: 'none',
+              fontFamily: 'inherit', fontSize: 13, fontWeight: 700, letterSpacing: '2px',
+              cursor: selectValue ? 'pointer' : 'not-allowed',
+              background: selectValue ? GOLD : '#555',
+              color: selectValue ? '#000' : '#999',
+            }}
+          >
+            VIEW CLIENT
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const phaseInfo = getPhaseInfo(selectedClient.tracking_start_date);
+  const isTier4 = selectedClient.tier === 4;
+  const progressPct = phaseInfo ? Math.min(Math.round((phaseInfo.cycleDay / 14) * 100), 100) : 0;
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-      {/* Demo mode banner */}
-      <div style={{
-        background: '#0d2340',
-        borderBottom: `2px solid ${GOLD}`,
-        padding: '9px 28px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        flexShrink: 0,
-      }}>
-        <span style={{
-          background: GOLD, color: '#000', fontWeight: 900,
-          fontSize: '9px', letterSpacing: '2px',
-          padding: '3px 8px', borderRadius: '2px',
-        }}>
-          CLIENT VIEW
-        </span>
-        <span style={{ color: '#aaa', fontSize: '10px', letterSpacing: '1px' }}>
-          Demo mode — generic client profile — nothing is saved
-        </span>
-        <span style={{ marginLeft: 'auto', color: TEXT_DIM, fontSize: '10px', letterSpacing: '1px' }}>
-          Select any coach nav item to return to coach view
-        </span>
-      </div>
-
       <div style={{ flex: 1, overflowY: 'auto', padding: '28px' }}>
 
-        {/* Profile header */}
+        <div
+          onClick={() => { setSelectedClient(null); setSelectValue(''); }}
+          style={{
+            color: GOLD, fontSize: 12, fontWeight: 700, letterSpacing: '1px',
+            cursor: 'pointer', marginBottom: 20, display: 'inline-block',
+          }}
+        >
+          ← Back to Client List
+        </div>
+
         <div style={{
           background: DARKER, border: `1px solid ${BORDER_DK}`,
-          borderRadius: '3px', padding: '20px 24px', marginBottom: '20px',
-          display: 'flex', alignItems: 'center', gap: '24px',
+          borderRadius: 3, padding: '20px 24px', marginBottom: 20,
+          display: 'flex', alignItems: 'center', gap: 24,
         }}>
           <div style={{
-            width: '56px', height: '56px', borderRadius: '50%', flexShrink: 0,
-            background: '#1C3A5C', border: `2px solid ${GOLD}`,
+            width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+            background: GOLD, border: `2px solid ${GOLD}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: GOLD, fontSize: '20px', fontWeight: 900,
+            color: '#000', fontSize: 20, fontWeight: 900,
           }}>
-            D
+            {selectedClient.first_name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <div style={{ fontSize: '16px', fontWeight: 900, color: '#fff', letterSpacing: '2px' }}>
-              {DEMO.name}
+            <div style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '2px' }}>
+              {(selectedClient.first_name + ' ' + selectedClient.last_name).toUpperCase()}
             </div>
-            <div style={{ fontSize: '10px', color: TEXT_DIM, letterSpacing: '1.5px', marginTop: '4px' }}>
+            <div style={{ fontSize: 10, color: TEXT_DIM, letterSpacing: '1.5px', marginTop: 4 }}>
               JONES PERFORMANCE GROUP LLC
             </div>
           </div>
           <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
             <div style={{
-              background: 'rgba(192,57,43,0.12)', color: '#C0392B',
-              border: '1px solid #C0392B', borderRadius: '2px',
-              fontSize: '9px', fontWeight: 700, letterSpacing: '1px',
+              background: 'rgba(184,134,11,0.12)', color: GOLD,
+              border: `1px solid ${GOLD}`, borderRadius: 2,
+              fontSize: 9, fontWeight: 700, letterSpacing: '1px',
               padding: '4px 10px', display: 'inline-block',
             }}>
-              {DEMO.phase}
-            </div>
-            <div style={{ fontSize: '10px', color: TEXT_DIM, marginTop: '6px', letterSpacing: '1px' }}>
-              {DEMO.day}
+              {(selectedClient.tier_name || 'UNKNOWN').toUpperCase()}
             </div>
           </div>
         </div>
 
-        {/* Stats row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
-          {[
-            { label: 'CURRENT STREAK', value: DEMO.streak, sub: 'keep it going' },
-            { label: 'LAST CHECK-IN', value: DEMO.lastActivity, sub: 'on time' },
-            { label: 'GOAL', value: DEMO.goal, sub: '14-day baseline' },
-          ].map(stat => (
-            <div key={stat.label} style={{ ...S.statBox }}>
-              <div style={S.statLabel}>{stat.label}</div>
-              <div style={{ ...S.statValue, fontSize: '14px', marginTop: '8px', height: 'auto' }}>{stat.value}</div>
-              <div style={S.statSub}>{stat.sub}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Progress bar */}
-        <div style={{
-          background: DARKER, border: `1px solid ${BORDER_DK}`,
-          borderRadius: '3px', padding: '16px 20px', marginBottom: '20px',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#fff' }}>
-              14-DAY BASELINE PROGRESS
+        {isTier4 ? (
+          <div style={{
+            background: DARKER, border: `1px solid ${BORDER_DK}`,
+            borderRadius: 3, padding: '16px 20px', marginBottom: 20,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            {phaseInfo ? (
+              <>
+                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '2px', color: GOLD }}>
+                  {phaseInfo.phase.toUpperCase()}
+                </span>
+                <span style={{ fontSize: 12, color: TEXT_MID, letterSpacing: '1px' }}>
+                  Day {phaseInfo.cycleDay}
+                </span>
+              </>
+            ) : (
+              <span style={{ fontSize: 12, color: TEXT_MID, letterSpacing: '1px' }}>
+                Program not yet started
+              </span>
+            )}
+          </div>
+        ) : (
+          <div style={{
+            background: DARKER, border: `1px solid ${BORDER_DK}`,
+            borderRadius: 3, padding: '16px 20px', marginBottom: 20,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '2px', color: GOLD }}>
+              {(selectedClient.tier_name || 'UNKNOWN').toUpperCase()}
             </span>
-            <span style={{ fontSize: '11px', color: GOLD, fontWeight: 700 }}>{progress}%</span>
+            <span style={{ fontSize: 11, color: TEXT_DIM, letterSpacing: '1px' }}>
+              Metrics coming for this tier
+            </span>
           </div>
-          <div style={{ background: '#2a2a2a', borderRadius: '2px', height: '8px', overflow: 'hidden' }}>
-            <div style={{
-              height: '100%', width: `${progress}%`,
-              background: `linear-gradient(90deg, ${GOLD}, #d4a017)`,
-              borderRadius: '2px', transition: 'width 0.4s ease',
-            }} />
-          </div>
-          <div style={{ fontSize: '10px', color: TEXT_DIM, marginTop: '8px', letterSpacing: '1px' }}>
-            Day 3 of 14 complete — 11 days remaining in APPRENTICE phase
-          </div>
-        </div>
+        )}
 
-        {/* Today's habits */}
         <div style={{
           background: DARKER, border: `1px solid ${BORDER_DK}`,
-          borderRadius: '3px', overflow: 'hidden',
+          borderRadius: 3, overflow: 'hidden',
         }}>
           <div style={{
             padding: '12px 16px', background: '#161616',
             borderBottom: `1px solid ${BORDER_DK}`,
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#fff' }}>
-              TODAY'S HABITS
-            </span>
-            <span style={{ fontSize: '10px', color: TEXT_DIM, letterSpacing: '1px' }}>
-              {DEMO.habits.filter(h => h.done).length} / {DEMO.habits.length} COMPLETE
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', color: GOLD }}>
+              CLIENT PROGRESS
             </span>
           </div>
-          {DEMO.habits.map(habit => (
-            <HabitRow key={habit.label} habit={habit} />
-          ))}
+          <div style={{ padding: '20px 16px' }}>
+            {isTier4 ? (
+              phaseInfo ? (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', color: '#fff' }}>
+                      {phaseInfo.phase.toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: 11, color: GOLD, fontWeight: 700 }}>{progressPct}%</span>
+                  </div>
+                  <div style={{ background: '#2a2a2a', borderRadius: 2, height: 8, overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', width: `${progressPct}%`,
+                      background: `linear-gradient(90deg, ${GOLD}, #d4a017)`,
+                      borderRadius: 2, transition: 'width 0.4s ease',
+                    }} />
+                  </div>
+                  <div style={{ fontSize: 10, color: TEXT_DIM, marginTop: 8, letterSpacing: '1px' }}>
+                    Day {phaseInfo.cycleDay} of 14 — progress data will update in real time after backend migration
+                  </div>
+                </>
+              ) : (
+                <div style={{ color: TEXT_DIM, fontSize: 12, letterSpacing: '1px' }}>
+                  Tracking has not started yet.
+                </div>
+              )
+            ) : (
+              <div style={{ color: TEXT_DIM, fontSize: 12, letterSpacing: '1px' }}>
+                Detailed metrics for this tier will be available after backend migration.
+              </div>
+            )}
+          </div>
         </div>
 
       </div>

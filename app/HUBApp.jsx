@@ -61,7 +61,7 @@ export default function HUBApp() {
         paddingRight: panelOpen ? '420px' : 0,
         transition: 'padding-right 0.25s ease'
       }}>
-        <Topbar onLogout={handleLogout} />
+        <Topbar onLogout={handleLogout} user={user} />
 
         <div style={S.viewArea}>
           {renderView()}

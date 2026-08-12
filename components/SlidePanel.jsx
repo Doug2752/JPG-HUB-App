@@ -5,12 +5,15 @@ import { updateClient } from '../services/clients';
 import { todayISO } from '../utils/date';
 
 const SPOKE_LABELS = [
-  { key: 'obt_unlocked',        label: 'OBT' },
-  { key: 'dop_unlocked',        label: 'DOP' },
-  { key: 'pit_unlocked',        label: 'PIT' },
-  { key: 'edu_unlocked',        label: 'EDU' },
-  { key: 'comms_unlocked',      label: 'COMMS' },
+  { key: 'obt_unlocked',        label: 'ONBOARDING & 14-DAY TRACKING' },
+  { key: 'dop_unlocked',        label: 'DAILY OPERATIONAL PROCESS (DOP)' },
+  { key: 'pit_unlocked',        label: 'PERSONAL INVESTMENT TIME (PIT)' },
+  { key: 'edu_unlocked',        label: 'EDUCATIONAL DOCUMENTS' },
+  { key: 'comms_unlocked',      label: 'COMMUNICATIONS & MESSAGING' },
   { key: 'agreements_unlocked', label: 'AGREEMENTS' },
+  { key: 'eventsboard_unlocked', label: 'EVENTS BOARD' },
+  { key: 'daily_unlocked',       label: 'DAILY TRACKER' },
+  { key: 'resources_unlocked',   label: 'RESOURCES VAULT' },
 ];
 
 export default function SlidePanel({ client, onClose, onUpdate }) {

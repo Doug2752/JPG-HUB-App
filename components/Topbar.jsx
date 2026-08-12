@@ -1,7 +1,7 @@
 import React from 'react';
 import { S } from '../utils/styles';
 
-export default function Topbar({ onLogout }) {
+export default function Topbar({ onLogout, user }) {
   return (
     <div style={S.topbar}>
       <div style={{ ...S.topbarRow, ...S.topbarRow1 }}>
@@ -11,7 +11,7 @@ export default function Topbar({ onLogout }) {
       <div style={S.topbarRow}>
         <div style={S.topbarJpg}>JONES PERFORMANCE GROUP LLC</div>
         <div style={S.topbarCoach}>
-          Coach: <span style={S.topbarCoachName}>DOUG JONES</span>
+          Coach: <span style={S.topbarCoachName}>{user?.username?.toUpperCase() ?? 'COACH'}</span>
         </div>
       </div>
     </div>

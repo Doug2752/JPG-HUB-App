@@ -5,7 +5,8 @@ import { createClientRecord, addClient } from '../services/clients';
 
 const SPOKE_FLAGS = [
   'obt_unlocked', 'dop_unlocked', 'pit_unlocked',
-  'edu_unlocked', 'comms_unlocked', 'agreements_unlocked'
+  'edu_unlocked', 'comms_unlocked', 'agreements_unlocked',
+  'eventsboard_unlocked', 'daily_unlocked', 'resources_unlocked'
 ];
 
 function countUnlocked(client) {
@@ -262,7 +263,7 @@ export default function ClientsView({ onOpenPanel }) {
                 </div>
                 <div style={S.ctMeta}>{c.tier_name}</div>
                 <div style={S.ctMeta}>{formatDate(c.program_start_date)}</div>
-                <div style={S.ctMeta}>{countUnlocked(c)} / 6</div>
+                <div style={S.ctMeta}>{countUnlocked(c)} / 9</div>
                 <div style={S.ctAction}>ACTIVE</div>
               </div>
             );
