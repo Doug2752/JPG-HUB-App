@@ -6,8 +6,8 @@
 - GitHub repo: Doug2752/JPG-HUB-App
 - Dev port: 5176 (5177 fallback)
 - Purpose: Central coaching platform hub — 10-spoke model, single login point for coach and clients.
-- Architecture: React + Vite, monolith baseline (Class 3 modular conversion pending), localStorage.
-- Code Logic doc: JPG-SYS-HUB-CodeLogic-WRK-v1.2
+- Architecture: React + Vite, modular structure (CommunicationView.jsx still monolithic — Class 3 conversion pending), localStorage.
+- Code Logic doc: JPG-SYS-HUB-CodeLogic-WRK-v1.4
 
 ## NON-NEGOTIABLE WORKING RULES
 1. Investigation before action.
@@ -37,7 +37,7 @@
 - Example: John Smith, phone 555-867-5309, start Sep 2026 → username: jsmith / password: Smith53090926
 - hub_session persists across page refresh. To force login screen: delete hub_session key from localStorage in Firefox DevTools and refresh.
 
-## CURRENT BUILD STATE (confirmed in source 08/08/2026)
+## CURRENT BUILD STATE (confirmed in source 08/12/2026)
 
 ### Built and committed
 - Login screen — calls login() from services/clients.js, error message on bad credentials, case-insensitive matching
@@ -45,49 +45,76 @@
 - Logout — deletes hub_session from localStorage, clears user state
 - 10-spoke SVG wheel — fully restructured 08/08/2026 (see Spoke Map below)
 - Center circle — JPG HUB branding: JPG (fontSize 30, y=340) over HUB (fontSize 42, y=388), black text, no subtext
-- Topbar title — CENTRAL HUB (updated 08/08/2026, was CENTRAL COMMAND HUB)
-- Role-based spoke rendering — coach: all spokes clickable; client: only unlocked spokes clickable; locked spokes greyed (opacity 0.4, not-allowed cursor)
-- Phase gating for client role (BUILT 08/08/2026) — DOP and PIT spokes locked during foundation (days 1–14) and analysis (days 15–21) phases regardless of unlock flag. getCyclePhase() reads tracking_start_date from hub_clients.
-- HUB_AUTH_SPOKES passthrough — DOP, PIT, OBT (tracker) append ?hub_user=USERNAME param when opened, bypassing spoke login screen. Passes username string only (not full session object) — fixed 08/08/2026.
-- FUTURE spoke permanently locked for all roles (bottom center, dashed border)
+- Topbar title — CENTRAL HUB
+- **Topbar dynamic coach name — BUILT 08/12/2026:** accepts user prop from HUBApp. Renders user?.username?.toUpperCase() ?? 'COACH'. No longer hardcoded. Post-Supabase: add admin tier with coach assignment to clients.
+- Role-based spoke rendering — coach: all spokes clickable; client: only unlocked spokes clickable; locked spokes greyed
+- Phase gating for client role (BUILT 08/08/2026) — DOP and PIT spokes locked during foundation (days 1–14) and analysis (days 15–21) phases
+- HUB_AUTH_SPOKES passthrough — DOP, PIT, OBT (tracker) append ?hub_user=USERNAME param when opened. Passes username string only.
+- FUTURE spoke permanently locked for all roles
 - services/storage.js — localStorage wrapper (get, set, delete)
-- services/clients.js — full client data model: generateUsername, generatePassword, createClientRecord, getClients, saveClients, addClient, updateClient, login, logout, getSession
-- utils/date.js — todayISO() returns YYYY-MM-DD
-- utils/constants.js — SPOKE_URLS, NAV_ITEMS, color constants. USERS and CLIENTS orphaned constants removed 08/08/2026.
-- ClientsView — reads hub_clients on mount, real columns, ADD CLIENT inline form with validation, credentials panel after save, empty state message
-- SlidePanel — real client fields, spoke unlock toggles (UNLOCK/REVOKE per spoke), onUpdate callback. OBT unlock auto-writes program_start_date: todayISO().
-- HUBApp — clientRosterKey forces ClientsView remount after spoke toggles; onUpdate refreshes panelClient with current data from localStorage after toggle. role prop passed to Nav.
-- Nav — role-gated (BUILT 08/08/2026): coach sees all five NAV_ITEMS (DASHBOARD, CLIENTS, MESSAGES, REPORTS, SETTINGS) + CLIENT VIEW toggle below divider + COACH VIEW back button when in client view. Client sees DASHBOARD only, no coach tabs, no CLIENT VIEW section, no COACH VIEW label.
-- PlaceholderView, ClientViewMode (demo only — hardcoded data)
+- services/clients.js — full client data model. createClientRecord defaults: obt, edu, comms, agreements, eventsboard, daily, resources all default TRUE as of 08/12/2026. dop_unlocked and pit_unlocked default FALSE.
+- utils/date.js — todayISO()
+- utils/constants.js — SPOKE_URLS, NAV_ITEMS, color constants
+- ClientsView — reads hub_clients on mount, ADD CLIENT form, credentials panel after save. SPOKE_FLAGS has all 9 entries. Spoke count shows X / 9 (updated 08/12/2026 from /6).
+- **SlidePanel — UPDATED 08/12/2026:** SPOKE_LABELS now has all 9 spokes with full descriptive labels. Accepts onOpenFullProfile prop. OPEN FULL PROFILE button now calls onOpenFullProfile(client) — no longer a placeholder. OBT unlock auto-writes program_start_date. Displays RESIDENTIAL ADDRESS (read-only, 2-line format).
+- Nav — role-gated: coach sees all five NAV_ITEMS + CLIENT VIEW toggle + COACH VIEW back button. Client sees DASHBOARD only.
+- **ClientViewMode — FULLY REBUILT 08/12/2026:** real client data from hub_clients. Client selector dropdown on load. Dashboard shows real name, tier badge, phase/cycle row (Tier 4 calculated from tracking_start_date). CLIENT PROGRESS section replaces TODAY'S HABITS — gold progress bar for Tier 4 with backend migration note. All hardcoded demo data removed. Props: { onBack }.
+- **FullProfileView — NEW 08/12/2026:** components/FullProfileView.jsx. Props: { client, onBack }. Five sections: PERSONAL INFORMATION, BACKGROUND, CURRENT HABITS & HEALTH, PROGRAM STATUS, 4x4 METRICS. Real data from hub_clients where available (name, phone, email, program dates, tier). Migration placeholders for OBT-sourced fields. Routed from HUBApp when activeView === 'fullprofile'.
+- HUBApp — clientRosterKey forces ClientsView remount after spoke toggles. selectedProfileClient state. handleOpenFullProfile(client) and handleBackFromProfile() handlers. fullprofile routing. Passes user={user} to Topbar. Passes onOpenFullProfile={handleOpenFullProfile} to SlidePanel.
+- CommunicationView (BUILT 08/10/2026) — 1089 lines. Three tabs: MESSAGES, ANNOUNCEMENTS, SCHEDULED COMMUNICATION. Props: { user }. Routed on activeView === "communication".
+- PlaceholderView — generic placeholder screen
 
-### Known issues / dead code
-- Topbar "Coach: DOUG JONES" — hardcoded, not dynamic from session
+### SlidePanel SPOKE_LABELS (9 entries — current as of 08/12/2026)
+```
+{ key: 'obt_unlocked',          label: 'ONBOARDING & 14-DAY TRACKING' }
+{ key: 'dop_unlocked',          label: 'DAILY OPERATIONAL PROCESS (DOP)' }
+{ key: 'pit_unlocked',          label: 'PERSONAL INVESTMENT TIME (PIT)' }
+{ key: 'edu_unlocked',          label: 'EDUCATIONAL DOCUMENTS' }
+{ key: 'comms_unlocked',        label: 'COMMUNICATIONS & MESSAGING' }
+{ key: 'agreements_unlocked',   label: 'AGREEMENTS' }
+{ key: 'eventsboard_unlocked',  label: 'EVENTS BOARD' }
+{ key: 'daily_unlocked',        label: 'DAILY TRACKER' }
+{ key: 'resources_unlocked',    label: 'RESOURCES VAULT' }
+```
+
+### Storage keys
+- hub_clients — client roster JSON array
+- hub_session — active session JSON object
+- hub_messages — message thread objects
+- hub_announcements — announcement objects
+- hub_scheduled — active scheduled items
+- hub_scheduled_completed — archived completed/cancelled items
+
+### Known issues
 - "Stay logged in" checkbox in Login.jsx — dead UI, post-Supabase
-- Legal/Agreements spoke gating rule — Agreements spoke must be completed before other spokes unlock. Not enforced at app level.
-- vite.config.js server block — confirmed present (port 5176, open: false)
-- hub_session persists indefinitely — no expiry. Acceptable for now; unified login will address.
-- flagMap in isSpokeUnlocked — eventsboard_unlocked, daily_unlocked, resources_unlocked flags not yet present in createClientRecord. These fields will be undefined on existing client records until createClientRecord is updated.
+- hub_session persists indefinitely — no expiry. Acceptable for now.
+- Residential address write-back from OBT limited by cross-origin localStorage — resolved post-Supabase.
 
 ### Not yet built
-- **createClientRecord update** — add eventsboard_unlocked, daily_unlocked, resources_unlocked flags defaulting to false
-- **Client nav items** — messages (with unread indicator), reports (summaries from OBT/PIT data). Scoped — not yet built.
-- **Communication spoke** — Spoke 8. Sub-spokes: Messages (Direct Thread), Announcements (Broadcast), Scheduled Communication. Zero code exists. Dedicated scoping session required before build.
-- **Events Board spoke** — Spoke 9. Forum-style thread board. Manual title at launch, AI-generated post-Supabase. UPCOMING/COMPLETED post states. Zero code exists. Dedicated scoping session required before build.
-- Full Profile view — OPEN FULL PROFILE button in SlidePanel footer is non-functional placeholder
-- Topbar dynamic coach/client name from session
-- Legal/Agreements spoke gating enforcement
-- Class 3 modular conversion
+- Agreements spoke gating enforcement
+- Client nav items — messages (unread indicator), reports
+- Events Board spoke — zero code. Dedicated build session required.
+- Class 3 modular conversion — CommunicationView.jsx needs split into 3 tab files
 - Unified HUB login for all apps — dedicated session required
+- Reports section in Communication spoke — scoped only, no code
+- Full Communications spoke usability and efficiency audit — after all builds complete
+- Topbar dynamic client name — currently shows coach name only when client logs in
 
 ### Post-Supabase (do not build)
-- OBT personal info auto-populates HUB client roster (requires shared backend)
+- Auto-unlock DOP and PIT after client completes all 14 OBT days
+- Admin tier with coach assignment to clients
+- OBT personal info auto-populates HUB client roster
 - Coach-facing archive and activity data
-- Real session persistence ("Stay logged in")
+- Real session persistence
 - Client tier progression logic
+- Events Board AI title generation
+- Communication spoke email delivery
+- Full Profile OBT-sourced field population (preferred name, age, occupation, desired outcomes, hobbies, habits, injuries)
+- Full Profile tier history and 4x4 metrics
 
 ## SPOKE MAP (locked 08/08/2026)
 
-| Position | spokeId | Label Line 1 (gold) | Label Line 2 (white) | Label Line 3 (grey) | cx | cy |
+| Position | spokeId | Label L1 (gold) | Label L2 (white) | Label L3 (grey) | cx | cy |
 |---|---|---|---|---|---|---|
 | TOP | dop | DAILY OPS | DOP | PROCESS | 360 | 75 |
 | TOP-RIGHT | pit | PERSONAL | PIT | INVEST. TIME | 528 | 129 |
@@ -101,22 +128,24 @@
 | TOP-LEFT-UPPER | edu | EDUCATION | REFERENCE | LIBRARY | 192 | 129 |
 
 ## KEY ARCHITECTURAL FACTS
-- Storage keys: hub_clients (client roster JSON array), hub_session (active session JSON object)
 - Coach record hardcoded in services/clients.js — id: coach_001, username: Doug, password: JPG2026, role: coach
-- Client role routing: role=coach → full wheel all clickable (no phase gating); role=client → unlock flags + phase gating control access
+- Client role routing: role=coach → full wheel, no phase gating; role=client → unlock flags + phase gating
 - flagMap in WheelView isSpokeUnlocked: tracker→obt_unlocked, dop→dop_unlocked, pit→pit_unlocked, edu→edu_unlocked, communication→comms_unlocked, agreements→agreements_unlocked, eventsboard→eventsboard_unlocked, daily→daily_unlocked, resources→resources_unlocked
 - getCyclePhase(hubUser) in WheelView — reads tracking_start_date from hub_clients, returns 'foundation'/'analysis'/'onramp'/'full'/null
 - isSpokeUnlocked(spokeId, hubUser, role) — role is third param; client role + dop/pit spokes blocked during foundation and analysis phases
 - program_start_date auto-written to hub_clients when coach unlocks OBT (obt_unlocked false→true in SlidePanel)
-- tracking_start_date written to hub_clients by OBT ClientInfo.jsx when client saves valid date — HUB WheelView reads it for phase gating
+- tracking_start_date written to hub_clients by OBT ClientInfo.jsx
 - clientRosterKey in HUBApp forces ClientsView remount after any spoke toggle
 - hub_clients is the single source of truth for all cycle and tier data — HUB owns it
 - hub_user param: HUB passes hubUser.username (string) to spoke apps via URL param — not the full session object
+- New client creation (08/12/2026): 7 spokes default true (obt, edu, comms, agreements, eventsboard, daily, resources). dop_unlocked and pit_unlocked default false.
+- CLIENT VIEW (08/12/2026): coach clicks CLIENT VIEW → client selector dropdown auto-opens → coach selects client → real client dashboard loads
+- Full Profile (08/12/2026): OPEN FULL PROFILE button in SlidePanel opens FullProfileView.jsx via HUBApp routing (activeView === 'fullprofile')
 
 ## REFERENCED GOVERNING DOCUMENTS
-- JPG-SYS-HUB-CodeLogic-WRK-v1.2 (single source of truth for all HUB decisions)
+- JPG-SYS-HUB-CodeLogic-WRK-v1.4 (single source of truth for all HUB decisions)
 - JPG-SYS-CS-CoreStandard-WRK-v1.8
-- JPG-SYS-Apps-TroubleshootingGuide-WRK-v6.4
+- JPG-SYS-Apps-TroubleshootingGuide-WRK-v6.8
 - JPG-SYS-PRIMER-SessionHandoff-WRK (current version)
 
 ## SESSION START PROTOCOL
@@ -125,4 +154,4 @@ First instruction is always read-only:
 
 ---
 
-*HUB CLAUDE.md — v1.3 — updated 08/08/2026. Spoke wheel fully restructured — 10 spokes repositioned and relabeled, Communication and Events Board spokes added, Client Check-In eliminated. Center circle updated to JPG HUB branding. Topbar title updated to CENTRAL HUB. Nav role-gating built — coach full access + CLIENT VIEW toggle with COACH VIEW back button; client DASHBOARD only. hub_user param fixed to pass username string. USERS and CLIENTS orphaned constants removed. Code Logic reference updated to v1.2.*
+*HUB CLAUDE.md — v1.4 — updated 08/12/2026. Topbar now dynamic from user prop. SlidePanel expanded to 9 spokes with full descriptive labels. ClientsView spoke count updated to /9. ClientViewMode fully rebuilt with real client data and client selector dropdown. FullProfileView.jsx new component — 5 sections, real data + migration placeholders. OPEN FULL PROFILE wired in SlidePanel and HUBApp. createClientRecord: 7 spokes default true on creation, dop/pit remain false. Code Logic reference updated to v1.4. Troubleshooting Guide reference updated to v6.8.*
