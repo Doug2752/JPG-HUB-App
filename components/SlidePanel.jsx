@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { S } from '../utils/styles';
 import { GOLD, TEXT_DIM } from '../utils/constants';
 import { updateClient } from '../services/clients';
@@ -16,8 +16,20 @@ const SPOKE_LABELS = [
   { key: 'resources_unlocked',   label: 'RESOURCES VAULT' },
 ];
 
+const TIER_PROMOTION = {
+  3: { newTier: 2, newName: 'Greatness',   label: 'PROMOTE TO GREATNESS' },
+  2: { newTier: 1, newName: 'Unstoppable', label: 'PROMOTE TO UNSTOPPABLE' },
+};
+
+const actionBtn = {
+  background: 'transparent', color: '#888', fontWeight: 700, fontSize: 11,
+  padding: '4px 12px', borderRadius: 3, border: '1px solid #444',
+  cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '1px',
+};
+
 export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfile }) {
   const isOpen = !!client;
+  const [capInput, setCapInput] = useState('');
 
   async function handleToggleSpoke(flagKey) {
     if (flagKey === 'obt_unlocked' && !client[flagKey]) {
@@ -25,6 +37,26 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
     } else {
       await updateClient(client.id, { [flagKey]: !client[flagKey] });
     }
+    if (onUpdate) onUpdate();
+  }
+
+  async function handlePromoteTier() {
+    const promo = TIER_PROMOTION[client.tier];
+    if (!promo) return;
+    await updateClient(client.id, { tier: promo.newTier, tier_name: promo.newName });
+    if (onUpdate) onUpdate();
+  }
+
+  async function handleSetCap() {
+    const val = parseInt(capInput, 10);
+    await updateClient(client.id, { cap_override_minutes: isNaN(val) ? null : val });
+    setCapInput('');
+    if (onUpdate) onUpdate();
+  }
+
+  async function handleClearCap() {
+    await updateClient(client.id, { cap_override_minutes: null });
+    setCapInput('');
     if (onUpdate) onUpdate();
   }
 
@@ -43,6 +75,44 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
             <div style={S.spRowLbl}>TIER</div>
             <div style={{ ...S.spRowVal, ...S.spRowValGold }}>{client.tier_name}</div>
           </div>
+
+          <div style={{ padding: '10px 0', borderBottom: '1px solid #222' }}>
+            <div style={S.spRowLbl}>PROGRAM TIER</div>
+            <div style={{ marginTop: 10 }}>
+              {TIER_PROMOTION[client.tier] && (
+                <div style={{ marginBottom: 10 }}>
+                  <button
+                    onClick={handlePromoteTier}
+                    style={{
+                      background: GOLD, color: '#000', fontWeight: 700, fontSize: 11,
+                      padding: '4px 12px', borderRadius: 3, border: 'none', cursor: 'pointer',
+                    }}
+                  >
+                    {TIER_PROMOTION[client.tier].label}
+                  </button>
+                </div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: TEXT_DIM }}>
+                  CAP OVERRIDE (MIN)
+                </span>
+                <input
+                  type="number"
+                  value={capInput}
+                  placeholder={client.cap_override_minutes ?? ''}
+                  onChange={e => setCapInput(e.target.value)}
+                  style={{
+                    width: 60, background: '#111', color: '#fff',
+                    border: '1px solid #444', borderRadius: 3,
+                    padding: '4px 8px', fontSize: 12, fontFamily: 'inherit',
+                  }}
+                />
+                <button onClick={handleSetCap} style={actionBtn}>SET</button>
+                <button onClick={handleClearCap} style={actionBtn}>CLEAR</button>
+              </div>
+            </div>
+          </div>
+
           <div style={S.spRow}>
             <div style={S.spRowLbl}>PROGRAM START</div>
             <div style={S.spRowVal}>{client.program_start_date || '—'}</div>

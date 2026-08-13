@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from '../utils/styles';
 import { SPOKE_URLS } from '../utils/constants';
+import { updateClient } from '../services/clients';
 
 const HUB_AUTH_SPOKES = ['dop', 'pit', 'tracker'];
 
@@ -25,7 +26,12 @@ function getCyclePhase(hubUser) {
     const cycleDay = Math.floor((today - start) / 86400000) + 1;
     if (cycleDay <= 14) return 'foundation';
     if (cycleDay <= 21) return 'analysis';
-    if (cycleDay <= 30) return 'onramp';
+    if (cycleDay <= 30) {
+      if (client.tier === 4) {
+        updateClient(client.id, { tier: 3, tier_name: 'Performance' });
+      }
+      return 'onramp';
+    }
     return 'full';
   } catch (_) {
     return null;
