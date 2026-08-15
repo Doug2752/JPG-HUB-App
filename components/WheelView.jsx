@@ -77,6 +77,10 @@ function spokeClick(spokeId, hubUser, role, onNavigate) {
     onNavigate('communication');
     return;
   }
+  if (spokeId === 'eventsboard' && onNavigate) {
+    onNavigate('eventsboard');
+    return;
+  }
   let url = SPOKE_URLS[spokeId];
   if (url) {
     if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {
