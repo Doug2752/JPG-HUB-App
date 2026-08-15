@@ -103,6 +103,12 @@ export default function WheelView({ hubUser, role, onNavigate }) {
     <div style={S.wheelView}>
       <svg style={S.wheelSvg} viewBox="0 0 720 720" xmlns="http://www.w3.org/2000/svg">
 
+        <defs>
+          <clipPath id="centerCircleClip">
+            <circle cx="360" cy="360" r="91" />
+          </clipPath>
+        </defs>
+
         {/* Rings */}
         <circle cx="360" cy="360" r="285" fill="none" stroke="#252525" strokeWidth="1"/>
         <circle cx="360" cy="360" r="285" fill="none" stroke="#B8860B" strokeWidth="0.5" strokeDasharray="3,12" opacity="0.25"/>
@@ -122,8 +128,16 @@ export default function WheelView({ hubUser, role, onNavigate }) {
 
         {/* HUB CENTER */}
         <circle cx="360" cy="360" r="92" fill="#B8860B" stroke="rgba(0,0,0,0.2)" strokeWidth="3"/>
-        <text x="360" y="340" textAnchor="middle" fill="#000" fontSize="30" fontWeight="900" letterSpacing="8" fontFamily="Lato">JPG</text>
-        <text x="360" y="388" textAnchor="middle" fill="#000" fontSize="42" fontWeight="900" letterSpacing="10" fontFamily="Lato">HUB</text>
+        <image
+          href="/jpglogo.png"
+          x="265"
+          y="265"
+          width="190"
+          height="190"
+          preserveAspectRatio="xMidYMid meet"
+          clipPath="url(#centerCircleClip)"
+          style={{ mixBlendMode: 'multiply' }}
+        />
 
         {/* DOP */}
         <g style={spokeStyle('dop', hubUser, role)} onClick={() => spokeClick('dop', hubUser, role, onNavigate)}>
