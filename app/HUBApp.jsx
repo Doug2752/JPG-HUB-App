@@ -10,6 +10,7 @@ import ClientViewMode from '../components/ClientViewMode.jsx';
 import SlidePanel from '../components/SlidePanel.jsx';
 import PlaceholderView from '../components/PlaceholderView.jsx';
 import CommunicationView from '../components/CommunicationView.jsx';
+import ReportsView from '../components/ReportsView.jsx';
 import FullProfileView from '../components/FullProfileView.jsx';
 
 export default function HUBApp() {
@@ -58,7 +59,7 @@ export default function HUBApp() {
     if (activeView === 'clients')      return <ClientsView key={clientRosterKey} onOpenPanel={setPanelClient} />;
     if (activeView === 'communication') return <CommunicationView user={user} />;
     if (activeView === 'fullprofile')   return <FullProfileView client={selectedProfileClient} onBack={handleBackFromProfile} />;
-    if (activeView === 'reports')    return <PlaceholderView icon="▦" label="REPORTS" sub="Under development" />;
+    if (activeView === 'reports')    return <ReportsView user={user} />;
     if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
     if (activeView === 'clientview') return <ClientViewMode key="clientview" />;
     return null;
