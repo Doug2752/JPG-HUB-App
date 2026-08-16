@@ -4,6 +4,22 @@ import { GOLD, TEXT_DIM } from '../utils/constants';
 import { updateClient } from '../services/clients';
 import { todayISO } from '../utils/date';
 
+function agreementsComplete(username) {
+  try {
+    const raw = localStorage.getItem(`jpg_agreements_${username}`);
+    const data = raw ? JSON.parse(raw) : {};
+    const keys = ['form_001','form_002','form_003','form_004','form_005'];
+    return keys.every(k => data[k]?.submitted === true);
+  } catch (_) {
+    return false;
+  }
+}
+
+const GATED_SPOKES = new Set([
+  'dop_unlocked', 'pit_unlocked', 'edu_unlocked',
+  'eventsboard_unlocked', 'daily_unlocked', 'resources_unlocked',
+]);
+
 const SPOKE_LABELS = [
   { key: 'obt_unlocked',        label: 'ONBOARDING & 14-DAY TRACKING' },
   { key: 'dop_unlocked',        label: 'DAILY OPERATIONAL PROCESS (DOP)' },
@@ -32,7 +48,11 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
   const [capInput, setCapInput] = useState('');
 
   async function handleToggleSpoke(flagKey) {
-    if (flagKey === 'obt_unlocked' && !client[flagKey]) {
+    const isUnlocking = !client[flagKey];
+    if (isUnlocking && GATED_SPOKES.has(flagKey) && !agreementsComplete(client.username)) {
+      return;
+    }
+    if (flagKey === 'obt_unlocked' && isUnlocking) {
       await updateClient(client.id, { obt_unlocked: true, program_start_date: todayISO() });
     } else {
       await updateClient(client.id, { [flagKey]: !client[flagKey] });
@@ -174,32 +194,41 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
               {SPOKE_LABELS.map((spoke, i) => {
                 const unlocked = !!client[spoke.key];
                 const isLast = i === SPOKE_LABELS.length - 1;
+                const isGated = GATED_SPOKES.has(spoke.key);
+                const showGateMsg = !unlocked && isGated && !agreementsComplete(client.username);
                 return (
                   <div key={spoke.key} style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     padding: '8px 0',
                     borderBottom: isLast ? 'none' : '1px solid #222',
                   }}>
-                    <span style={{
-                      color: unlocked ? '#fff' : TEXT_DIM,
-                      fontSize: '12px', fontWeight: 700, letterSpacing: '1px',
-                    }}>
-                      {spoke.label}
-                    </span>
-                    <button
-                      onClick={() => handleToggleSpoke(spoke.key)}
-                      style={unlocked ? {
-                        background: GOLD, color: '#000', fontWeight: 700, fontSize: 11,
-                        padding: '4px 12px', borderRadius: 3, border: 'none',
-                        cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '1px',
-                      } : {
-                        background: 'transparent', color: '#888', fontWeight: 700, fontSize: 11,
-                        padding: '4px 12px', borderRadius: 3, border: '1px solid #444',
-                        cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '1px',
-                      }}
-                    >
-                      {unlocked ? 'REVOKE' : 'UNLOCK'}
-                    </button>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{
+                        color: unlocked ? '#fff' : TEXT_DIM,
+                        fontSize: '12px', fontWeight: 700, letterSpacing: '1px',
+                      }}>
+                        {spoke.label}
+                      </span>
+                      <button
+                        onClick={() => handleToggleSpoke(spoke.key)}
+                        style={unlocked ? {
+                          background: GOLD, color: '#000', fontWeight: 700, fontSize: 11,
+                          padding: '4px 12px', borderRadius: 3, border: 'none',
+                          cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '1px',
+                        } : {
+                          background: 'transparent', color: '#888', fontWeight: 700, fontSize: 11,
+                          padding: '4px 12px', borderRadius: 3, border: '1px solid #444',
+                          cursor: showGateMsg ? 'default' : 'pointer',
+                          fontFamily: 'inherit', letterSpacing: '1px',
+                        }}
+                      >
+                        {unlocked ? 'REVOKE' : 'UNLOCK'}
+                      </button>
+                    </div>
+                    {showGateMsg && (
+                      <div style={{ color: '#888', fontSize: 11, fontStyle: 'italic', marginTop: 4 }}>
+                        Agreements must be completed before this spoke can be unlocked.
+                      </div>
+                    )}
                   </div>
                 );
               })}

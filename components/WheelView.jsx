@@ -5,6 +5,19 @@ import { updateClient } from '../services/clients';
 
 const HUB_AUTH_SPOKES = ['dop', 'pit', 'tracker'];
 
+const GATED_SPOKE_IDS = new Set(['dop', 'pit', 'edu', 'eventsboard', 'daily', 'resources']);
+
+function agreementsComplete(username) {
+  try {
+    const raw = localStorage.getItem(`jpg_agreements_${username}`);
+    const data = raw ? JSON.parse(raw) : {};
+    const keys = ['form_001','form_002','form_003','form_004','form_005'];
+    return keys.every(k => data[k]?.submitted === true);
+  } catch (_) {
+    return false;
+  }
+}
+
 function getClientRecord(hubUser) {
   try {
     const raw = localStorage.getItem('hub_clients');
@@ -59,6 +72,10 @@ function isSpokeUnlocked(spokeId, hubUser, role) {
   if (role === 'client' && (spokeId === 'dop' || spokeId === 'pit')) {
     const phase = getCyclePhase(hubUser);
     if (phase === 'foundation' || phase === 'analysis') return false;
+  }
+
+  if (role === 'client' && GATED_SPOKE_IDS.has(spokeId) && !agreementsComplete(hubUser.username)) {
+    return false;
   }
 
   return true;
