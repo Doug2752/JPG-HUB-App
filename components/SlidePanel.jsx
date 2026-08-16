@@ -147,6 +147,20 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
             </div>
           </div>
 
+          <div style={S.spRow}>
+            <div style={S.spRowLbl}>AGREEMENTS</div>
+            <div style={S.spRowVal}>
+              {(() => {
+                const agreementsKey = `jpg_agreements_${client.username}`;
+                const agreementsRaw = localStorage.getItem(agreementsKey);
+                const agreementsData = agreementsRaw ? JSON.parse(agreementsRaw) : {};
+                const formKeys = ['form_001','form_002','form_003','form_004','form_005'];
+                const completedCount = formKeys.filter(k => agreementsData[k]?.submitted).length;
+                return completedCount + ' of 5 complete';
+              })()}
+            </div>
+          </div>
+
           <hr style={S.spDivider} />
 
           <div style={S.spRow}>

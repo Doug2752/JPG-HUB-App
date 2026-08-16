@@ -1,19 +1,22 @@
-# CLAUDE.md — JPG-HUB-App
-**Version:** v1.5 | **Date:** 08/13/2026 | **Repo:** Doug2752/JPG-HUB-App
-
-This file is a context loader for Claude Code. Read this first, then read actual source files for full technical detail. Do not replace this file with a stripped-down version — produce targeted updates only.
+# CLAUDE.md — HUB App
+**Version:** v1.6 | **Date:** 08/14/2026
+**Repo:** Doug2752/JPG-HUB-App
+**Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
 ---
 
-## APP IDENTITY
+## STACK
+- React + Vite (no src/ prefix — files at root-level folders: app/, components/, utils/, services/)
+- localStorage (pre-Supabase)
+- Dev port: 5176 (fallback 5177)
+- Test browser: Firefox
 
-- **Name:** HUB — Workspace Hub
-- **Port:** 5176 (5177 fallback)
-- **Framework:** React + Vite
-- **Storage:** localStorage (pre-Supabase)
-- **Coach login:** Doug / JPG2026
-- **Client login:** generated username / generated password
-- **Dev/test browser:** Firefox
+---
+
+## CREDENTIALS
+- Coach: Doug / JPG2026
+- Test client: mhowardiii / Howard iii63900826 (space between "Howard" and "iii" is real)
+- hub_session persists indefinitely — to force login screen, delete hub_session key from localStorage in Firefox DevTools and refresh
 
 ---
 
@@ -21,172 +24,115 @@ This file is a context loader for Claude Code. Read this first, then read actual
 
 ```
 app/
-  HUBApp.jsx              — root, session restore, routing, clientRosterKey, selectedProfileClient
+  HUBApp.jsx              — root component, session restore, renderView(), all activeView routing
 components/
-  Login.jsx               — login gate
-  Nav.jsx                 — role-gated navigation
-  Topbar.jsx              — title + role-based name display (Coach: / Client:)
-  WheelView.jsx           — 10-spoke SVG wheel, phase gating, Day 22 auto-promotion
-  ClientsView.jsx         — client roster, ADD CLIENT form, credentials panel
-  SlidePanel.jsx          — client detail panel, spoke toggles, PROGRAM TIER section
-  FullProfileView.jsx     — read-only full client profile, 5 sections
-  CommunicationView.jsx   — 3-tab communication: Messages, Announcements, Scheduled
-  ClientViewMode.jsx      — coach preview of client dashboard
-  PlaceholderView.jsx     — under development screen
+  Login.jsx               — shared JPG login screen
+  Nav.jsx                 — role-gated nav (coach: 5 items + CLIENT VIEW; client: DASHBOARD only)
+  Topbar.jsx              — role-based name display (Coach: DOUG / Client: FIRST LAST)
+  WheelView.jsx           — 10-spoke SVG wheel, phase gating, Day 22 auto-promotion, eventsboard onNavigate wiring, center circle JPG logo (clipPath + multiply blend)
+  ClientsView.jsx         — client roster, ADD CLIENT form, 9-spoke flag table
+  SlidePanel.jsx          — client detail panel, PROGRAM TIER section, cap override, OPEN FULL PROFILE
+  FullProfileView.jsx     — 5-section full client profile, real data + migration placeholders
+  CommunicationView.jsx   — 3-tab communication: MESSAGES, ANNOUNCEMENTS, SCHEDULED COMMUNICATION (1089 lines — Class 3 conversion pending)
+  ClientViewMode.jsx      — coach-as-client view, real client data, client selector dropdown
+  ReportsView.jsx         — coach reports: client list view → drill-down per client, 6 metric rows (all placeholder dashes), VIEW DAILY DETAIL disabled
+  EventsBoardView.jsx     — coming-soon placeholder screen, professional JPG-styled, routes from eventsboard spoke and nav
+  PlaceholderView.jsx     — generic "under development" screen (icon, label, sub props)
 services/
-  clients.js              — all client/session logic, createClientRecord, updateClient
-  storage.js              — localStorage wrapper
+  clients.js              — all client/session logic, generateUsername, generatePassword, createClientRecord, getClients, saveClients, addClient, updateClient, login, logout, getSession
+  storage.js              — localStorage wrapper (get, set, delete)
 utils/
+  constants.js            — color constants, LOGO, SPOKE_URLS, NAV_ITEMS
   date.js                 — todayISO()
-  constants.js            — GOLD, DARK, DARKER, RED, GREEN, BORDER_LT, BORDER_DK, SPOKE_URLS, NAV_ITEMS
+  styles.js               — shared style objects
+public/
+  jpglogo.png             — JPG mountain logo (used in center circle via SVG <image> with clipPath)
+  LIMITLESS_Tier_1_Patch.png
+  LIMITLESS_Tier_2_Patch.png
+  LIMITLESS_Tier_3_Patch.png
+  LIMITLESS_Tier_4_Patch.png
 ```
 
 ---
 
-## KEY STORAGE KEYS
+## STORAGE KEYS
 
 | Key | Written at | Read at |
 |---|---|---|
-| `hub_clients` | clients.js, WheelView (Day 22 promotion), OBT write-back | clients.js, WheelView, ClientsView, HUBApp, ClientViewMode, DOP (read-only) |
-| `hub_session` | clients.js login/logout | clients.js getSession |
-| `hub_messages` | CommunicationView | CommunicationView |
-| `hub_announcements` | CommunicationView | CommunicationView |
-| `hub_scheduled` | CommunicationView | CommunicationView |
-| `hub_scheduled_completed` | CommunicationView | archive only |
+| hub_clients | services/clients.js; OBT ClientInfo.jsx (tracking_start_date + address); WheelView.jsx (Day 22 auto-promotion) | services/clients.js; ClientsView.jsx; WheelView.jsx; HUBApp.jsx; ReportsView.jsx; DOP fourX4Period.js (read-only); ClientViewMode.jsx |
+| hub_session | services/clients.js (login / logout) | services/clients.js (getSession) |
+| hub_messages | CommunicationView.jsx | CommunicationView.jsx |
+| hub_announcements | CommunicationView.jsx | CommunicationView.jsx |
+| hub_scheduled | CommunicationView.jsx | CommunicationView.jsx |
+| hub_scheduled_completed | CommunicationView.jsx (archive only) | not yet read |
 
 ---
 
-## CLIENT RECORD STRUCTURE
+## ACTIVE VIEW ROUTING (HUBApp.jsx renderView())
 
-```js
-{
-  id: "client_{timestamp}",
-  role: "client",
-  first_name, last_name, username, password,
-  phone, email,
-  program_start_date,       // written on OBT unlock
-  tracking_start_date,      // written by OBT
-  current_cycle_start, onramp_end,
-  tier: 4,                  // Apprentice on creation
-  tier_name: "Apprentice",
-  cap_override_minutes: null, // coach-set Time Governor override (NEW 08/13/2026)
-  obt_unlocked: true,
-  dop_unlocked: false,
-  pit_unlocked: false,
-  edu_unlocked: true,
-  comms_unlocked: true,
-  agreements_unlocked: true,
-  eventsboard_unlocked: true,
-  daily_unlocked: true,
-  resources_unlocked: true,
-  residential_street, residential_city, residential_state, residential_zip
-}
-```
+| activeView | Component |
+|---|---|
+| 'wheel' | WheelView |
+| 'clients' | ClientsView |
+| 'communication' | CommunicationView |
+| 'fullprofile' | FullProfileView |
+| 'reports' | ReportsView |
+| 'eventsboard' | EventsBoardView |
+| 'settings' | PlaceholderView |
+| 'clientview' | ClientViewMode |
+| anything else | null |
 
 ---
 
-## CRITICAL LOGIC — WheelView.jsx
+## SPOKE ROUTING (WheelView spokeClick)
 
-### getCyclePhase(hubUser)
-Reads `hub_clients` synchronously, computes cycleDay from `tracking_start_date`.
-
-**Day 22 auto-promotion side effect (ADDED 08/13/2026):**
-In the onramp branch (cycleDay > 21 and <= 30):
-```js
-if (client.tier === 4) {
-  updateClient(client.id, { tier: 3, tier_name: 'Performance' });
-}
-```
-Self-guarding — fires only once. `updateClient` imported from `services/clients`.
-
-### isSpokeUnlocked(spokeId, hubUser, role)
-- Client role + dop or pit + phase foundation or analysis → false (phase-gated)
-- Coach role → never phase-gated
-- All other spokes → unlock flag only
+- 'communication' → onNavigate('communication') — internal view
+- 'eventsboard' → onNavigate('eventsboard') — internal view (ADDED 08/14/2026)
+- All other spokes → SPOKE_URLS[spokeId] opened in new tab with hub_user param (HUB_AUTH_SPOKES: dop, pit, tracker)
+- Spokes with empty SPOKE_URLS string → alert message
 
 ---
 
-## CRITICAL LOGIC — SlidePanel.jsx
+## CENTER CIRCLE (WheelView.jsx)
 
-### PROGRAM TIER section (NEW 08/13/2026)
-Located between TIER display row and PROGRAM START row.
-
-**TIER_PROMOTION map:**
-```js
-{
-  3: { newTier: 2, newName: 'Greatness',   label: 'PROMOTE TO GREATNESS' },
-  2: { newTier: 1, newName: 'Unstoppable', label: 'PROMOTE TO UNSTOPPABLE' },
-}
-```
-
-- PROMOTE button: renders only when `TIER_PROMOTION[client.tier]` exists (Tier 3 and 2 only)
-- `handlePromoteTier()` — calls `updateClient(client.id, { tier, tier_name })`, calls `onUpdate()`
-- CAP OVERRIDE input: controlled local `capInput` state
-- `handleSetCap()` — parseInt, calls `updateClient(client.id, { cap_override_minutes: val || null })`, resets capInput, calls `onUpdate()`
-- `handleClearCap()` — calls `updateClient(client.id, { cap_override_minutes: null })`, resets capInput, calls `onUpdate()`
+- Gold circle: cx=360, cy=360, r=92, fill=#B8860B
+- JPG logo image: href=/jpglogo.png, x=265, y=265, width=190, height=190
+- clipPath="url(#centerCircleClip)" — clips image to circle (r=91 in defs)
+- style={{ mixBlendMode: 'multiply' }} — blends white PNG background into gold
+- Both JPG/HUB text elements removed 08/14/2026
 
 ---
 
-## CRITICAL LOGIC — Topbar.jsx
+## LOCKED DECISIONS
 
-Role-based name display (UPDATED 08/13/2026):
-```js
-const isClient = user?.role === 'client';
-const label = isClient ? 'Client: ' : 'Coach: ';
-const name = isClient
-  ? ((user.first_name && user.last_name)
-      ? (user.first_name + ' ' + user.last_name).toUpperCase()
-      : user?.username?.toUpperCase() ?? 'CLIENT')
-  : (user?.username?.toUpperCase() ?? 'COACH');
-```
-
----
-
-## TIER PROGRESSION (LOCKED 08/13/2026)
-
-| Tier | Name | Entry | Exit |
-|---|---|---|---|
-| 4 | Apprentice | Auto at creation | Auto Day 22 (WheelView getCyclePhase) |
-| 3 | Performance | Auto Day 22 | Coach-promoted via SlidePanel |
-| 2 | Greatness | Coach-promoted | Coach-promoted |
-| 1 | Unstoppable | Coach-promoted | None — ceiling |
+- Username formula: first initial + last name, lowercase
+- Password formula: First-cap last name + last 4 of phone + MMYY of program start date
+- 7 spoke flags default true on client create (obt, edu, comms, agreements, eventsboard, daily, resources); dop and pit default false
+- program_start_date auto-written when coach toggles obt_unlocked true — never changes
+- tracking_start_date written by OBT when client saves it; also written to hub_clients
+- Phase gating: foundation (days 1–14) and analysis (days 15–21) lock DOP and PIT for client role regardless of unlock flag
+- Day 22 auto-promotion: getCyclePhase() onramp branch — Tier 4 → Tier 3, self-guarding
+- Coach tier promotion: PROMOTE button in SlidePanel for Tier 3→2 and Tier 2→1 only
+- cap_override_minutes: coach-set field, takes precedence over tier default when set
+- Tier 1 cap: 60 min; Tiers 2/3/4: 30 min default
+- HUB_AUTH_SPOKES (hub_user param appended): dop, pit, tracker
+- hub_user param: username string only — not full session object
+- Topbar: coach shows "Coach: DOUG"; client shows "Client: FIRST LAST" (uppercased)
+- CommunicationView: 3 tabs only — MESSAGES, ANNOUNCEMENTS, SCHEDULED COMMUNICATION
+- ReportsView: standalone view wired to left nav REPORTS item — not inside CommunicationView
+- EventsBoardView: standalone coming-soon placeholder — routes via eventsboard spoke and future nav item
+- Cross-origin localStorage: OBT cannot write to HUB hub_clients from a different port — resolved post-Supabase
 
 ---
 
-## PHASE GATING (LOCKED)
+## DO NOT
 
-| Phase | Days | DOP/PIT client access |
-|---|---|---|
-| foundation | 1–14 | BLOCKED |
-| analysis | 15–21 | BLOCKED |
-| onramp | 22–30 | OPEN |
-| full | 31+ | OPEN |
-| null | no tracking_start_date | OPEN |
-
----
-
-## SPOKE FLAGS (9 total)
-
-```
-obt_unlocked, dop_unlocked, pit_unlocked, edu_unlocked,
-comms_unlocked, agreements_unlocked, eventsboard_unlocked,
-daily_unlocked, resources_unlocked
-```
-
-Default on creation: dop and pit = false. All others = true.
-
-HUB_AUTH_SPOKES (bypass login via hub_user param): dop, pit, tracker.
-
----
-
-## STANDING RULES FOR CLAUDE CODE
-
-- Investigation before build — always read actual source files before making changes
-- Do not modify .md files in the repo
 - Do not start the dev server
-- Do not commit
-- Master branch is protected — all OBT experimental work on Chris-Mods branch only (not applicable to HUB directly, but rule stands)
-- updateClient() is the only safe write path to hub_clients — never write hub_clients directly
-- WheelView reads localStorage synchronously — getCyclePhase and isSpokeUnlocked are pure functions except for the Day 22 promotion side effect
+- Do not commit — GitHub Desktop only
+- Do not touch .md files in the repo during builds
+- Do not add a Reports tab back to CommunicationView — Reports is a standalone view
+- Do not add eventsboard to SPOKE_URLS — it routes via onNavigate, not a URL
 
-*CLAUDE.md v1.5 | JPG-HUB-App | 08/13/2026*
+---
+
+*CLAUDE.md v1.6 | JPG-HUB-App | 08/14/2026*

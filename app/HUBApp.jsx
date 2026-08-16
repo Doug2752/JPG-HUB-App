@@ -12,6 +12,7 @@ import PlaceholderView from '../components/PlaceholderView.jsx';
 import CommunicationView from '../components/CommunicationView.jsx';
 import ReportsView from '../components/ReportsView.jsx';
 import EventsBoardView from '../components/EventsBoardView';
+import AgreementsView from '../components/AgreementsView.jsx';
 import FullProfileView from '../components/FullProfileView.jsx';
 
 export default function HUBApp() {
@@ -63,6 +64,7 @@ export default function HUBApp() {
     if (activeView === 'reports')    return <ReportsView user={user} />;
     if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
     if (activeView === 'eventsboard') return <EventsBoardView user={user} />;
+    if (activeView === 'agreements') return <AgreementsView user={user} />;
     if (activeView === 'clientview') return <ClientViewMode key="clientview" />;
     return null;
   }

@@ -81,6 +81,10 @@ function spokeClick(spokeId, hubUser, role, onNavigate) {
     onNavigate('eventsboard');
     return;
   }
+  if (spokeId === 'agreements' && onNavigate) {
+    onNavigate('agreements');
+    return;
+  }
   let url = SPOKE_URLS[spokeId];
   if (url) {
     if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {

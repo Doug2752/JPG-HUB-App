@@ -33,6 +33,7 @@ export const NAV_ITEMS = [
   { id: 'clients',  label: 'CLIENTS' },
   { id: 'communication', label: 'MESSAGES' },
   { id: 'reports',  label: 'REPORTS' },
+  { id: 'agreements', label: 'AGREEMENTS' },
   { id: 'settings', label: 'SETTINGS' }
 ];
 
