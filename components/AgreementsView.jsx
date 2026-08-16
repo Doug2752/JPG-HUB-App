@@ -13,6 +13,28 @@ const FORMS = [
   { key: 'form_005', label: 'Photo / Testimonial Release' },
 ];
 
+const FORM_PDFS = {
+  form_001: '/agreement-forms/JPG-TK-001-ClientIntake-WRK-v1.0.pdf',
+  form_002: '/agreement-forms/JPG-TK-002-ProgramApplication-WRK-v1.0.pdf',
+  form_003: '/agreement-forms/JPG-TK-003-LiabilityWaiver-WRK-v1.0.pdf',
+  form_004: '/agreement-forms/JPG-TK-004-ProgramAgreement-WRK-v1.0.pdf',
+  form_005: '/agreement-forms/JPG-TK-005-PhotoRelease-WRK-v1.0.pdf',
+};
+
+const FORM_EMAIL_SUBJECTS = {
+  form_001: 'Jones Performance Group — Client Intake & Application Form',
+  form_002: 'Jones Performance Group — Program Application & Commitment Statement',
+  form_003: 'Jones Performance Group — Liability Waiver & Disclaimer',
+  form_004: 'Jones Performance Group — Program Agreement',
+  form_005: 'Jones Performance Group — Photo / Testimonial Release',
+};
+
+const EMAIL_BODY_SINGLE = (formLabel) =>
+  `Please find the attached JPG form enclosed: ${formLabel}.\n\nComplete and return this document at your earliest convenience. If you have any questions, reply to this email.\n\nJones Performance Group`;
+
+const EMAIL_BODY_ALL =
+  `Please find all five Jones Performance Group program forms attached to this email.\n\nComplete and return all documents at your earliest convenience. If you have any questions, reply to this email.\n\nJones Performance Group`;
+
 const FORM_FIELDS = {
   form_001: [
     { key: 'full_name',               label: 'Full Name',                        type: 'text',     required: true },
@@ -400,19 +422,48 @@ function CoachDetailView({ client, onBack }) {
 
 function CoachAgreementsView() {
   const [selectedClient, setSelectedClient] = useState(null);
+  const [expandedFormSend, setExpandedFormSend] = useState(null);
+  const [emailInputs, setEmailInputs] = useState({});
+
+  const clientsRaw = localStorage.getItem('hub_clients');
+  const clients = clientsRaw
+    ? JSON.parse(clientsRaw).filter(c => c.role === 'client')
+    : [];
 
   if (selectedClient) {
     return <CoachDetailView client={selectedClient} onBack={() => setSelectedClient(null)} />;
   }
 
-  let clients = [];
-  try {
-    const raw = localStorage.getItem('hub_clients');
-    clients = raw ? JSON.parse(raw).filter(c => c.role === 'client') : [];
-  } catch (_) {}
+  // --- helpers ---
+  const handleEmailChange = (formKey, val) => {
+    setEmailInputs(prev => ({ ...prev, [formKey]: val }));
+  };
 
+  const handleSendSingle = (form) => {
+    const email = emailInputs[form.key] || '';
+    const subject = encodeURIComponent(FORM_EMAIL_SUBJECTS[form.key]);
+    const body = encodeURIComponent(EMAIL_BODY_SINGLE(form.label));
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_self');
+  };
+
+  const handleSendAll = (email) => {
+    const subject = encodeURIComponent('Jones Performance Group — Program Agreement Forms');
+    const body = encodeURIComponent(EMAIL_BODY_ALL);
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_self');
+  };
+
+  const handleDownload = (formKey) => {
+    const link = document.createElement('a');
+    link.href = FORM_PDFS[formKey];
+    link.download = FORM_PDFS[formKey].split('/').pop();
+    link.click();
+  };
+
+  // --- render ---
   return (
     <div style={{ padding: 24, minHeight: '100vh', background: DARKER }}>
+
+      {/* ── FORMS SECTION ── */}
       <div style={{
         color: '#fff', fontWeight: 700, fontSize: 20,
         marginBottom: 24, paddingBottom: 12, borderBottom: `2px solid ${GOLD}`,
@@ -420,17 +471,136 @@ function CoachAgreementsView() {
         AGREEMENTS
       </div>
 
+      {/* Forms subheader */}
+      <div style={{
+        color: GOLD, fontWeight: 700, fontSize: 15,
+        marginBottom: 14, paddingBottom: 8, borderBottom: `1px solid #5a4a1a`,
+      }}>
+        FORMS
+      </div>
+
+      {/* Note about mailto */}
+      <div style={{
+        color: '#aaa', fontSize: 12, fontStyle: 'italic', marginBottom: 16,
+      }}>
+        Your default mail client will open when sending. Attach the downloaded PDF manually.
+      </div>
+
+      {FORMS.map(form => {
+        const isOpen = expandedFormSend === form.key;
+        const emailVal = emailInputs[form.key] || '';
+        return (
+          <div key={form.key} style={{
+            background: DARK, border: `1px solid #5a4a1a`,
+            borderRadius: 6, padding: '14px 20px', marginBottom: 10,
+          }}>
+            {/* Form row */}
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, flex: 1, marginRight: 16 }}>
+                {form.label}
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+                {/* Download */}
+                <button
+                  onClick={() => handleDownload(form.key)}
+                  style={{
+                    background: 'none', border: `1px solid ${GOLD}`, color: GOLD,
+                    fontSize: 11, padding: '4px 8px', borderRadius: 4, cursor: 'pointer',
+                    whiteSpace: 'nowrap', minWidth: 110,
+                  }}
+                >
+                  DOWNLOAD PDF
+                </button>
+                {/* Send options toggle */}
+                <button
+                  onClick={() => setExpandedFormSend(isOpen ? null : form.key)}
+                  style={{
+                    background: GOLD, border: 'none', color: '#000',
+                    fontWeight: 700, fontSize: 11, padding: '4px 8px',
+                    borderRadius: 4, cursor: 'pointer',
+                    whiteSpace: 'nowrap', minWidth: 128,
+                  }}
+                >
+                  {isOpen ? '▲ SEND OPTIONS' : '▼ SEND OPTIONS'}
+                </button>
+              </div>
+            </div>
+
+            {/* Send options panel */}
+            {isOpen && (
+              <div style={{
+                marginTop: 14, paddingTop: 14,
+                borderTop: '1px solid #333',
+              }}>
+                <input
+                  type="email"
+                  placeholder="Client email address"
+                  value={emailVal}
+                  onChange={e => handleEmailChange(form.key, e.target.value)}
+                  style={{
+                    width: '100%', background: '#111', border: `1px solid ${GOLD}`,
+                    color: '#fff', borderRadius: 4, padding: '8px 10px',
+                    fontSize: 13, boxSizing: 'border-box', marginBottom: 10,
+                  }}
+                />
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={() => handleSendSingle(form)}
+                    style={{
+                      background: GOLD, border: 'none', color: '#000',
+                      fontWeight: 700, fontSize: 12, padding: '7px 16px',
+                      borderRadius: 4, cursor: 'pointer',
+                    }}
+                  >
+                    SEND THIS FORM
+                  </button>
+                  <button
+                    onClick={() => handleSendAll(emailVal)}
+                    style={{
+                      background: 'none', border: `1px solid ${GOLD}`, color: GOLD,
+                      fontWeight: 700, fontSize: 12, padding: '7px 16px',
+                      borderRadius: 4, cursor: 'pointer',
+                    }}
+                  >
+                    SEND ALL FORMS
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* ── CLIENTS SECTION ── */}
+      <div style={{
+        color: GOLD, fontWeight: 700, fontSize: 15,
+        marginTop: 32, marginBottom: 14,
+        paddingBottom: 8, borderBottom: `1px solid #5a4a1a`,
+      }}>
+        CLIENTS
+      </div>
+
       {clients.length === 0 ? (
-        <div style={{ color: '#fff', fontStyle: 'italic', fontSize: 14 }}>No clients enrolled.</div>
+        <div style={{ color: '#fff', fontStyle: 'italic', fontSize: 14 }}>
+          No clients enrolled.
+        </div>
       ) : (
         clients.map(c => {
           const agreements = getAgreements(c.username);
           const complete = countComplete(agreements);
           return (
-            <ClientRow key={c.id} client={c} complete={complete} onClick={() => setSelectedClient(c)} />
+            <ClientRow
+              key={c.id}
+              client={c}
+              complete={complete}
+              onClick={() => setSelectedClient(c)}
+            />
           );
         })
       )}
+
     </div>
   );
 }
