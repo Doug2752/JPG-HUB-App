@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-
-const GOLD = '#B8860B';
-const DARK = '#1A1A1A';
-const DARKER = '#0F0F0F';
-const TEXT_DIM = '#555555';
+import { GOLD, DARK, DARKER, TEXT_DIM } from '../utils/constants';
 
 const FORMS = [
   { key: 'form_001', label: 'Client Intake & Application' },
@@ -275,7 +271,6 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
 
 function ClientAgreementsView({ user }) {
   const [activeForm, setActiveForm] = useState(null);
-  const [tick, setTick] = useState(0);
 
   const agreements = getAgreements(user.username);
   const complete = countComplete(agreements);
@@ -289,7 +284,7 @@ function ClientAgreementsView({ user }) {
         entry={entry}
         username={user.username}
         onBack={() => setActiveForm(null)}
-        onSubmitted={() => { setTick(t => t + 1); setActiveForm(null); }}
+        onSubmitted={() => setActiveForm(null)}
       />
     );
   }
@@ -425,10 +420,15 @@ function CoachAgreementsView() {
   const [expandedFormSend, setExpandedFormSend] = useState(null);
   const [emailInputs, setEmailInputs] = useState({});
 
-  const clientsRaw = localStorage.getItem('hub_clients');
-  const clients = clientsRaw
-    ? JSON.parse(clientsRaw).filter(c => c.role === 'client')
-    : [];
+  let clients = [];
+  try {
+    const clientsRaw = localStorage.getItem('hub_clients');
+    clients = clientsRaw
+      ? JSON.parse(clientsRaw).filter(c => c.role === 'client')
+      : [];
+  } catch (_) {
+    clients = [];
+  }
 
   if (selectedClient) {
     return <CoachDetailView client={selectedClient} onBack={() => setSelectedClient(null)} />;
