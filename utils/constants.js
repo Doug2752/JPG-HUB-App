@@ -32,6 +32,7 @@ export const NAV_ITEMS = [
   { id: 'wheel',    label: 'DASHBOARD' },
   { id: 'clients',  label: 'CLIENTS' },
   { id: 'communication', label: 'MESSAGES' },
+  { id: 'edu',           label: 'EDUCATION' },
   { id: 'reports',  label: 'REPORTS' },
   { id: 'agreements',  label: 'AGREEMENTS' },
   { id: 'eventsboard', label: 'EVENTS' },

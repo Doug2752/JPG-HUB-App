@@ -102,6 +102,10 @@ function spokeClick(spokeId, hubUser, role, onNavigate) {
     onNavigate('agreements');
     return;
   }
+  if (spokeId === 'edu' && onNavigate) {
+    onNavigate('edu');
+    return;
+  }
   let url = SPOKE_URLS[spokeId];
   if (url) {
     if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {
