@@ -57,6 +57,24 @@ const EDU_CATEGORIES = [
         description: 'An honest look at phone use patterns, costs, and practical recommendations for intentional use.',
         file: '/edu-docs/JPG-EDU-CellPhoneRelationship-v1.0.pdf',
       },
+      {
+        num: 2,
+        title: 'LIMITLESS — Operating Doctrine',
+        description: '',
+        file: '/edu-docs/JPG-FD-LIM-001-EDU-WRK-v1.0.pdf',
+      },
+    ],
+  },
+  {
+    id: 'program_foundations',
+    label: 'PROGRAM FOUNDATIONS',
+    description: '',
+    docs: [
+      { num: 1, title: 'The Four Foundations Overview', description: '', file: '/edu-docs/JPG-FD-OV-001-EDU-WRK-v6.0.pdf' },
+      { num: 2, title: 'Foundation 01 — Fitness', description: '', file: '/edu-docs/JPG-FD-001-EDU-WRK-v6.0.pdf' },
+      { num: 3, title: 'Foundation 02 — Nutrition', description: '', file: '/edu-docs/JPG-FD-002-EDU-WRK-v6.0.pdf' },
+      { num: 4, title: 'Foundation 03 — Sleep', description: '', file: '/edu-docs/JPG-FD-003-EDU-WRK-v6.0.pdf' },
+      { num: 5, title: 'Foundation 04 — Mental / Spiritual Health', description: '', file: '/edu-docs/JPG-FD-004-EDU-WRK-v6.0.pdf' },
     ],
   },
   {
