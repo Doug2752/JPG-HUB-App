@@ -28,7 +28,7 @@ const SPOKE_LABELS = [
   { key: 'comms_unlocked',      label: 'COMMUNICATIONS & MESSAGING' },
   { key: 'agreements_unlocked', label: 'AGREEMENTS' },
   { key: 'eventsboard_unlocked', label: 'EVENTS BOARD' },
-  { key: 'daily_unlocked',       label: 'DAILY TRACKER' },
+  { key: 'daily_unlocked',       label: 'TRACKING & TECHNOLOGY' },
   { key: 'resources_unlocked',   label: 'RESOURCES VAULT' },
 ];
 

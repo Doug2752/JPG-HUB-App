@@ -106,6 +106,10 @@ function spokeClick(spokeId, hubUser, role, onNavigate) {
     onNavigate('edu');
     return;
   }
+  if (spokeId === 'daily' && onNavigate) {
+    onNavigate('tracker');
+    return;
+  }
   let url = SPOKE_URLS[spokeId];
   if (url) {
     if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {
@@ -219,12 +223,12 @@ export default function WheelView({ hubUser, role, onNavigate }) {
           <text x="192" y="611" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">COMMUNITY</text>
         </g>
 
-        {/* DAILY TRACKER */}
+        {/* TRACKING & TECHNOLOGY */}
         <g style={spokeStyle('daily', hubUser, role)} onClick={() => spokeClick('daily', hubUser, role, onNavigate)}>
           <circle cx="89" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">DAILY</text>
-          <text x="89" y="453" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">TRACKER</text>
-          <text x="89" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">APPS</text>
+          <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="9"  fontWeight="700" letterSpacing="1.5" fontFamily="Lato">TRACKING &</text>
+          <text x="89" y="451" textAnchor="middle" fill="#fff"    fontSize="11" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">TECHNOLOGY</text>
+          <text x="89" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">TOOLS</text>
         </g>
 
         {/* EDUCATION REFERENCE */}
