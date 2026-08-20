@@ -245,8 +245,13 @@ export default function EventsBoardView({ user }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           padding: '18px 16px', borderBottom: `1px solid ${BORDER_DK}`, flexShrink: 0,
         }}>
-          <div style={{ color: GOLD, fontWeight: 700, fontSize: 18, letterSpacing: '3px' }}>
-            EVENTS BOARD
+          <div>
+            <div style={{ color: GOLD, fontWeight: 700, fontSize: 18, letterSpacing: '3px' }}>
+              EVENTS BOARD
+            </div>
+            <div style={{ color: TEXT_DIM, fontSize: 13, fontStyle: 'italic', marginTop: 4 }}>
+              Use the Events Board to post upcoming events, share announcements, and engage with other JPG members.
+            </div>
           </div>
           <button
             onClick={() => {
