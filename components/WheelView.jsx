@@ -5,7 +5,7 @@ import { updateClient } from '../services/clients';
 
 const HUB_AUTH_SPOKES = ['dop', 'pit', 'tracker'];
 
-const GATED_SPOKE_IDS = new Set(['dop', 'pit', 'edu', 'eventsboard', 'daily', 'resources']);
+const GATED_SPOKE_IDS = new Set(['dop', 'pit', 'edu', 'eventsboard', 'daily', 'resources', 'interface']);
 
 function agreementsComplete(username) {
   try {
@@ -65,6 +65,7 @@ function isSpokeUnlocked(spokeId, hubUser, role) {
     eventsboard:   'eventsboard_unlocked',
     daily:         'daily_unlocked',
     resources:     'resources_unlocked',
+    interface:     'interface_unlocked',
   };
   const flag = flagMap[spokeId];
   if (!flag || !client[flag]) return false;
@@ -110,6 +111,10 @@ function spokeClick(spokeId, hubUser, role, onNavigate) {
     onNavigate('tracker');
     return;
   }
+  if (spokeId === 'interface' && onNavigate) {
+    onNavigate('interface');
+    return;
+  }
   let url = SPOKE_URLS[spokeId];
   if (url) {
     if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {
@@ -125,7 +130,6 @@ function spokeClick(spokeId, hubUser, role, onNavigate) {
   }
 }
 
-const lockedG = { cursor: 'not-allowed', opacity: 0.4 };
 
 export default function WheelView({ hubUser, role, onNavigate }) {
   return (
@@ -149,7 +153,7 @@ export default function WheelView({ hubUser, role, onNavigate }) {
         <line x1="360" y1="360" x2="631"  y2="272" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="631"  y2="448" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="528"  y2="591" stroke="#333" strokeWidth="1.5"/>
-        <line x1="360" y1="360" x2="360"  y2="645" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="3,6"/>
+        <line x1="360" y1="360" x2="360"  y2="645" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="192"  y2="591" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="89"   y2="448" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="89"   y2="272" stroke="#333" strokeWidth="1.5"/>
@@ -171,9 +175,10 @@ export default function WheelView({ hubUser, role, onNavigate }) {
         {/* DOP */}
         <g style={spokeStyle('dop', hubUser, role)} onClick={() => spokeClick('dop', hubUser, role, onNavigate)}>
           <circle cx="360" cy="75" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
-          <text x="360" y="60"  textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">DAILY OPS</text>
-          <text x="360" y="80"  textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4" fontFamily="Lato">DOP</text>
-          <text x="360" y="95"  textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">PROCESS</text>
+          <text x="360" y="53"  textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2"   fontFamily="Lato">DAILY</text>
+          <text x="360" y="68"  textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">OPERATIONAL</text>
+          <text x="360" y="88"  textAnchor="middle" fill="#fff"    fontSize="16" fontWeight="900" letterSpacing="4"   fontFamily="Lato">DOP</text>
+          <text x="360" y="103" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">PROCESS</text>
         </g>
 
         {/* PIT */}
@@ -208,16 +213,17 @@ export default function WheelView({ hubUser, role, onNavigate }) {
           <text x="528" y="611" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">DOCS &amp; FORMS</text>
         </g>
 
-        {/* FUTURE (locked) */}
-        <g style={lockedG}>
-          <circle cx="360" cy="645" r="62" fill="#161616" stroke="#3a3a3a" strokeWidth="1.5" strokeDasharray="4,4"/>
-          <text x="360" y="637" textAnchor="middle" fill="#555" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">FUTURE</text>
-          <text x="360" y="655" textAnchor="middle" fill="#444" fontSize="9"  letterSpacing="1.5" fontFamily="Lato">DEVELOPMENT</text>
+        {/* INTERFACE PREFERENCE */}
+        <g style={spokeStyle('interface', hubUser, role)} onClick={() => spokeClick('interface', hubUser, role, onNavigate)}>
+          <circle cx="360" cy="645" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <text x="360" y="630" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">APP</text>
+          <text x="360" y="650" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">INTERFACE</text>
+          <text x="360" y="665" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">PREFERENCE</text>
         </g>
 
         {/* EVENTS BOARD */}
         <g style={spokeStyle('eventsboard', hubUser, role)} onClick={() => spokeClick('eventsboard', hubUser, role, onNavigate)}>
-          <circle cx="192" cy="591" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <circle cx="192" cy="591" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
           <text x="192" y="576" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EVENTS</text>
           <text x="192" y="596" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">BOARD</text>
           <text x="192" y="611" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">COMMUNITY</text>
@@ -225,7 +231,7 @@ export default function WheelView({ hubUser, role, onNavigate }) {
 
         {/* TRACKING & TECHNOLOGY */}
         <g style={spokeStyle('daily', hubUser, role)} onClick={() => spokeClick('daily', hubUser, role, onNavigate)}>
-          <circle cx="89" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <circle cx="89" cy="448" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
           <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="9"  fontWeight="700" letterSpacing="1.5" fontFamily="Lato">TRACKING &</text>
           <text x="89" y="451" textAnchor="middle" fill="#fff"    fontSize="11" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">TECHNOLOGY</text>
           <text x="89" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">TOOLS</text>
@@ -233,7 +239,7 @@ export default function WheelView({ hubUser, role, onNavigate }) {
 
         {/* EDUCATION REFERENCE */}
         <g style={spokeStyle('edu', hubUser, role)} onClick={() => spokeClick('edu', hubUser, role, onNavigate)}>
-          <circle cx="192" cy="129" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <circle cx="192" cy="129" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
           <text x="192" y="114" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EDUCATION</text>
           <text x="192" y="134" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">REFERENCE</text>
           <text x="192" y="149" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">LIBRARY</text>
@@ -241,7 +247,7 @@ export default function WheelView({ hubUser, role, onNavigate }) {
 
         {/* RESOURCES VAULT */}
         <g style={spokeStyle('resources', hubUser, role)} onClick={() => spokeClick('resources', hubUser, role, onNavigate)}>
-          <circle cx="89" cy="272" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+          <circle cx="89" cy="272" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
           <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">RESOURCES</text>
           <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">VAULT</text>
           <text x="89" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">DOWNLOADS</text>
