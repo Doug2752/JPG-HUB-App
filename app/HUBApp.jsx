@@ -16,6 +16,7 @@ import AgreementsView from '../components/AgreementsView.jsx';
 import EducationView from '../components/EducationView.jsx';
 import FullProfileView from '../components/FullProfileView.jsx';
 import TrackingTechView from '../src/components/TrackingTechView';
+import InterfacePreferenceView from '../src/components/InterfacePreferenceView';
 
 export default function HUBApp() {
   const [user, setUser]             = useState(null);
@@ -69,6 +70,7 @@ export default function HUBApp() {
     if (activeView === 'agreements') return <AgreementsView user={user} />;
     if (activeView === 'edu')        return <EducationView user={user} />;
     if (activeView === 'tracker')    return <TrackingTechView user={user} />;
+    if (activeView === 'interface')  return <InterfacePreferenceView user={user} />;
     if (activeView === 'clientview') return <ClientViewMode key="clientview" />;
     return null;
   }
