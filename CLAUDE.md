@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v1.9 | **Date:** 08/19/2026
+**Version:** v2.0 | **Date:** 08/20/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -36,20 +36,20 @@
 ```
 JPG-HUB-App/
 ├── app/
-│   └── HUBApp.jsx               # Root component — session, routing, activeView
+│   └── HUBApp.jsx                    # Root component. renderView() routes all views.
 ├── components/
 │   ├── Login.jsx
 │   ├── Nav.jsx
 │   ├── Topbar.jsx
-│   ├── WheelView.jsx            # 10-spoke SVG wheel, phase gating, agreements gating
+│   ├── WheelView.jsx                 # 10-spoke SVG wheel. Two visual tiers. Phase + agreements gating.
 │   ├── ClientsView.jsx
-│   ├── SlidePanel.jsx           # 420px client panel, spoke unlock/revoke, gating
+│   ├── SlidePanel.jsx                # 420px right panel. Agreements gating on 6 spokes.
 │   ├── FullProfileView.jsx
-│   ├── CommunicationView.jsx    # Thin shell — 210 lines, owns state, passes to tabs
+│   ├── CommunicationView.jsx         # Thin shell — 210 lines. Owns state. Passes to tab components.
 │   ├── ReportsView.jsx
-│   ├── EventsBoardView.jsx      # Full forum-style board, hub_events storage
-│   ├── AgreementsView.jsx       # 5 forms, coach + client views
-│   ├── EducationView.jsx        # Two-level nav, 5 categories, 12 docs
+│   ├── EventsBoardView.jsx           # Full forum-style thread board. hub_events storage.
+│   ├── AgreementsView.jsx            # 5 forms. jpg_agreements_{username} storage.
+│   ├── EducationView.jsx             # Two-level nav. 5 categories, 12 docs.
 │   ├── ClientViewMode.jsx
 │   ├── PlaceholderView.jsx
 │   └── tabs/
@@ -58,40 +58,39 @@ JPG-HUB-App/
 │       └── ScheduledTab.jsx
 ├── src/
 │   ├── components/
-│   │   └── TrackingTechView.jsx # Three-tab view: WEARABLES / APPS / RECOMMENDATIONS
+│   │   ├── TrackingTechView.jsx      # Three-tab spoke view. Non-standard import path — cleanup at migration.
+│   │   └── InterfacePreferenceView.jsx  # Shell — title, description, coming-soon block; props: { user }
 │   └── data/
-│       └── trackingTechData.js  # Pure data module — 816 lines, 54 items, no localStorage
-├── services/
-│   ├── clients.js
-│   └── storage.js
+│       └── trackingTechData.js       # TRACKING_TECH_DATA export. 816 lines. No localStorage.
 ├── utils/
-│   ├── constants.js             # GOLD, GOLD_LIGHT, DARK, DARKER, BORDER_DK, TEXT_DIM, NAV_ITEMS, SPOKE_URLS
-│   ├── styles.js
-│   └── date.js
-└── public/
-    ├── jpglogo.png
-    ├── edu-docs/                # 12 PDFs — education spoke
-    └── agreement-forms/         # 5 PDFs — agreements spoke
+│   ├── constants.js                  # GOLD, GOLD_LIGHT, DARK, DARKER, BORDER_DK, TEXT_DIM, NAV_ITEMS, SPOKE_URLS
+│   └── styles.js                     # S object — shared style tokens
+├── services/
+│   ├── clients.js                    # getClients, updateClient, createClientRecord
+│   └── storage.js                    # getSession, saveSession, logoutService
+├── public/
+│   ├── jpglogo.png                   # Center circle logo — replace with transparent PNG when available
+│   ├── agreement-forms/              # 5 agreement PDFs (form_001–form_005)
+│   └── edu-docs/                     # 12 education PDFs
+└── CLAUDE.md
 ```
-
-**Path note:** TrackingTechView.jsx and trackingTechData.js live under `src/` — one level deeper than the standard component root. HUBApp imports TrackingTechView from `'../src/components/TrackingTechView'`. This is a known asymmetry — flag for cleanup at Supabase migration. Do not move files without Doug's direction.
 
 ---
 
 ## STORAGE KEYS
 
-| Key | Component | Description |
+| Key | Owner | Description |
 |---|---|---|
-| `hub_clients` | ClientsView, SlidePanel, WheelView | Array of client objects |
-| `hub_session` | Login, HUBApp | Current session |
-| `hub_messages` | MessagesTab | Message thread objects |
-| `hub_announcements` | AnnouncementsTab | Announcement objects |
-| `hub_scheduled` | ScheduledTab | Scheduled items |
-| `hub_scheduled_completed` | ScheduledTab | Archived completed/cancelled items |
-| `hub_events` | EventsBoardView | Event thread objects |
-| `jpg_agreements_{username}` | AgreementsView, SlidePanel, WheelView | Per-client agreement state |
+| `hub_clients` | ClientsView, SlidePanel, WheelView | Array of all client objects |
+| `hub_session` | Login, HUBApp | Current logged-in user session |
+| `hub_messages` | MessagesTab | Array of message thread objects |
+| `hub_announcements` | AnnouncementsTab | Array of announcement objects |
+| `hub_scheduled` | ScheduledTab | Array of scheduled items |
+| `hub_scheduled_completed` | ScheduledTab | Archive of completed/cancelled items |
+| `hub_events` | EventsBoardView | Array of event thread objects |
+| `jpg_agreements_{username}` | AgreementsView | Per-client agreement state (5 forms) |
 
-**trackingTechData.js uses no localStorage** — pure static data module.
+InterfacePreferenceView has no localStorage access.
 
 ---
 
@@ -109,50 +108,68 @@ JPG-HUB-App/
 | 'agreements' | AgreementsView |
 | 'edu' | EducationView |
 | 'tracker' | TrackingTechView |
+| 'interface' | InterfacePreferenceView |
 | 'clientview' | ClientViewMode |
+| anything else | null |
 
 ---
 
 ## SPOKE ROUTING (WheelView spokeClick)
 
-| spokeId | Action |
+Internal routes (do NOT add to SPOKE_URLS):
+| spokeId | Routes to |
 |---|---|
 | communication | onNavigate('communication') |
 | eventsboard | onNavigate('eventsboard') |
 | agreements | onNavigate('agreements') |
 | edu | onNavigate('edu') |
 | daily | onNavigate('tracker') |
-| dop, pit, tracker | window.open(SPOKE_URLS[spokeId] + hub_user param) |
-| resources | alert (empty URL fallback) |
+| interface | onNavigate('interface') |
 
-**Do NOT add to SPOKE_URLS:** communication, eventsboard, agreements, edu, daily.
+External routes (SPOKE_URLS — appends ?hub_user param for HUB_AUTH_SPOKES):
+- dop → localhost:5173
+- pit → localhost:5174
+- tracker → localhost:5175
 
-**HUB_AUTH_SPOKES** (bypass login via hub_user param): dop, pit, tracker.
+HUB_AUTH_SPOKES: dop, pit, tracker
+
+Do NOT add to SPOKE_URLS: agreements, eventsboard, edu, communication, daily, interface
+
+---
+
+## WHEEL VIEW — SPOKE VISUAL TIERS
+
+Two visual tiers built 08/20/2026. Applied per spokeId in SVG circle elements directly.
+
+**Working spokes** — fill: #1C3A5C | stroke: #B8860B
+Spokes: dop, pit, tracker, communication, agreements, interface
+
+**Reference/community spokes** — fill: #0F2238 | stroke: #6B5E2E
+Spokes: edu, eventsboard, daily, resources
+
+All strokes: strokeWidth 2, solid. No dashed lines on any active spoke.
 
 ---
 
 ## AGREEMENTS GATING
 
-### GATED_SPOKES (SlidePanel) — flag keys
-`dop_unlocked`, `pit_unlocked`, `edu_unlocked`, `eventsboard_unlocked`, `daily_unlocked`, `resources_unlocked`
+GATED_SPOKE_IDS (WheelView): dop, pit, edu, eventsboard, daily, resources, interface
 
-### GATED_SPOKE_IDS (WheelView) — spoke ids
-`dop`, `pit`, `edu`, `eventsboard`, `daily`, `resources`
+**OPEN BUG:** 'interface' must be removed from GATED_SPOKE_IDS. Interface Preference spoke is always freely accessible — not agreements-gated. Fix before client-facing release.
 
-### agreementsComplete(username)
-Reads `jpg_agreements_{username}`. Checks all 5 form keys for `submitted === true`. try/catch returns false. Defined identically in both SlidePanel and WheelView.
+GATED_SPOKES (SlidePanel): same 6 keys excluding interface — audit SlidePanel to confirm.
 
-### Gate behavior
-- SlidePanel: UNLOCK blocked + inline italic message shown. REVOKE always allowed.
-- WheelView: greyed out spoke for client when gated. Coach never gated.
+Exempt from gating (always accessible): tracker, communication, agreements, interface
+
+agreementsComplete() checks jpg_agreements_{username} — all 5 forms .submitted === true.
 
 ---
 
 ## EDUCATION SPOKE (EducationView.jsx)
 
-Two-level navigation. 5 categories, 12 docs.
+5 categories, 12 docs. PDFs in public/edu-docs/.
 
-| Category id | Label | Docs |
+| id | Label | Docs |
 |---|---|---|
 | app_systems | APP OPERATING SYSTEMS | 4 |
 | training | TRAINING & PHYSICAL PERFORMANCE | 1 |
@@ -160,74 +177,70 @@ Two-level navigation. 5 categories, 12 docs.
 | program_foundations | PROGRAM FOUNDATIONS | 5 |
 | industry_articles | CURRENT INDUSTRY ARTICLES | 0 (placeholder) |
 
-PDFs served from `public/edu-docs/`. To add a doc: add one object to the relevant category's `docs` array in EDU_CATEGORIES. No component rebuild needed.
+Adding docs: one object to category docs array. No component rebuild needed.
 
 ---
 
 ## TRACKING & TECHNOLOGY SPOKE (TrackingTechView.jsx + trackingTechData.js)
 
-Three-tab view: WEARABLES / APPS / RECOMMENDATIONS.
+Import path: HUBApp imports from '../src/components/TrackingTechView' — non-standard, cleanup at Supabase migration.
 
-### Data file structure
-`src/data/trackingTechData.js` — export const TRACKING_TECH_DATA = { wearables, apps }
+3 tabs: WEARABLES / APPS / RECOMMENDATIONS (placeholder).
+Data: TRACKING_TECH_DATA — 4 wearable categories (16 items), 6 app categories (38 items).
+Slide panel: 9 fields per item. tutorialLink = "" on all — populate when URLs ready.
+No localStorage. Gated behind agreements completion.
 
-**Wearables:** 4 categories, 16 items.
-**Apps:** 6 categories (1 with 7 sub-categories), 38 items total.
-**Item fields (11):** id, name, whatItDoes, bestFor, howItWorks, ecosystemIntegrations, ecosystemValue, aiIntegration, freeOption, pricing, tutorialLink
+---
 
-### Navigation
-- WEARABLES: category grid → item list → slide panel
-- APPS flat: category grid → item list → slide panel
-- APPS sub-categorized: category grid → sub-category grid → item list → slide panel
-- Branch condition: `selectedCategory.subCategories.length === 0` → flat path
+## INTERFACE PREFERENCE SPOKE (InterfacePreferenceView.jsx)
 
-### Slide panel
-Fixed right, 480px, overlay backdrop. Displays all 9 content fields. tutorialLink empty → "Coming soon". Closes on × or overlay click.
-
-### To add items
-Add one object to the relevant `items` array in trackingTechData.js. No component rebuild needed.
-
-### To add tutorial links
-Update `tutorialLink` field on specific items in trackingTechData.js.
-
-### Recommendations tab
-Static placeholder. Content build deferred — dedicated pass when Doug provides coach recommendations by client profile.
+Shell only — no selection logic built yet.
+Props: { user }. No localStorage.
+Routing: 'interface' case in renderView() → InterfacePreferenceView.
+flagMap entry: interface → 'interface_unlocked'.
+Spoke position: cx=360, cy=645 (bottom-center). Working spoke tier (#1C3A5C / #B8860B).
+Always freely accessible — exempt from agreements gating and phase gating.
+Future build: Open/Guided/Structured version selection, two-path flow, snippet previews.
 
 ---
 
 ## LOCKED DECISIONS
 
-- GOLD_LIGHT (#ddb94a) = clickable/action. GOLD (#B8860B) = informational. Never swap.
-- Elements on dark nav bar get NO black border.
-- agreementsComplete() logic must be identical in SlidePanel and WheelView.
-- TrackingTechView slide panel is a custom inline panel — not SlidePanel.jsx.
-- trackingTechData.js has no localStorage access — pure data module.
-- Do not move TrackingTechView or trackingTechData to standard paths without Doug's direction.
+- Two-tier gold system: GOLD_LIGHT (#ddb94a) = clickable/action. GOLD (#B8860B) = informational.
+- Never define local color constants. Always import from utils/constants.
+- HUB owns all cycle and tier data. Spokes read-only except OBT writing tracking_start_date.
+- program_start_date auto-set on OBT unlock. Never changes.
+- Phase gating: foundation (days 1–14) and analysis (days 15–21) block DOP and PIT for clients.
+- Day 22 auto-promotion: tier 4 → tier 3 (Performance). Self-guarding.
+- TrackingTechView and InterfacePreferenceView live in src/components/ — do not move without updating HUBApp import path.
+- Spoke visual tiers locked: working (#1C3A5C/#B8860B), reference (#0F2238/#6B5E2E).
+- Interface Preference spoke always freely accessible. Must not be in GATED_SPOKE_IDS.
 
 ---
 
 ## PHASE GATING RULES
 
-| Days | Phase | DOP/PIT |
-|---|---|---|
-| 1–14 | foundation | locked |
-| 15–21 | analysis | locked |
-| 22–30 | onramp | unlocked |
-| 31+ | full | unlocked |
+getCyclePhase(hubUser) — reads hub_clients, computes cycleDay from tracking_start_date.
 
-Day 22 auto-promotion: if tier === 4 on onramp entry → updateClient({ tier: 3, tier_name: 'Performance' }).
+| Days | Phase |
+|---|---|
+| 1–14 | foundation |
+| 15–21 | analysis |
+| 22–30 | onramp |
+| 31+ | full |
+| No date | null |
+
+isSpokeUnlocked() — phase gate runs first (dop/pit only), then agreements gate (GATED_SPOKE_IDS). Coach always unrestricted.
 
 ---
 
 ## COLOR CONSTANTS (utils/constants.js)
 
-| Constant | Hex | Use |
+| Constant | Value | Use |
 |---|---|---|
-| GOLD | #B8860B | Headers, informational elements |
+| GOLD | #B8860B | Informational/non-interactive |
 | GOLD_LIGHT | #ddb94a | Clickable/action elements |
-| DARK | — | Primary dark background |
-| DARKER | — | Secondary dark background |
-| BORDER_DK | — | Dark border |
-| TEXT_DIM | — | Dimmed text |
-
-Always import from utils/constants. Never define local color constants.
+| DARK | #1a1a2e | Primary background |
+| DARKER | #12121f | Secondary/panel background |
+| BORDER_DK | #2a2a4a | Borders |
+| TEXT_DIM | #888 | Secondary/muted text |
