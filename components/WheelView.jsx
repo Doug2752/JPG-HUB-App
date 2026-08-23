@@ -5,13 +5,13 @@ import { updateClient } from '../services/clients';
 
 const HUB_AUTH_SPOKES = ['dop', 'pit', 'tracker'];
 
-const GATED_SPOKE_IDS = new Set(['dop', 'pit', 'edu', 'eventsboard', 'daily', 'resources', 'interface']);
+const GATED_SPOKE_IDS = new Set(['dop', 'pit', 'edu', 'daily', 'resources']);
 
 function agreementsComplete(username) {
   try {
     const raw = localStorage.getItem(`jpg_agreements_${username}`);
     const data = raw ? JSON.parse(raw) : {};
-    const keys = ['form_001','form_002','form_003','form_004','form_005'];
+    const keys = ['form_001','form_006','form_002','form_003','form_004','form_005'];
     return keys.every(k => data[k]?.submitted === true);
   } catch (_) {
     return false;

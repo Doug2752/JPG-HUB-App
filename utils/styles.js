@@ -9,7 +9,7 @@ export const S = {
 
   // ── App shell ────────────────────────────────────────────────
   appShell: {
-    display: 'flex', width: '100%', height: '100vh', overflow: 'hidden',
+    display: 'flex', width: '100%', height: '100vh', overflow: 'auto',
     background: DARK, color: '#fff', fontFamily: "'Lato', sans-serif"
   },
 
@@ -116,7 +116,7 @@ export const S = {
 
   // ── View area ────────────────────────────────────────────────
   viewArea: {
-    flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column'
+    flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column'
   },
 
   // ── Wheel / Dashboard view ───────────────────────────────────

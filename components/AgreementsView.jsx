@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GOLD, DARK, DARKER, TEXT_DIM } from '../utils/constants';
 
 const FORMS = [
-  { key: 'form_001', label: 'Client Intake & Application' },
+  { key: 'form_001', label: 'Client Application' },
+  { key: 'form_006', label: 'Client Information' },
   { key: 'form_002', label: 'Program Application & Commitment Statement' },
   { key: 'form_003', label: 'Liability Waiver & Disclaimer' },
   { key: 'form_004', label: 'Program Agreement' },
@@ -32,8 +33,40 @@ const EMAIL_BODY_ALL =
   `Please find all five Jones Performance Group program forms attached to this email.\n\nComplete and return all documents at your earliest convenience. If you have any questions, reply to this email.\n\nJones Performance Group`;
 
 const FORM_FIELDS = {
+  form_006: [
+    { key: 'full_name',           label: 'Full Name (first and last)',                                               type: 'text',     required: true },
+    { key: 'preferred_name',      label: 'Preferred Name',                                                           type: 'text',     required: false },
+    { key: 'residential_street',  label: 'Residential Street',                                                       type: 'text',     required: false },
+    { key: 'residential_city',    label: 'Residential City',                                                         type: 'text',     required: false },
+    { key: 'residential_state',   label: 'Residential State',                                                        type: 'text',     required: false },
+    { key: 'residential_zip',     label: 'Residential Zip',                                                          type: 'text',     required: false },
+    { key: 'mailing_same',        label: 'Mailing address same as residential',                                      type: 'checkbox', required: false },
+    { key: 'mailing_street',      label: 'Mailing Street',                                                           type: 'text',     required: false },
+    { key: 'mailing_city',        label: 'Mailing City',                                                             type: 'text',     required: false },
+    { key: 'mailing_state',       label: 'Mailing State',                                                            type: 'text',     required: false },
+    { key: 'mailing_zip',         label: 'Mailing Zip',                                                              type: 'text',     required: false },
+    { key: 'phone',               label: 'Phone',                                                                    type: 'text',     required: false },
+    { key: 'email',               label: 'Email',                                                                    type: 'text',     required: false },
+    { key: 'date_of_birth',           label: 'Date of Birth (MM/DD/YYYY)',                                          type: 'date',     required: false },
+    { key: 'emergency_contact_name',  label: 'Emergency Contact Name',                                              type: 'text',     required: false },
+    { key: 'emergency_contact_phone', label: 'Emergency Contact Phone',                                             type: 'text',     required: false },
+    { key: 'date_started',        label: 'Date Started (MM/DD/YYYY)',                                                type: 'date',     required: true },
+    { key: 'tracking_start_date', label: 'Tracking Start Date (MM/DD/YYYY)',                                         type: 'date',     required: true },
+    { key: 'occupation',          label: 'Occupation & Work Schedule',                                               type: 'textarea', required: true },
+    { key: 'desired_outcome_1',   label: 'Desired Outcome 1 — why are you here?',                                 type: 'textarea', required: true },
+    { key: 'desired_outcome_2',   label: 'Desired Outcome 2',                                                        type: 'textarea', required: false },
+    { key: 'desired_outcome_3',   label: 'Desired Outcome 3',                                                        type: 'textarea', required: false },
+    { key: 'motivation',          label: 'What Motivates You?',                                                      type: 'textarea', required: false },
+    { key: 'non_negotiables',     label: 'Current Non-Negotiables — important activities',                           type: 'textarea', required: true },
+    { key: 'hobbies',             label: 'Hobbies & Free Time',                                                      type: 'textarea', required: true },
+    { key: 'current_fitness',     label: 'Current Fitness Activity — write None if no current fitness',             type: 'textarea', required: true },
+    { key: 'eating_habits',       label: 'Current Eating Habits — describe a typical day',                          type: 'textarea', required: true },
+    { key: 'sleep',               label: 'Sleep — typical bedtime, wake time, quality 1-10 scale, 10 = Great',      type: 'textarea', required: true },
+    { key: 'injuries',            label: 'Injuries, Medical Conditions, or Physical Limitations',                   type: 'textarea', required: true },
+    { key: 'additional_info',     label: 'Additional Information',                                                   type: 'textarea', required: false },
+  ],
   form_001: [
-    { key: 'full_name',               label: 'Full Name',                        type: 'text',     required: true },
+    { key: 'full_name',               label: 'Full Name (first and last)',        type: 'text',     required: true },
     { key: 'date_of_birth',           label: 'Date of Birth',                    type: 'date',     required: true },
     { key: 'phone',                   label: 'Phone Number',                     type: 'text',     required: true },
     { key: 'email',                   label: 'Email Address',                    type: 'text',     required: true },
@@ -43,7 +76,7 @@ const FORM_FIELDS = {
     { key: 'health_concerns',         label: 'Health Concerns or Limitations',   type: 'textarea', required: false },
   ],
   form_002: [
-    { key: 'primary_goal',         label: 'Primary Goal',                                                                                                    type: 'textarea', required: true },
+    { key: 'primary_goal',         label: 'Primary Desired Outcome',                                                                                          type: 'textarea', required: true },
     { key: 'motivation',           label: 'What Motivates You?',                                                                                             type: 'textarea', required: true },
     { key: 'commitment_confirm',   label: 'I commit to showing up fully for this program, doing the work, and being coachable.',                             type: 'checkbox', required: true },
     { key: 'signature',            label: 'Electronic Signature (type full name)',                                                                           type: 'text',     required: true },
@@ -68,6 +101,7 @@ const FORM_FIELDS = {
 };
 
 const DEFAULT_FORM_STATE = {
+  form_006: { submitted: false, submitted_at: null, data: {} },
   form_001: { submitted: false, submitted_at: null, data: {} },
   form_002: { submitted: false, submitted_at: null, data: {} },
   form_003: { submitted: false, submitted_at: null, data: {} },
@@ -122,11 +156,37 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
       if (f.type === 'checkbox') vals[f.key] = false;
       else vals[f.key] = '';
     });
+    if (formDef.key === 'form_006' && !isSubmitted) {
+      const all = getAgreements(username);
+      const d001 = all['form_001']?.submitted ? all['form_001'].data : null;
+      const d002 = all['form_002']?.submitted ? all['form_002'].data : null;
+      const prepop = (target, src, srcKey) => {
+        if (src && src[srcKey] && !vals[target]) vals[target] = src[srcKey];
+      };
+      if (d001) {
+        prepop('full_name', d001, 'full_name');
+        prepop('phone', d001, 'phone');
+        prepop('email', d001, 'email');
+        prepop('date_of_birth', d001, 'date_of_birth');
+        prepop('emergency_contact_name', d001, 'emergency_contact_name');
+        prepop('emergency_contact_phone', d001, 'emergency_contact_phone');
+        prepop('injuries', d001, 'health_concerns');
+      }
+      if (d002) {
+        prepop('desired_outcome_1', d002, 'primary_goal');
+        prepop('motivation', d002, 'motivation');
+      }
+    }
     return vals;
   };
 
-  const [values, setValues] = useState(initValues);
+  const [values, setValues] = useState(() => initValues());
   const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    setValues(initValues());
+  }, [formDef.key]);
 
   function handleChange(key, val) {
     setValues(prev => ({ ...prev, [key]: val }));
@@ -158,13 +218,24 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
     onSubmitted();
   }
 
+  function handleEdit() {
+    const vals = {};
+    fields.forEach(f => {
+      if (f.type === 'checkbox') vals[f.key] = entry.data?.[f.key] ?? false;
+      else vals[f.key] = entry.data?.[f.key] ?? '';
+    });
+    setValues(vals);
+    setEditMode(true);
+  }
+
   // ── Read-only submitted view ─────────────────────────────────
-  if (isSubmitted) {
+  if (isSubmitted && !editMode) {
     return (
-      <div style={{ padding: 24, minHeight: '100vh', background: DARKER }}>
+      <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
         <button onClick={onBack} style={backBtnStyle}>← Back</button>
         <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{formDef.label}</div>
-        <div style={{ color: '#4caf50', fontSize: 13, marginBottom: 24 }}>✓ Submitted {entry.submitted_at}</div>
+        <div style={{ color: '#4caf50', fontSize: 13, marginBottom: 12 }}>✓ Submitted {entry.submitted_at}</div>
+        <button onClick={handleEdit} style={{ ...backBtnStyle, marginBottom: 24 }}>EDIT</button>
         {Object.entries(entry.data).map(([key, val]) => (
           <div key={key} style={{ marginBottom: 14 }}>
             <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 3 }}>
@@ -179,7 +250,7 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
 
   // ── Fillable form ────────────────────────────────────────────
   return (
-    <div style={{ padding: 24, minHeight: '100vh', background: DARKER }}>
+    <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
       <button onClick={onBack} style={backBtnStyle}>← Back</button>
       <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, marginBottom: 24 }}>{formDef.label}</div>
 
@@ -298,7 +369,7 @@ function ClientAgreementsView({ user }) {
         AGREEMENTS
       </div>
       <div style={{ color: TEXT_DIM, fontSize: 13, marginBottom: 24 }}>
-        {complete} of 5 complete
+        {complete} of 6 complete
       </div>
 
       {FORMS.map(form => {
@@ -325,7 +396,7 @@ function ClientFormRow({ form, submitted, submittedAt, onClick }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: DARK, border: `1px solid ${submitted ? '#2e5a2e' : GOLD}`,
+        background: DARK, border: `1px solid ${GOLD}`,
         borderRadius: 6, padding: '14px 20px', marginBottom: 10,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         cursor: 'pointer', filter: hovered ? 'brightness(1.15)' : 'none',
@@ -335,7 +406,7 @@ function ClientFormRow({ form, submitted, submittedAt, onClick }) {
       <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{form.label}</div>
       {submitted ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ color: '#4caf50', fontSize: 13 }}>✓ {submittedAt}</span>
+          <span style={{ color: GOLD, fontSize: 13 }}>✓ {submittedAt}</span>
           <span style={{ color: GOLD, fontSize: 11, textDecoration: 'underline' }}>VIEW</span>
         </div>
       ) : (
@@ -363,7 +434,7 @@ function CoachDetailView({ client, onBack }) {
           background: GOLD, color: '#000', fontWeight: 700, fontSize: 12,
           padding: '3px 10px', borderRadius: 12,
         }}>
-          {complete} of 5 complete
+          {complete} of 6 complete
         </div>
       </div>
 
@@ -409,6 +480,37 @@ function CoachDetailView({ client, onBack }) {
           </div>
         );
       })}
+
+      {/* ── CLIENT INFORMATION ── */}
+      <div style={{
+        color: GOLD, fontWeight: 700, fontSize: 15,
+        marginTop: 32, marginBottom: 14,
+        paddingBottom: 8, borderBottom: '1px solid #5a4a1a',
+      }}>
+        CLIENT INFORMATION
+      </div>
+      {(() => {
+        const infoEntry = agreements['form_006'];
+        if (!infoEntry || !infoEntry.submitted) {
+          return (
+            <div style={{ color: TEXT_DIM, fontSize: 13, fontStyle: 'italic' }}>
+              Client information not yet submitted.
+            </div>
+          );
+        }
+        return (
+          <div>
+            {Object.entries(infoEntry.data).map(([key, val]) => (
+              <div key={key} style={{ marginBottom: 14 }}>
+                <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 3 }}>
+                  {fieldLabel(key)}
+                </div>
+                <div style={{ color: '#ccc', fontSize: 13 }}>{fieldValue(val)}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -622,7 +724,7 @@ function ClientRow({ client, complete, onClick }) {
       }}
     >
       <div style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{fullName}</div>
-      <div style={{ color: GOLD, fontSize: 13 }}>{complete} of 5 complete</div>
+      <div style={{ color: GOLD, fontSize: 13 }}>{complete} of 6 complete</div>
     </div>
   );
 }
