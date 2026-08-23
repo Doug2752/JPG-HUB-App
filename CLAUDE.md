@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.0 | **Date:** 08/20/2026
+**Version:** v2.1 | **Date:** 08/22/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -43,12 +43,12 @@ JPG-HUB-App/
 │   ├── Topbar.jsx
 │   ├── WheelView.jsx                 # 10-spoke SVG wheel. Two visual tiers. Phase + agreements gating.
 │   ├── ClientsView.jsx
-│   ├── SlidePanel.jsx                # 420px right panel. Agreements gating on 6 spokes.
+│   ├── SlidePanel.jsx                # 420px right panel. Agreements gating on 5 spokes.
 │   ├── FullProfileView.jsx
 │   ├── CommunicationView.jsx         # Thin shell — 210 lines. Owns state. Passes to tab components.
 │   ├── ReportsView.jsx
 │   ├── EventsBoardView.jsx           # Full forum-style thread board. hub_events storage.
-│   ├── AgreementsView.jsx            # 5 forms. jpg_agreements_{username} storage.
+│   ├── AgreementsView.jsx            # 6 forms. jpg_agreements_{username} storage.
 │   ├── EducationView.jsx             # Two-level nav. 5 categories, 12 docs.
 │   ├── ClientViewMode.jsx
 │   ├── PlaceholderView.jsx
@@ -70,7 +70,7 @@ JPG-HUB-App/
 │   └── storage.js                    # getSession, saveSession, logoutService
 ├── public/
 │   ├── jpglogo.png                   # Center circle logo — replace with transparent PNG when available
-│   ├── agreement-forms/              # 5 agreement PDFs (form_001–form_005)
+│   ├── agreement-forms/              # 5 agreement PDFs (form_001–form_005). form_006 has no PDF.
 │   └── edu-docs/                     # 12 education PDFs
 └── CLAUDE.md
 ```
@@ -88,7 +88,7 @@ JPG-HUB-App/
 | `hub_scheduled` | ScheduledTab | Array of scheduled items |
 | `hub_scheduled_completed` | ScheduledTab | Archive of completed/cancelled items |
 | `hub_events` | EventsBoardView | Array of event thread objects |
-| `jpg_agreements_{username}` | AgreementsView | Per-client agreement state (5 forms) |
+| `jpg_agreements_{username}` | AgreementsView, SlidePanel, WheelView | Per-client agreement state (6 forms) |
 
 InterfacePreferenceView has no localStorage access.
 
@@ -153,15 +153,16 @@ All strokes: strokeWidth 2, solid. No dashed lines on any active spoke.
 
 ## AGREEMENTS GATING
 
-GATED_SPOKE_IDS (WheelView): dop, pit, edu, eventsboard, daily, resources, interface
+GATED_SPOKE_IDS (WheelView — confirmed in code 08/22/2026): `new Set(['dop', 'pit', 'edu', 'daily', 'resources'])`
 
-**OPEN BUG:** 'interface' must be removed from GATED_SPOKE_IDS. Interface Preference spoke is always freely accessible — not agreements-gated. Fix before client-facing release.
+'interface' removed 08/22/2026 — Interface Preference always freely accessible.
+'eventsboard' removed 08/22/2026 — Events Board freely accessible via eventsboard_unlocked flag.
 
-GATED_SPOKES (SlidePanel): same 6 keys excluding interface — audit SlidePanel to confirm.
+GATED_SPOKES (SlidePanel): still includes eventsboard_unlocked — inconsistency with WheelView, cleanup needed next session.
 
-Exempt from gating (always accessible): tracker, communication, agreements, interface
+Exempt from gating (always accessible): tracker, communication, agreements, interface, eventsboard
 
-agreementsComplete() checks jpg_agreements_{username} — all 5 forms .submitted === true.
+agreementsComplete() checks jpg_agreements_{username} — all 6 forms .submitted === true.
 
 ---
 
@@ -215,6 +216,8 @@ Future build: Open/Guided/Structured version selection, two-path flow, snippet p
 - TrackingTechView and InterfacePreferenceView live in src/components/ — do not move without updating HUBApp import path.
 - Spoke visual tiers locked: working (#1C3A5C/#B8860B), reference (#0F2238/#6B5E2E).
 - Interface Preference spoke always freely accessible. Must not be in GATED_SPOKE_IDS.
+- Desired Outcomes is correct terminology throughout — not Goals. Applies to all form labels and display text.
+- styles.js S.viewArea: overflowY auto. S.appShell: overflow auto. Do not revert to hidden.
 
 ---
 

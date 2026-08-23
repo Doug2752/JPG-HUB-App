@@ -12,6 +12,7 @@ const FORMS = [
 
 const FORM_PDFS = {
   form_001: '/agreement-forms/JPG-TK-001-ClientIntake-WRK-v1.0.pdf',
+  form_006: '/agreement-forms/JPG-TK-006-ClientInformation-WRK-v1.0.pdf',
   form_002: '/agreement-forms/JPG-TK-002-ProgramApplication-WRK-v1.0.pdf',
   form_003: '/agreement-forms/JPG-TK-003-LiabilityWaiver-WRK-v1.0.pdf',
   form_004: '/agreement-forms/JPG-TK-004-ProgramAgreement-WRK-v1.0.pdf',
@@ -20,6 +21,7 @@ const FORM_PDFS = {
 
 const FORM_EMAIL_SUBJECTS = {
   form_001: 'Jones Performance Group — Client Intake & Application Form',
+  form_006: 'Jones Performance Group — Client Information',
   form_002: 'Jones Performance Group — Program Application & Commitment Statement',
   form_003: 'Jones Performance Group — Liability Waiver & Disclaimer',
   form_004: 'Jones Performance Group — Program Agreement',

@@ -17,7 +17,7 @@ function agreementsComplete(username) {
 
 const GATED_SPOKES = new Set([
   'dop_unlocked', 'pit_unlocked', 'edu_unlocked',
-  'eventsboard_unlocked', 'daily_unlocked', 'resources_unlocked',
+  'daily_unlocked', 'resources_unlocked',
 ]);
 
 const SPOKE_LABELS = [
@@ -27,6 +27,7 @@ const SPOKE_LABELS = [
   { key: 'edu_unlocked',        label: 'EDUCATIONAL DOCUMENTS' },
   { key: 'comms_unlocked',      label: 'COMMUNICATIONS & MESSAGING' },
   { key: 'agreements_unlocked', label: 'AGREEMENTS' },
+  { key: 'interface_unlocked',  label: 'INTERFACE PREFERENCE' },
   { key: 'eventsboard_unlocked', label: 'EVENTS BOARD' },
   { key: 'daily_unlocked',       label: 'TRACKING & TECHNOLOGY' },
   { key: 'resources_unlocked',   label: 'RESOURCES VAULT' },
