@@ -136,7 +136,8 @@ function saveAgreements(username, data) {
 }
 
 function countComplete(agreements) {
-  return Object.values(agreements).filter(f => f.submitted === true).length;
+  const activeKeys = ['form_001','form_002','form_003','form_005'];
+  return activeKeys.filter(k => agreements[k]?.submitted === true).length;
 }
 
 function fieldLabel(key) {
