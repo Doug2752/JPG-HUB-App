@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.1 | **Date:** 08/22/2026
+**Version:** v2.2 | **Date:** 08/24/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -33,7 +33,6 @@
 
 ## REPO STRUCTURE
 
-```
 JPG-HUB-App/
 ├── app/
 │   └── HUBApp.jsx                    # Root component. renderView() routes all views.
@@ -43,12 +42,12 @@ JPG-HUB-App/
 │   ├── Topbar.jsx
 │   ├── WheelView.jsx                 # 10-spoke SVG wheel. Two visual tiers. Phase + agreements gating.
 │   ├── ClientsView.jsx
-│   ├── SlidePanel.jsx                # 420px right panel. Agreements gating on 5 spokes.
+│   ├── SlidePanel.jsx                # 420px right panel. Agreements gating on 5 spokes. 10 SPOKE_LABELS entries.
 │   ├── FullProfileView.jsx
 │   ├── CommunicationView.jsx         # Thin shell — 210 lines. Owns state. Passes to tab components.
 │   ├── ReportsView.jsx
 │   ├── EventsBoardView.jsx           # Full forum-style thread board. hub_events storage.
-│   ├── AgreementsView.jsx            # 6 forms. jpg_agreements_{username} storage.
+│   ├── AgreementsView.jsx            # 4 active forms. jpg_agreements_{username} storage. CoachDetailView and ClientAgreementsView are function components defined inside this file — not separate files.
 │   ├── EducationView.jsx             # Two-level nav. 5 categories, 12 docs.
 │   ├── ClientViewMode.jsx
 │   ├── PlaceholderView.jsx
@@ -70,10 +69,9 @@ JPG-HUB-App/
 │   └── storage.js                    # getSession, saveSession, logoutService
 ├── public/
 │   ├── jpglogo.png                   # Center circle logo — replace with transparent PNG when available
-│   ├── agreement-forms/              # 5 agreement PDFs (form_001–form_005). form_006 has no PDF.
+│   ├── agreement-forms/              # 4 active agreement PDFs (form_001, form_002, form_003, form_005)
 │   └── edu-docs/                     # 12 education PDFs
 └── CLAUDE.md
-```
 
 ---
 
@@ -81,16 +79,33 @@ JPG-HUB-App/
 
 | Key | Owner | Description |
 |---|---|---|
-| `hub_clients` | ClientsView, SlidePanel, WheelView | Array of all client objects |
-| `hub_session` | Login, HUBApp | Current logged-in user session |
-| `hub_messages` | MessagesTab | Array of message thread objects |
-| `hub_announcements` | AnnouncementsTab | Array of announcement objects |
-| `hub_scheduled` | ScheduledTab | Array of scheduled items |
-| `hub_scheduled_completed` | ScheduledTab | Archive of completed/cancelled items |
-| `hub_events` | EventsBoardView | Array of event thread objects |
-| `jpg_agreements_{username}` | AgreementsView, SlidePanel, WheelView | Per-client agreement state (6 forms) |
+| hub_clients | ClientsView, SlidePanel, WheelView | Array of all client objects |
+| hub_session | Login, HUBApp | Current logged-in user session |
+| hub_messages | MessagesTab | Array of message thread objects |
+| hub_announcements | AnnouncementsTab | Array of announcement objects |
+| hub_scheduled | ScheduledTab | Array of scheduled items |
+| hub_scheduled_completed | ScheduledTab | Archive of completed/cancelled items |
+| hub_events | EventsBoardView | Array of event thread objects |
+| jpg_agreements_{username} | AgreementsView, SlidePanel, WheelView | Per-client agreement state — 4 active forms: form_001, form_002, form_003, form_005 |
 
 InterfacePreferenceView has no localStorage access.
+
+**Retired form keys (do not reference):** form_004 (Program Agreement — retired 08/24/2026), form_006 (Client Information — retired 08/24/2026)
+
+---
+
+## ACTIVE FORM KEYS (AgreementsView — confirmed in code 08/24/2026)
+
+| Key | Label |
+|---|---|
+| form_001 | Client Application (43 fields, 10 sections) |
+| form_002 | Program Overview & Agreement (14 fields, 6 static text blocks) |
+| form_003 | Liability Waiver & Disclaimer |
+| form_005 | Photo / Testimonial Release |
+
+countComplete() iterates activeKeys = ['form_001','form_002','form_003','form_005'] only.
+agreementsComplete() in both SlidePanel and WheelView uses keys ['form_001','form_002','form_003','form_005'].
+Completion count displays as "of 4 complete" in all 3 locations.
 
 ---
 
@@ -151,18 +166,21 @@ All strokes: strokeWidth 2, solid. No dashed lines on any active spoke.
 
 ---
 
-## AGREEMENTS GATING
+## AGREEMENTS GATING (confirmed in code 08/24/2026)
 
-GATED_SPOKE_IDS (WheelView — confirmed in code 08/22/2026): `new Set(['dop', 'pit', 'edu', 'daily', 'resources'])`
+GATED_SPOKE_IDS (WheelView): new Set(['dop', 'pit', 'edu', 'daily', 'resources'])
 
-'interface' removed 08/22/2026 — Interface Preference always freely accessible.
-'eventsboard' removed 08/22/2026 — Events Board freely accessible via eventsboard_unlocked flag.
+GATED_SPOKES (SlidePanel): new Set(['dop_unlocked', 'pit_unlocked', 'edu_unlocked', 'daily_unlocked', 'resources_unlocked'])
 
-GATED_SPOKES (SlidePanel): still includes eventsboard_unlocked — inconsistency with WheelView, cleanup needed next session.
+eventsboard_unlocked: removed from both gating sets 08/22/2026. Confirmed absent 08/24/2026.
+interface_unlocked: never in gating sets. Interface Preference always freely accessible.
 
 Exempt from gating (always accessible): tracker, communication, agreements, interface, eventsboard
 
-agreementsComplete() checks jpg_agreements_{username} — all 6 forms .submitted === true.
+agreementsComplete() checks jpg_agreements_{username} — all 4 active forms .submitted === true.
+
+SPOKE_LABELS (SlidePanel — 10 entries, confirmed in code 08/24/2026):
+interface_unlocked present | eventsboard_unlocked present but NOT in GATED_SPOKES
 
 ---
 
@@ -215,9 +233,13 @@ Future build: Open/Guided/Structured version selection, two-path flow, snippet p
 - Day 22 auto-promotion: tier 4 → tier 3 (Performance). Self-guarding.
 - TrackingTechView and InterfacePreferenceView live in src/components/ — do not move without updating HUBApp import path.
 - Spoke visual tiers locked: working (#1C3A5C/#B8860B), reference (#0F2238/#6B5E2E).
-- Interface Preference spoke always freely accessible. Must not be in GATED_SPOKE_IDS.
+- Interface Preference spoke always freely accessible. Must not be in GATED_SPOKE_IDS or GATED_SPOKES.
 - Desired Outcomes is correct terminology throughout — not Goals. Applies to all form labels and display text.
 - styles.js S.viewArea: overflowY auto. S.appShell: overflow auto. Do not revert to hidden.
+- Active forms are form_001, form_002, form_003, form_005. form_004 and form_006 are retired — do not reference.
+- countComplete() must iterate activeKeys only — never Object.values() of all agreements keys.
+- CoachDetailView and ClientAgreementsView are function components inside AgreementsView.jsx — not separate files.
+- Prospective client delivery: form_001 (Client Application) and form_002 (Program Overview & Agreement) sent simultaneously before enrollment.
 
 ---
 

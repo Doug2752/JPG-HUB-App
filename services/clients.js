@@ -47,6 +47,8 @@ export function createClientRecord(firstName, lastName, phone, email, programSta
     eventsboard_unlocked: true,
     daily_unlocked: true,
     resources_unlocked: true,
+    interface_unlocked: false,
+    client_approved: false,
   };
 }
 

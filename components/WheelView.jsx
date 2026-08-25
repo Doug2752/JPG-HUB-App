@@ -5,7 +5,7 @@ import { updateClient } from '../services/clients';
 
 const HUB_AUTH_SPOKES = ['dop', 'pit', 'tracker'];
 
-const GATED_SPOKE_IDS = new Set(['dop', 'pit', 'edu', 'daily', 'resources']);
+const GATED_SPOKE_IDS = new Set(['dop', 'pit', 'daily', 'resources']);
 
 function agreementsComplete(username) {
   try {

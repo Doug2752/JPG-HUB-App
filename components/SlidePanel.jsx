@@ -16,7 +16,7 @@ function agreementsComplete(username) {
 }
 
 const GATED_SPOKES = new Set([
-  'dop_unlocked', 'pit_unlocked', 'edu_unlocked',
+  'dop_unlocked', 'pit_unlocked',
   'daily_unlocked', 'resources_unlocked',
 ]);
 
@@ -57,6 +57,25 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
       await updateClient(client.id, { obt_unlocked: true, program_start_date: todayISO() });
     } else {
       await updateClient(client.id, { [flagKey]: !client[flagKey] });
+    }
+    if (onUpdate) onUpdate();
+  }
+
+  async function handleApproval() {
+    if (client.client_approved) {
+      await updateClient(client.id, {
+        client_approved: false,
+        obt_unlocked: false,
+        edu_unlocked: false,
+        program_start_date: null,
+      });
+    } else {
+      await updateClient(client.id, {
+        client_approved: true,
+        obt_unlocked: true,
+        edu_unlocked: true,
+        program_start_date: todayISO(),
+      });
     }
     if (onUpdate) onUpdate();
   }
@@ -188,6 +207,34 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
           </div>
 
           <hr style={S.spDivider} />
+
+          <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: '1px solid #2a2a2a' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#888', marginBottom: 10 }}>
+              CLIENT APPROVAL
+            </div>
+            <button
+              onClick={handleApproval}
+              style={{
+                width: '100%',
+                padding: '9px 0',
+                background: client.client_approved ? '#5a1a1a' : '#1a3a1a',
+                color: client.client_approved ? '#e05a5a' : '#4caf50',
+                border: client.client_approved ? '1px solid #e05a5a' : '1px solid #4caf50',
+                borderRadius: 4,
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: 1,
+                cursor: 'pointer',
+              }}
+            >
+              {client.client_approved ? 'REVOKE APPROVAL' : 'APPROVE CLIENT'}
+            </button>
+            {client.client_approved && (
+              <div style={{ fontSize: 11, color: '#4caf50', marginTop: 6, textAlign: 'center' }}>
+                Approved — OBT and Education unlocked
+              </div>
+            )}
+          </div>
 
           <div style={S.spRow}>
             <div style={S.spRowLbl}>SPOKES UNLOCKED</div>
