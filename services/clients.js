@@ -86,6 +86,14 @@ export async function login(username, password) {
     await storage.set('hub_session', JSON.stringify(session));
     return session;
   }
+  if (
+    username.toLowerCase() === 'prospect' &&
+    password === 'JPG2026'
+  ) {
+    const session = { id: 'prospect_001', role: 'prospect', username: 'prospect' };
+    await storage.set('hub_session', JSON.stringify(session));
+    return session;
+  }
   const clients = await getClients();
   const client = clients.find(
     c =>

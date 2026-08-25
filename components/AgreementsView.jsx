@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GOLD, DARK, DARKER, TEXT_DIM } from '../utils/constants';
+import { generateUsername, generatePassword, createClientRecord, addClient } from '../services/clients';
 
 const FORMS = [
   { key: 'form_001', label: 'Client Application' },
@@ -419,11 +420,48 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
 
 // ── Client agreements list ───────────────────────────────────────
 
-function ClientAgreementsView({ user }) {
+function ClientAgreementsView({ user, onSessionUpgrade }) {
   const [activeForm, setActiveForm] = useState(null);
+  const [prospectCredentials, setProspectCredentials] = useState(null);
+  const [showCredentialBanner, setShowCredentialBanner] = useState(false);
 
   const agreements = getAgreements(user.username);
   const complete = countComplete(agreements);
+
+  async function handleFormSubmitted() {
+    if (activeForm === 'form_001' && user.role === 'prospect') {
+      const updatedAgreements = getAgreements(user.username);
+      const formData = updatedAgreements['form_001'].data;
+      const firstName = formData.full_name?.split(' ')[0] || 'Client';
+      const lastName = formData.full_name?.split(' ').slice(1).join(' ') || 'User';
+      const phone = formData.phone || '0000000000';
+      const today = new Date().toISOString().split('T')[0];
+      const newUsername = generateUsername(firstName, lastName);
+      const newPassword = generatePassword(lastName, phone, today);
+      const newRecord = createClientRecord(firstName, lastName, phone,
+        formData.email || '', today);
+      newRecord.username = newUsername;
+      newRecord.password = newPassword;
+      await addClient(newRecord);
+      const oldKey = 'jpg_agreements_prospect';
+      const newKey = `jpg_agreements_${newUsername}`;
+      const existing = localStorage.getItem(oldKey);
+      if (existing) localStorage.setItem(newKey, existing);
+      const newSession = {
+        id: newRecord.id,
+        role: 'client',
+        username: newUsername,
+        first_name: firstName,
+        last_name: lastName,
+      };
+      setProspectCredentials({ username: newUsername, password: newPassword });
+      setShowCredentialBanner(true);
+      setActiveForm(null);
+      if (onSessionUpgrade) onSessionUpgrade(newSession);
+      return;
+    }
+    setActiveForm(null);
+  }
 
   if (activeForm) {
     const formDef = FORMS.find(f => f.key === activeForm);
@@ -434,13 +472,67 @@ function ClientAgreementsView({ user }) {
         entry={entry}
         username={user.username}
         onBack={() => setActiveForm(null)}
-        onSubmitted={() => setActiveForm(null)}
+        onSubmitted={handleFormSubmitted}
       />
     );
   }
 
   return (
     <div style={{ padding: 24, minHeight: '100vh', background: DARKER }}>
+      {showCredentialBanner && prospectCredentials && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: '#1a1a1a', border: '2px solid #ddb94a',
+            borderRadius: 8, padding: 32, maxWidth: 420, width: '90%',
+          }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#ddb94a',
+              letterSpacing: 1, marginBottom: 16 }}>
+              YOUR LOGIN CREDENTIALS
+            </div>
+            <div style={{ fontSize: 13, color: '#ccc', marginBottom: 20,
+              lineHeight: 1.7 }}>
+              Your personal account has been created. Save these credentials
+              before you close this window — they will not be shown again.
+            </div>
+            <div style={{ background: '#111', borderRadius: 4, padding: 16,
+              marginBottom: 20 }}>
+              <div style={{ fontSize: 13, color: '#888', marginBottom: 6 }}>
+                USERNAME
+              </div>
+              <div style={{ fontSize: 16, color: '#fff', fontWeight: 700,
+                marginBottom: 14 }}>
+                {prospectCredentials.username}
+              </div>
+              <div style={{ fontSize: 13, color: '#888', marginBottom: 6 }}>
+                PASSWORD
+              </div>
+              <div style={{ fontSize: 16, color: '#fff', fontWeight: 700 }}>
+                {prospectCredentials.password}
+              </div>
+            </div>
+            <div style={{ fontSize: 12, color: '#e05a5a', marginBottom: 20,
+              lineHeight: 1.6 }}>
+              ⚠ You are now logged in with your personal account. The next time
+              you log in, use the credentials above — not the prospect login.
+            </div>
+            <button
+              onClick={() => setShowCredentialBanner(false)}
+              style={{
+                width: '100%', padding: '10px 0', background: '#ddb94a',
+                color: '#000', border: 'none', borderRadius: 4,
+                fontSize: 13, fontWeight: 700, letterSpacing: 1,
+                cursor: 'pointer',
+              }}
+            >
+              I HAVE SAVED MY CREDENTIALS
+            </button>
+          </div>
+        </div>
+      )}
       <div style={{
         color: '#fff', fontWeight: 700, fontSize: 20,
         marginBottom: 6, paddingBottom: 12, borderBottom: `2px solid ${GOLD}`,
@@ -788,7 +880,7 @@ const backBtnStyle = {
 
 // ── Root export ──────────────────────────────────────────────────
 
-export default function AgreementsView({ user }) {
+export default function AgreementsView({ user, onSessionUpgrade }) {
   if (user.role === 'coach') return <CoachAgreementsView />;
-  return <ClientAgreementsView user={user} />;
+  return <ClientAgreementsView user={user} onSessionUpgrade={onSessionUpgrade} />;
 }

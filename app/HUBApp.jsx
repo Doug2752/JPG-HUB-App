@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { S } from '../utils/styles';
 import { getSession, logout as logoutService } from '../services/clients';
+import { storage } from '../services/storage';
 import Login from '../components/Login.jsx';
 import Nav from '../components/Nav.jsx';
 import Topbar from '../components/Topbar.jsx';
@@ -59,15 +60,20 @@ export default function HUBApp() {
     setPanelClient(null);
   }
 
+  async function upgradeSession(newSession) {
+    await storage.set('hub_session', JSON.stringify(newSession));
+    setUser(newSession);
+  }
+
   function renderView() {
-    if (activeView === 'wheel')         return <WheelView hubUser={user} role={user.role} onNavigate={handleViewChange} />;
+    if (activeView === 'wheel')         return <WheelView hubUser={user} role={user.role === 'prospect' ? 'client' : user.role} onNavigate={handleViewChange} />;
     if (activeView === 'clients')      return <ClientsView key={clientRosterKey} onOpenPanel={setPanelClient} />;
     if (activeView === 'communication') return <CommunicationView user={user} />;
     if (activeView === 'fullprofile')   return <FullProfileView client={selectedProfileClient} onBack={handleBackFromProfile} />;
     if (activeView === 'reports')    return <ReportsView user={user} />;
     if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
     if (activeView === 'eventsboard') return <EventsBoardView user={user} />;
-    if (activeView === 'agreements') return <AgreementsView user={user} />;
+    if (activeView === 'agreements') return <AgreementsView user={user} onNavigate={setActiveView} onSessionUpgrade={upgradeSession} />;
     if (activeView === 'edu')        return <EducationView user={user} />;
     if (activeView === 'tracker')    return <TrackingTechView user={user} />;
     if (activeView === 'interface')  return <InterfacePreferenceView user={user} />;
