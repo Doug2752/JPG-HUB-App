@@ -26,7 +26,7 @@ const EMAIL_BODY_SINGLE = (formLabel) =>
   `Please find the attached JPG form enclosed: ${formLabel}.\n\nComplete and return this document at your earliest convenience. If you have any questions, reply to this email.\n\nJones Performance Group`;
 
 const EMAIL_BODY_ALL =
-  `Please find all five Jones Performance Group program forms attached to this email.\n\nComplete and return all documents at your earliest convenience. If you have any questions, reply to this email.\n\nJones Performance Group`;
+  `Please find all four Jones Performance Group program forms attached to this email.\n\nComplete and return all documents at your earliest convenience. If you have any questions, reply to this email.\n\nJones Performance Group`;
 
 const FORM_FIELDS = {
   form_001: [
