@@ -38,7 +38,7 @@ export function createClientRecord(firstName, lastName, phone, email, programSta
     tier: 4,
     tier_name: 'Apprentice',
     cap_override_minutes: null,
-    obt_unlocked: true,
+    obt_unlocked: false,
     dop_unlocked: false,
     pit_unlocked: false,
     edu_unlocked: true,
