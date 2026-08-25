@@ -53,6 +53,9 @@ function getCyclePhase(hubUser) {
 
 function isSpokeUnlocked(spokeId, hubUser, role) {
   if (!hubUser || !hubUser.id) return false;
+  if (hubUser.role === 'prospect') {
+    return spokeId === 'communication' || spokeId === 'agreements';
+  }
   const client = getClientRecord(hubUser);
   if (!client) return false;
   const flagMap = {
