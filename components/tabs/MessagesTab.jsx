@@ -34,7 +34,7 @@ const checkboxCheckedStyle = {
   border: `2px solid ${GOLD}`, background: GOLD,
 };
 
-export default function MessagesTab({ user, clients, threads, setThreads, checkedClients, setCheckedClients, messageInput, setMessageInput, messagesEndRef }) {
+export default function MessagesTab({ user, clients, threads, setThreads, checkedClients, setCheckedClients, messageInput, setMessageInput, messagesEndRef, isClient, clientId }) {
   const checkedIds = Object.keys(checkedClients).filter(id => checkedClients[id]);
   const checkedCount = checkedIds.length;
   const allChecked = clients.length > 0 && clients.every(c => checkedClients[c.id]);
@@ -87,8 +87,98 @@ export default function MessagesTab({ user, clients, threads, setThreads, checke
     setMessageInput('');
   }
 
+  async function handleClientSendMessage() {
+    const text = messageInput.trim();
+    if (!text) return;
+    const now = new Date().toISOString();
+    const entry = { id: 'entry_' + Date.now(), sender: user.username, text, timestamp: now };
+    let updated = [...threads];
+    const idx = updated.findIndex(t => t.client_id === clientId);
+    if (idx >= 0) {
+      updated[idx] = { ...updated[idx], messages: [...updated[idx].messages, entry] };
+    } else {
+      updated.push({
+        id: 'msg_' + Date.now(),
+        client_id: clientId,
+        client_username: user.username,
+        messages: [entry],
+      });
+    }
+    await saveMessages(updated);
+    setThreads(updated);
+    setMessageInput('');
+  }
+
   const singleSelected = checkedCount === 1 ? clients.find(c => c.id === checkedIds[0]) : null;
   const thread = singleSelected ? getThreadForClient(singleSelected.id) : null;
+
+  if (isClient) {
+    const clientThread = threads.find(t => t.client_id === clientId);
+    const clientSendDisabled = !messageInput.trim();
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+          {clientThread && clientThread.messages.length > 0 ? (
+            clientThread.messages.map(msg => {
+              const isOwn = msg.sender === user.username;
+              return (
+                <div key={msg.id} style={{
+                  display: 'flex',
+                  justifyContent: isOwn ? 'flex-end' : 'flex-start',
+                  marginBottom: 12,
+                }}>
+                  <div style={{
+                    maxWidth: '70%',
+                    background: isOwn ? '#1C3A5C' : '#2a2a2a',
+                    borderRadius: 6, padding: '10px 14px',
+                  }}>
+                    <div style={{ color: '#fff', fontSize: 13, lineHeight: '1.4' }}>
+                      {msg.text}
+                    </div>
+                    <div style={{ fontSize: 9, color: TEXT_DIM, marginTop: 6, letterSpacing: '0.5px' }}>
+                      {formatTimestamp(msg.timestamp)}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div style={{ color: TEXT_DIM, fontSize: 12, textAlign: 'center', paddingTop: 40 }}>
+              No messages yet. Send a message to your coach below.
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+        <div style={{
+          padding: '12px 20px', borderTop: `1px solid ${BORDER_DK}`,
+          background: DARKER, flexShrink: 0, display: 'flex', gap: 8,
+        }}>
+          <input
+            type="text"
+            value={messageInput}
+            onChange={e => setMessageInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !clientSendDisabled && handleClientSendMessage()}
+            placeholder="Message your coach..."
+            style={{ ...inputStyle, marginBottom: 0, flex: 1 }}
+          />
+          <button
+            onClick={handleClientSendMessage}
+            disabled={clientSendDisabled}
+            style={{
+              background: clientSendDisabled ? '#555' : '#ddb94a',
+              color: clientSendDisabled ? '#999' : '#000',
+              fontWeight: 700, fontSize: 12,
+              padding: '8px 20px', borderRadius: 4, border: 'none',
+              cursor: clientSendDisabled ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit', letterSpacing: '1px', flexShrink: 0,
+            }}
+          >
+            SEND
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>

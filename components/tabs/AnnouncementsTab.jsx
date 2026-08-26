@@ -36,7 +36,45 @@ const detailLabel = {
   color: TEXT_DIM, fontSize: 9, letterSpacing: '2px', fontWeight: 700, marginBottom: 5,
 };
 
-export default function AnnouncementsTab({ user, announcements, setAnnouncements, annFormData, setAnnFormData, showAnnForm, setShowAnnForm, annError, setAnnError, selectedAnn, setSelectedAnn }) {
+export default function AnnouncementsTab({ user, announcements, setAnnouncements, annFormData, setAnnFormData, showAnnForm, setShowAnnForm, annError, setAnnError, selectedAnn, setSelectedAnn, isClient, clientId }) {
+
+  if (isClient) {
+    const sorted = [...announcements].sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return (
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
+        <div style={S.sectionBar}>
+          <h3 style={S.sectionBarH3}>ANNOUNCEMENTS</h3>
+          <span style={S.sectionBarSpan}>{sorted.length} TOTAL</span>
+        </div>
+        {sorted.length === 0 ? (
+          <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666', fontSize: 14 }}>
+            No announcements yet.
+          </div>
+        ) : (
+          <div style={S.clientTable}>
+            {sorted.map((ann, i) => (
+              <div key={ann.id} style={{
+                padding: '16px 18px',
+                borderBottom: i < sorted.length - 1 ? '1px solid #1a1a1a' : 'none',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '1px' }}>
+                    {ann.title}
+                  </span>
+                  <span style={{ color: TEXT_DIM, fontSize: 10, letterSpacing: '1px', flexShrink: 0, marginLeft: 12 }}>
+                    {formatTimestamp(ann.created_at)}
+                  </span>
+                </div>
+                <div style={{ color: '#ccc', fontSize: 13, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                  {ann.body}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   async function handleSaveAnnouncement() {
     if (!annFormData.title.trim()) { setAnnError('Title is required.'); return; }

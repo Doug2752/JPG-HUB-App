@@ -80,7 +80,11 @@ const checkboxCheckedStyle = {
 };
 
 export default function CommunicationView({ user }) {
+  const isClient = user?.role === 'client';
   const [activeTab, setActiveTab] = useState('messages');
+  const [unreadMessages, setUnreadMessages] = useState(false);
+  const [unreadAnnouncements, setUnreadAnnouncements] = useState(false);
+  const [unreadScheduled, setUnreadScheduled] = useState(false);
 
   const [clients, setClients] = useState([]);
   const [threads, setThreads] = useState([]);
@@ -106,7 +110,48 @@ export default function CommunicationView({ user }) {
   const [reschedTime, setReschedTime] = useState('');
   const [coachNotes, setCoachNotes] = useState('');
 
-  useEffect(() => { loadAll(); }, []);
+  function getSeen() {
+    try {
+      const raw = localStorage.getItem(`hub_comms_seen_${user.username}`);
+      return raw ? JSON.parse(raw) : { messages: null, announcements: null, scheduled: null };
+    } catch (_) {
+      return { messages: null, announcements: null, scheduled: null };
+    }
+  }
+
+  function saveSeen(tab) {
+    try {
+      const seen = getSeen();
+      seen[tab] = new Date().toISOString();
+      localStorage.setItem(`hub_comms_seen_${user.username}`, JSON.stringify(seen));
+    } catch (_) {}
+  }
+
+  function computeUnread() {
+    if (!isClient) return;
+    try {
+      const seen = getSeen();
+      const msgsRaw = localStorage.getItem('hub_messages');
+      const msgs = msgsRaw ? JSON.parse(msgsRaw) : [];
+      const thread = msgs.find(t => t.client_id === user.id);
+      if (thread && thread.messages.length > 0) {
+        setUnreadMessages(thread.messages.some(m => !seen.messages || m.timestamp > seen.messages));
+      } else {
+        setUnreadMessages(false);
+      }
+      const annsRaw = localStorage.getItem('hub_announcements');
+      const anns = annsRaw ? JSON.parse(annsRaw) : [];
+      setUnreadAnnouncements(anns.some(a => !seen.announcements || a.created_at > seen.announcements));
+      const schedRaw = localStorage.getItem('hub_scheduled');
+      const sched = schedRaw ? JSON.parse(schedRaw) : [];
+      const clientSched = sched.filter(s => s.client_id === user.id);
+      setUnreadScheduled(clientSched.some(s => !seen.scheduled || s.created_at > seen.scheduled));
+    } catch (_) {}
+  }
+
+  useEffect(() => {
+    loadAll().then(() => { if (isClient) computeUnread(); });
+  }, []);
 
   useEffect(() => {
     if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -138,6 +183,12 @@ export default function CommunicationView({ user }) {
                 setSelectedAnn(null);
                 setSelectedSched(null);
                 setSchedFooterMode(null);
+                if (isClient) {
+                  saveSeen(tab.id);
+                  if (tab.id === 'messages') setUnreadMessages(false);
+                  if (tab.id === 'announcements') setUnreadAnnouncements(false);
+                  if (tab.id === 'scheduled') setUnreadScheduled(false);
+                }
               }}
               style={{
                 padding: '14px 24px', cursor: 'pointer',
@@ -148,6 +199,20 @@ export default function CommunicationView({ user }) {
               }}
             >
               {tab.label}
+              {isClient && (
+                (tab.id === 'messages' && unreadMessages) ||
+                (tab.id === 'announcements' && unreadAnnouncements) ||
+                (tab.id === 'scheduled' && unreadScheduled)
+              ) && (
+                <span style={{
+                  display: 'inline-block',
+                  width: 8, height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: '#ddb94a',
+                  marginLeft: 6,
+                  verticalAlign: 'middle',
+                }} />
+              )}
             </div>
           );
         })}
@@ -164,6 +229,8 @@ export default function CommunicationView({ user }) {
           messageInput={messageInput}
           setMessageInput={setMessageInput}
           messagesEndRef={messagesEndRef}
+          isClient={isClient}
+          clientId={user?.id}
         />
       )}
       {activeTab === 'announcements' && (
@@ -179,6 +246,8 @@ export default function CommunicationView({ user }) {
           setAnnError={setAnnError}
           selectedAnn={selectedAnn}
           setSelectedAnn={setSelectedAnn}
+          isClient={isClient}
+          clientId={user?.id}
         />
       )}
       {activeTab === 'scheduled' && (
@@ -203,6 +272,8 @@ export default function CommunicationView({ user }) {
           setReschedTime={setReschedTime}
           coachNotes={coachNotes}
           setCoachNotes={setCoachNotes}
+          isClient={isClient}
+          clientId={user?.id}
         />
       )}
     </div>

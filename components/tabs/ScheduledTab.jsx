@@ -70,7 +70,7 @@ const detailLabel = {
   color: TEXT_DIM, fontSize: 9, letterSpacing: '2px', fontWeight: 700, marginBottom: 5,
 };
 
-export default function ScheduledTab({ user, clients, scheduled, setScheduled, schedFormData, setSchedFormData, showSchedForm, setShowSchedForm, schedError, setSchedError, selectedSched, setSelectedSched, schedFooterMode, setSchedFooterMode, reschedDate, setReschedDate, reschedTime, setReschedTime, coachNotes, setCoachNotes }) {
+export default function ScheduledTab({ user, clients, scheduled, setScheduled, schedFormData, setSchedFormData, showSchedForm, setShowSchedForm, schedError, setSchedError, selectedSched, setSelectedSched, schedFooterMode, setSchedFooterMode, reschedDate, setReschedDate, reschedTime, setReschedTime, coachNotes, setCoachNotes, isClient, clientId }) {
   const coachNotesTimerRef = useRef(null);
 
   useEffect(() => {
@@ -192,6 +192,56 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
     setSchedFooterMode(null);
     setReschedDate('');
     setReschedTime('');
+  }
+
+  if (isClient) {
+    const clientItems = [...scheduled]
+      .filter(s => s.client_id === clientId)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    return (
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
+        <div style={S.sectionBar}>
+          <h3 style={S.sectionBarH3}>SCHEDULED COMMUNICATION</h3>
+          <span style={S.sectionBarSpan}>{clientItems.length} TOTAL</span>
+        </div>
+        {clientItems.length === 0 ? (
+          <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666', fontSize: 14 }}>
+            No scheduled communications yet.
+          </div>
+        ) : (
+          <div style={S.clientTable}>
+            {clientItems.map((item, i) => (
+              <div key={item.id} style={{
+                padding: '14px 18px',
+                borderBottom: i < clientItems.length - 1 ? '1px solid #1a1a1a' : 'none',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '1px' }}>
+                    {item.title}
+                  </span>
+                  <span style={{ color: TEXT_DIM, fontSize: 11, letterSpacing: '1px', flexShrink: 0, marginLeft: 12 }}>
+                    {formatDate(item.date)}{item.time ? ' ' + formatTime(item.time) : ''}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                  <span style={{
+                    color: GOLD, fontSize: 10, fontWeight: 700, letterSpacing: '1px',
+                    background: 'rgba(184,134,11,0.1)', padding: '2px 8px', borderRadius: 2,
+                  }}>
+                    {item.type.toUpperCase()}
+                  </span>
+                  {item.notes && (
+                    <span style={{ color: TEXT_DIM, fontSize: 11, letterSpacing: '0.5px' }}>
+                      {item.notes}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   }
 
   const sorted = [...scheduled].sort((a, b) => a.date.localeCompare(b.date));

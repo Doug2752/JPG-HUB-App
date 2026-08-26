@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.2 | **Date:** 08/24/2026
+**Version:** v2.3 | **Date:** 08/25/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -35,19 +35,19 @@
 
 JPG-HUB-App/
 ├── app/
-│   └── HUBApp.jsx                    # Root component. renderView() routes all views.
+│   └── HUBApp.jsx                    # Root component. renderView() routes all views. Owns upgradeSession(). Imports storage from services/storage.
 ├── components/
 │   ├── Login.jsx
 │   ├── Nav.jsx
 │   ├── Topbar.jsx
-│   ├── WheelView.jsx                 # 10-spoke SVG wheel. Two visual tiers. Phase + agreements gating.
+│   ├── WheelView.jsx                 # 10-spoke SVG wheel. Two visual tiers. Phase + agreements gating. Prospect short-circuit in isSpokeUnlocked.
 │   ├── ClientsView.jsx
-│   ├── SlidePanel.jsx                # 420px right panel. Agreements gating on 5 spokes. 10 SPOKE_LABELS entries.
+│   ├── SlidePanel.jsx                # 420px right panel. APPROVE/REVOKE APPROVAL button. Agreements gating on 4 spokes. 10 SPOKE_LABELS entries.
 │   ├── FullProfileView.jsx
 │   ├── CommunicationView.jsx         # Thin shell — 210 lines. Owns state. Passes to tab components.
 │   ├── ReportsView.jsx
 │   ├── EventsBoardView.jsx           # Full forum-style thread board. hub_events storage.
-│   ├── AgreementsView.jsx            # 4 active forms. jpg_agreements_{username} storage. CoachDetailView and ClientAgreementsView are function components defined inside this file — not separate files.
+│   ├── AgreementsView.jsx            # 4 active forms. jpg_agreements_{username} storage. Prospect form_001 submission triggers credential generation + session upgrade. CoachDetailView and ClientAgreementsView are function components defined inside this file — not separate files.
 │   ├── EducationView.jsx             # Two-level nav. 5 categories, 12 docs.
 │   ├── ClientViewMode.jsx
 │   ├── PlaceholderView.jsx
@@ -65,7 +65,7 @@ JPG-HUB-App/
 │   ├── constants.js                  # GOLD, GOLD_LIGHT, DARK, DARKER, BORDER_DK, TEXT_DIM, NAV_ITEMS, SPOKE_URLS
 │   └── styles.js                     # S object — shared style tokens
 ├── services/
-│   ├── clients.js                    # getClients, updateClient, createClientRecord
+│   ├── clients.js                    # getClients, updateClient, createClientRecord, generateUsername, generatePassword, addClient, login, logout
 │   └── storage.js                    # getSession, saveSession, logoutService
 ├── public/
 │   ├── jpglogo.png                   # Center circle logo — replace with transparent PNG when available
@@ -94,6 +94,44 @@ InterfacePreferenceView has no localStorage access.
 
 ---
 
+## LOGIN ROLES (services/clients.js — confirmed in code 08/25/2026)
+
+Three login checks in order:
+
+| Check | Credentials | Role | Session shape |
+|---|---|---|---|
+| 1. Coach | Doug / JPG2026 | coach | { id: 'coach_001', role: 'coach', username: 'Doug' } |
+| 2. Prospect | prospect / JPG2026 | prospect | { id: 'prospect_001', role: 'prospect', username: 'prospect' } |
+| 3. Client | generated credentials | client | { id, role: 'client', username, first_name, last_name } |
+
+Prospect is a shared generic login. No real client record exists in hub_clients for prospect. isSpokeUnlocked() short-circuits for prospect role — returns true only for communication and agreements, false for all other spokes.
+
+---
+
+## CLIENT RECORD SHAPE (createClientRecord — confirmed in code 08/25/2026)
+
+```js
+{
+  id, role: 'client', first_name, last_name, username, password,
+  phone, email, program_start_date, tracking_start_date: null,
+  current_cycle_start: null, onramp_end: null,
+  tier: 4, tier_name: 'Apprentice', cap_override_minutes: null,
+  obt_unlocked: false,          // approval gate is the only path — changed 08/25/2026
+  dop_unlocked: false,
+  pit_unlocked: false,
+  edu_unlocked: true,           // set to true by handleApproval
+  comms_unlocked: true,
+  agreements_unlocked: true,
+  eventsboard_unlocked: true,
+  daily_unlocked: true,
+  resources_unlocked: true,
+  interface_unlocked: false,    // added 08/25/2026
+  client_approved: false,       // added 08/25/2026
+}
+```
+
+---
+
 ## ACTIVE FORM KEYS (AgreementsView — confirmed in code 08/24/2026)
 
 | Key | Label |
@@ -109,23 +147,36 @@ Completion count displays as "of 4 complete" in all 3 locations.
 
 ---
 
-## ACTIVE VIEW ROUTING (HUBApp renderView)
+## PROSPECT FORM_001 SUBMISSION FLOW (AgreementsView — built 08/25/2026)
 
-| activeView | Component |
-|---|---|
-| 'wheel' | WheelView |
-| 'clients' | ClientsView |
-| 'communication' | CommunicationView |
-| 'fullprofile' | FullProfileView |
-| 'reports' | ReportsView |
-| 'settings' | PlaceholderView |
-| 'eventsboard' | EventsBoardView |
-| 'agreements' | AgreementsView |
-| 'edu' | EducationView |
-| 'tracker' | TrackingTechView |
-| 'interface' | InterfacePreferenceView |
-| 'clientview' | ClientViewMode |
-| anything else | null |
+When role === 'prospect' and form_001 is submitted:
+1. generateUsername and generatePassword called with form_001 data
+2. createClientRecord called — pre-populated with form_001 data
+3. addClient adds record to hub_clients
+4. jpg_agreements_prospect copied to jpg_agreements_{newUsername} in localStorage
+5. onSessionUpgrade called → upgradeSession in HUBApp updates hub_session and user state
+6. Credential banner displayed — position fixed, zIndex 1000, full-screen modal
+7. Banner dismissed by "I HAVE SAVED MY CREDENTIALS" button only — not auto-dismissed
+
+---
+
+## ACTIVE VIEW ROUTING (HUBApp renderView — updated 08/25/2026)
+
+| activeView | Component | Notes |
+|---|---|---|
+| 'wheel' | WheelView | role normalized: prospect → 'client' |
+| 'clients' | ClientsView | |
+| 'communication' | CommunicationView | |
+| 'fullprofile' | FullProfileView | |
+| 'reports' | ReportsView | |
+| 'settings' | PlaceholderView | |
+| 'eventsboard' | EventsBoardView | |
+| 'agreements' | AgreementsView | receives onSessionUpgrade={upgradeSession} |
+| 'edu' | EducationView | |
+| 'tracker' | TrackingTechView | |
+| 'interface' | InterfacePreferenceView | |
+| 'clientview' | ClientViewMode | |
+| anything else | null | |
 
 ---
 
@@ -166,21 +217,34 @@ All strokes: strokeWidth 2, solid. No dashed lines on any active spoke.
 
 ---
 
-## AGREEMENTS GATING (confirmed in code 08/24/2026)
+## AGREEMENTS GATING (confirmed in code 08/25/2026)
 
-GATED_SPOKE_IDS (WheelView): new Set(['dop', 'pit', 'edu', 'daily', 'resources'])
+GATED_SPOKE_IDS (WheelView): new Set(['dop', 'pit', 'daily', 'resources'])
 
-GATED_SPOKES (SlidePanel): new Set(['dop_unlocked', 'pit_unlocked', 'edu_unlocked', 'daily_unlocked', 'resources_unlocked'])
+GATED_SPOKES (SlidePanel): new Set(['dop_unlocked', 'pit_unlocked', 'daily_unlocked', 'resources_unlocked'])
 
-eventsboard_unlocked: removed from both gating sets 08/22/2026. Confirmed absent 08/24/2026.
+edu removed from both gating sets 08/25/2026 — Education now controlled by client_approved flag via handleApproval.
+eventsboard_unlocked: removed from both gating sets 08/22/2026.
 interface_unlocked: never in gating sets. Interface Preference always freely accessible.
 
-Exempt from gating (always accessible): tracker, communication, agreements, interface, eventsboard
+Exempt from gating (always accessible): tracker, communication, agreements, interface, eventsboard, edu (approval-controlled)
 
 agreementsComplete() checks jpg_agreements_{username} — all 4 active forms .submitted === true.
 
-SPOKE_LABELS (SlidePanel — 10 entries, confirmed in code 08/24/2026):
-interface_unlocked present | eventsboard_unlocked present but NOT in GATED_SPOKES
+SPOKE_LABELS (SlidePanel — 10 entries, confirmed in code 08/25/2026):
+interface_unlocked present | eventsboard_unlocked present but NOT in GATED_SPOKES | edu_unlocked present but NOT in GATED_SPOKES
+
+---
+
+## APPROVAL GATE (SlidePanel — built 08/25/2026)
+
+handleApproval() — APPROVE CLIENT button above spoke toggles.
+
+APPROVE writes: client_approved: true, obt_unlocked: true, edu_unlocked: true, program_start_date: todayISO()
+REVOKE writes: client_approved: false, obt_unlocked: false, edu_unlocked: false, program_start_date: null
+
+obt_unlocked default is false — handleApproval is the only path to OBT unlock.
+edu_unlocked is set by approval, not by coach spoke toggle or agreements gate.
 
 ---
 
@@ -228,7 +292,7 @@ Future build: Open/Guided/Structured version selection, two-path flow, snippet p
 - Two-tier gold system: GOLD_LIGHT (#ddb94a) = clickable/action. GOLD (#B8860B) = informational.
 - Never define local color constants. Always import from utils/constants.
 - HUB owns all cycle and tier data. Spokes read-only except OBT writing tracking_start_date.
-- program_start_date auto-set on OBT unlock. Never changes.
+- program_start_date auto-set by handleApproval on coach approval. Never changes after set.
 - Phase gating: foundation (days 1–14) and analysis (days 15–21) block DOP and PIT for clients.
 - Day 22 auto-promotion: tier 4 → tier 3 (Performance). Self-guarding.
 - TrackingTechView and InterfacePreferenceView live in src/components/ — do not move without updating HUBApp import path.
@@ -239,7 +303,10 @@ Future build: Open/Guided/Structured version selection, two-path flow, snippet p
 - Active forms are form_001, form_002, form_003, form_005. form_004 and form_006 are retired — do not reference.
 - countComplete() must iterate activeKeys only — never Object.values() of all agreements keys.
 - CoachDetailView and ClientAgreementsView are function components inside AgreementsView.jsx — not separate files.
-- Prospective client delivery: form_001 (Client Application) and form_002 (Program Overview & Agreement) sent simultaneously before enrollment.
+- obt_unlocked defaults to false. APPROVE CLIENT is the only path to OBT unlock — not the spoke toggle.
+- client_approved and interface_unlocked are fields in every client record — both default false.
+- Prospect role: shared login, no client record in hub_clients. isSpokeUnlocked short-circuits — communication and agreements only.
+- Stage 3 auto-unlock deferred to post-Supabase. No obt_complete flag exists pre-Supabase.
 
 ---
 
@@ -255,7 +322,7 @@ getCyclePhase(hubUser) — reads hub_clients, computes cycleDay from tracking_st
 | 31+ | full |
 | No date | null |
 
-isSpokeUnlocked() — phase gate runs first (dop/pit only), then agreements gate (GATED_SPOKE_IDS). Coach always unrestricted.
+isSpokeUnlocked() — prospect short-circuit first, then phase gate (dop/pit only), then agreements gate (GATED_SPOKE_IDS). Coach always unrestricted.
 
 ---
 
