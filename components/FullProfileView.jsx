@@ -106,6 +106,8 @@ export default function FullProfileView({ client, onBack }) {
         <div style={sectionCard}>
           <div style={sectionHeading}>PROGRAM STATUS</div>
           <Field label="CURRENT TIER" value={client.tier_name || 'Apprentice'} />
+          <Field label="USERNAME" value={client.username} />
+          <Field label="PASSWORD" value={client.password} />
           <MigrationField label="TIME IN CURRENT TIER" />
           <MigrationField label="TIER HISTORY" />
         </div>
