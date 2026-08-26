@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { S } from '../utils/styles';
 import { SPOKE_URLS } from '../utils/constants';
 import { updateClient } from '../services/clients';
@@ -135,9 +135,57 @@ function spokeClick(spokeId, hubUser, role, onNavigate) {
 
 
 export default function WheelView({ hubUser, role, onNavigate }) {
+  const [hasUnread, setHasUnread] = useState(false);
+
+  function computeUnread() {
+    if (role !== 'client') return;
+    try {
+      const seenRaw = localStorage.getItem(`hub_comms_seen_${hubUser.username}`);
+      const seen = seenRaw ? JSON.parse(seenRaw) : { messages: null, announcements: null, scheduled: null };
+
+      const clientsRaw = localStorage.getItem('hub_clients');
+      const clients = clientsRaw ? JSON.parse(clientsRaw) : [];
+      const clientRecord = clients.find(c => c.username === hubUser.username);
+      const clientId = clientRecord?.id;
+
+      let unread = false;
+
+      const messagesRaw = localStorage.getItem('hub_messages');
+      const threads = messagesRaw ? JSON.parse(messagesRaw) : [];
+      const thread = threads.find(t => t.client_id === clientId);
+      if (thread && thread.messages?.length) {
+        const latest = thread.messages[thread.messages.length - 1].timestamp;
+        if (!seen.messages || latest > seen.messages) unread = true;
+      }
+
+      const annRaw = localStorage.getItem('hub_announcements');
+      const announcements = annRaw ? JSON.parse(annRaw) : [];
+      if (announcements.some(a => !seen.announcements || a.created_at > seen.announcements)) unread = true;
+
+      const schedRaw = localStorage.getItem('hub_scheduled');
+      const scheduled = schedRaw ? JSON.parse(schedRaw) : [];
+      const clientSched = scheduled.filter(s => s.client_id === clientId);
+      if (clientSched.some(s => !seen.scheduled || s.created_at > seen.scheduled)) unread = true;
+
+      setHasUnread(unread);
+    } catch (_) {}
+  }
+
+  useEffect(() => { computeUnread(); }, []);
+
   return (
     <div style={S.wheelView}>
       <svg style={S.wheelSvg} viewBox="0 0 720 720" xmlns="http://www.w3.org/2000/svg">
+        <style>{`
+          @keyframes commsPulse {
+            0%   { opacity: 1; }
+            50%  { opacity: 0.25; }
+            100% { opacity: 1; }
+          }
+          .comms-pulse {
+            animation: commsPulse 2s ease-in-out infinite;
+          }
+        `}</style>
 
         <defs>
           <clipPath id="centerCircleClip">
@@ -201,8 +249,8 @@ export default function WheelView({ hubUser, role, onNavigate }) {
         </g>
 
         {/* COMMUNICATION */}
-        <g style={spokeStyle('communication', hubUser, role)} onClick={() => spokeClick('communication', hubUser, role, onNavigate)}>
-          <circle cx="631" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2"/>
+        <g style={spokeStyle('communication', hubUser, role)} onClick={() => { if (role === 'client') setHasUnread(false); spokeClick('communication', hubUser, role, onNavigate); }}>
+          <circle cx="631" cy="448" r="62" fill="#1C3A5C" stroke="#B8860B" strokeWidth="2" className={role === 'client' && hasUnread ? 'comms-pulse' : undefined}/>
           <text x="631" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">COACH</text>
           <text x="631" y="453" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">COMMUNICATION</text>
           <text x="631" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">MESSAGES</text>
