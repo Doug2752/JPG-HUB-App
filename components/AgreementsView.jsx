@@ -14,6 +14,7 @@ const FORM_PDFS = {
   form_002: '/agreement-forms/JPG-TK-002-ProgramOverview-WRK-v2.0.pdf',
   form_003: '/agreement-forms/JPG-TK-003-LiabilityWaiver-WRK-v1.0.pdf',
   form_005: '/agreement-forms/JPG-TK-005-PhotoRelease-WRK-v1.0.pdf',
+  form_007: '/agreement-forms/JPG-TK-007-PromotionalAgreement-WRK-v1.0.pdf',
 };
 
 const FORM_EMAIL_SUBJECTS = {
@@ -21,7 +22,17 @@ const FORM_EMAIL_SUBJECTS = {
   form_002: 'Jones Performance Group — Program Overview & Agreement',
   form_003: 'Jones Performance Group — Liability Waiver & Disclaimer',
   form_005: 'Jones Performance Group — Photo / Testimonial Release',
+  form_007: 'Jones Performance Group — Promotional Discount Program Agreement',
 };
+
+const PROMOTION_TYPES = [
+  { key: 'A', label: 'Type A — Full Scholarship', description: 'Entire program through Tier 2 at no cost to the client.' },
+  { key: 'B', label: 'Type B — Two Month Trial', description: 'First two months of the program at no cost to the client.' },
+  { key: 'C', label: 'Type C — Reduced Rate', description: 'Reduced monthly rate as entered by coach.' },
+  { key: 'D', label: 'Type D — Greatness Prepay', description: '7 months prepaid. Standard value: $10,500. Promotional prepay price: $9,450 (10% off).' },
+  { key: 'E', label: 'Type E — Unstoppable Prepay', description: '10 months prepaid. Standard value: $15,000. Promotional prepay price: $13,500 (10% off).' },
+  { key: 'F', label: 'Type F — Friends & Family', description: 'Flat monthly rate of $500/month for the duration of the program.' },
+];
 
 const EMAIL_BODY_SINGLE = (formLabel) =>
   `Please find the attached JPG form enclosed: ${formLabel}.\n\nComplete and return this document at your earliest convenience. If you have any questions, reply to this email.\n\nJones Performance Group`;
@@ -162,7 +173,7 @@ const inputBase = {
 // ── Client form view (fill out or view submitted) ───────────────
 
 function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
-  const fields = FORM_FIELDS[formDef.key] || [];
+  const fields = formDef ? (FORM_FIELDS[formDef.key] || []) : [];
   const isSubmitted = entry && entry.submitted;
 
   const initValues = () => {
@@ -180,7 +191,11 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
 
   useEffect(() => {
     setValues(initValues());
-  }, [formDef.key]);
+  }, [formDef?.key]);
+
+  if (!formDef || formDef.key === 'form_007') {
+    return <Form007View entry={entry} username={username} onBack={onBack} onSubmitted={onSubmitted} />;
+  }
 
   function handleChange(key, val) {
     setValues(prev => ({ ...prev, [key]: val }));
@@ -418,6 +433,186 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
   );
 }
 
+// ── Form 007 input helpers ───────────────────────────────────────
+
+function TI({ label, placeholder = '', req = false, value, onChange }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ color: '#aaa', fontSize: 12, fontWeight: 700, letterSpacing: '1px', marginBottom: 6 }}>
+        {label}{req && <span style={{ color: GOLD }}> *</span>}
+      </div>
+      <input type="text" value={value} onChange={onChange} placeholder={placeholder} style={inputBase} />
+    </div>
+  );
+}
+
+function CB({ label, checked, onChange }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+        <input type="checkbox" checked={checked} onChange={onChange} style={{ marginTop: 2, accentColor: GOLD, flexShrink: 0, width: 16, height: 16 }} />
+        <span style={{ color: '#ccc', fontSize: 13, lineHeight: 1.5 }}>{label}<span style={{ color: GOLD }}> *</span></span>
+      </label>
+    </div>
+  );
+}
+
+function TA({ label, value, onChange }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ color: '#aaa', fontSize: 12, fontWeight: 700, letterSpacing: '1px', marginBottom: 6 }}>
+        {label}<span style={{ color: GOLD }}> *</span>
+      </div>
+      <textarea value={value} onChange={onChange} rows={4} style={{ ...inputBase, resize: 'vertical' }} />
+    </div>
+  );
+}
+
+// ── Form 007 — Promotional Discount Program Agreement ───────────
+
+function Form007View({ entry, username, onBack, onSubmitted }) {
+  const init = () => ({
+    full_legal_name: '', email: '', phone: '',
+    effective_date: '', anticipated_start_date: '',
+    ack_supersession: false, ack_scope: false, ack_tier_structure: false,
+    ack_financial_terms: false, ack_time_commitment: false,
+    why_applying: '', top_three_behaviors: '', overcoming_difficulty: '',
+    ack_ip: false, ack_dispute: false, ack_full_agreement: false,
+    signature: '',
+  });
+
+  const [values, setValues] = useState(init);
+  const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+
+  const isSubmitted = entry && entry.submitted;
+  const promoTypeObj = PROMOTION_TYPES.find(p => p.key === entry?.promotion_type);
+  const promoLabel = promoTypeObj ? promoTypeObj.label : (entry?.promotion_type || '—');
+
+  function handleChange(key, val) { setValues(prev => ({ ...prev, [key]: val })); setError(''); }
+
+  function handleSubmit() {
+    const required = [
+      { key: 'full_legal_name', type: 'text', label: 'Full Legal Name' },
+      { key: 'email', type: 'text', label: 'Email Address' },
+      { key: 'phone', type: 'text', label: 'Phone Number' },
+      { key: 'ack_supersession', type: 'cb', label: 'Section 2 acknowledgment' },
+      { key: 'ack_scope', type: 'cb', label: 'Section 3 acknowledgment' },
+      { key: 'ack_tier_structure', type: 'cb', label: 'Section 4 acknowledgment' },
+      { key: 'ack_financial_terms', type: 'cb', label: 'Section 6 acknowledgment' },
+      { key: 'ack_time_commitment', type: 'cb', label: 'Section 7 acknowledgment' },
+      { key: 'why_applying', type: 'text', label: 'Why are you applying' },
+      { key: 'top_three_behaviors', type: 'text', label: 'Top three behaviors' },
+      { key: 'overcoming_difficulty', type: 'text', label: 'Overcoming difficulty' },
+      { key: 'ack_ip', type: 'cb', label: 'Section 10 acknowledgment' },
+      { key: 'ack_dispute', type: 'cb', label: 'Section 11 acknowledgment' },
+      { key: 'ack_full_agreement', type: 'cb', label: 'Section 12 acknowledgment' },
+      { key: 'signature', type: 'text', label: 'Signature (typed full name)' },
+    ];
+    for (const r of required) {
+      const v = values[r.key];
+      if (r.type === 'cb' && !v) { setError(`Please check: "${r.label}"`); return; }
+      if (r.type === 'text' && !String(v).trim()) { setError(`"${r.label}" is required.`); return; }
+    }
+    const all = getAgreements(username);
+    const existing = all['form_007'] || {};
+    const now = new Date().toISOString().slice(0, 10);
+    all['form_007'] = { ...existing, submitted: true, submitted_at: now, data: { ...values } };
+    saveAgreements(username, all);
+    onSubmitted();
+  }
+
+  function handleEdit() {
+    const d = entry.data || {};
+    setValues({
+      full_legal_name: d.full_legal_name || '', email: d.email || '', phone: d.phone || '',
+      effective_date: d.effective_date || '', anticipated_start_date: d.anticipated_start_date || '',
+      ack_supersession: d.ack_supersession ?? false, ack_scope: d.ack_scope ?? false,
+      ack_tier_structure: d.ack_tier_structure ?? false, ack_financial_terms: d.ack_financial_terms ?? false,
+      ack_time_commitment: d.ack_time_commitment ?? false,
+      why_applying: d.why_applying || '', top_three_behaviors: d.top_three_behaviors || '',
+      overcoming_difficulty: d.overcoming_difficulty || '',
+      ack_ip: d.ack_ip ?? false, ack_dispute: d.ack_dispute ?? false,
+      ack_full_agreement: d.ack_full_agreement ?? false, signature: d.signature || '',
+    });
+    setEditMode(true);
+  }
+
+  const sBox = { background: '#1a1a2e', border: '1px solid #5a4a1a', borderRadius: 4, padding: '14px 16px', marginBottom: 10, color: '#ccc', fontSize: 13, lineHeight: 1.7 };
+  const pBox = { background: '#0f1e0f', border: '1px solid #2a4a2a', borderRadius: 4, padding: '14px 16px', marginBottom: 10, color: '#ccc', fontSize: 13, lineHeight: 1.7 };
+  const errBox = { color: '#e57373', fontSize: 13, marginBottom: 16, padding: '8px 12px', background: '#1a0a0a', borderRadius: 4 };
+
+  const PromoCard = () => (
+    <div style={pBox}>
+      <div><strong style={{ color: GOLD }}>Promotion Type:</strong> {promoLabel}</div>
+      {entry?.coach_notes && <div style={{ marginTop: 6 }}><strong style={{ color: GOLD }}>Terms:</strong> {entry.coach_notes}</div>}
+      {entry?.expiration && <div style={{ marginTop: 6 }}><strong style={{ color: GOLD }}>Conditions:</strong> {entry.expiration}</div>}
+    </div>
+  );
+
+  const header = (
+    <>
+      <button onClick={onBack} style={backBtnStyle}>← Back</button>
+      <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Promotional Discount Program Agreement</div>
+      <div style={{ color: GOLD, fontSize: 11, marginBottom: 16, opacity: 0.7 }}>JPG-TK-007-PromotionalAgreement-WRK-v1.0</div>
+    </>
+  );
+
+  if (isSubmitted && !editMode) {
+    return (
+      <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+        {header}
+        <div style={{ color: '#4caf50', fontSize: 13, marginBottom: 12 }}>✓ Submitted {entry.submitted_at}</div>
+        <button onClick={handleEdit} style={{ ...backBtnStyle, marginBottom: 24 }}>EDIT</button>
+        <PromoCard />
+        {Object.entries(entry.data || {}).map(([key, val]) => (
+          <div key={key} style={{ marginBottom: 14 }}>
+            <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 3 }}>{fieldLabel(key)}</div>
+            <div style={{ color: '#ccc', fontSize: 13 }}>{fieldValue(val)}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+      {header}
+      <TI label="Full Legal Name" req value={values.full_legal_name} onChange={e => handleChange('full_legal_name', e.target.value)} />
+      <TI label="Email Address" req value={values.email} onChange={e => handleChange('email', e.target.value)} />
+      <TI label="Phone Number" req value={values.phone} onChange={e => handleChange('phone', e.target.value)} />
+      <TI label="Effective Date (MM/DD/YYYY)" placeholder="MM/DD/YYYY" value={values.effective_date} onChange={e => handleChange('effective_date', e.target.value)} />
+      <TI label="Anticipated Start Date (MM/DD/YYYY)" placeholder="MM/DD/YYYY" value={values.anticipated_start_date} onChange={e => handleChange('anticipated_start_date', e.target.value)} />
+      <div style={sBox}>This Promotional Discount Program Agreement supersedes and replaces the JPG Program Overview &amp; Agreement (TK-002) with respect to financial terms only. All other terms, conditions, obligations, and acknowledgments contained in the JPG Program Overview &amp; Agreement remain in full force and effect and are incorporated herein by reference.</div>
+      <CB label="I understand that this document modifies only the financial terms of my program agreement. All other terms from the JPG Program Overview & Agreement remain in effect." checked={values.ack_supersession} onChange={e => handleChange('ack_supersession', e.target.checked)} />
+      <div style={sBox}>JPG provides performance coaching, fitness programming, mindset development, life architecture, and business and career momentum coaching. JPG does not provide medical diagnoses, therapy, registered dietary services, legal advice, financial planning, or crisis intervention of any kind.</div>
+      <CB label="I understand the scope of JPG coaching services and acknowledge that JPG does not provide medical, therapeutic, dietary, legal, or financial services of any kind." checked={values.ack_scope} onChange={e => handleChange('ack_scope', e.target.checked)} />
+      <div style={sBox}>All clients enter JPG at Tier 4 — Apprentice. Progression through Tier 4 → Tier 3 → Tier 2 is mandatory. Tier 1 — Unstoppable is optional and available only after successful Tier 2 completion.</div>
+      <CB label="I understand the tier progression structure and accept that entry at Tier 4 is mandatory, progression through Tier 2 is required, and Tier 1 is optional." checked={values.ack_tier_structure} onChange={e => handleChange('ack_tier_structure', e.target.checked)} />
+      <PromoCard />
+      <div style={sBox}>The financial terms applicable to this agreement are governed by the promotional arrangement identified in Section 5. Standard billing mechanics, reinstatement terms, and non-refundable provisions apply as described in the full agreement document.</div>
+      <CB label="I understand and agree to the financial terms associated with my selected promotion type. I authorize Jones Performance Group LLC to invoice me accordingly." checked={values.ack_financial_terms} onChange={e => handleChange('ack_financial_terms', e.target.checked)} />
+      <div style={sBox}>The JPG program requires a minimum six-month commitment covering Tier 4 through Tier 2 completion. Promotional arrangements do not alter the minimum time commitment unless explicitly stated in the applicable promotion type terms.</div>
+      <CB label="I understand the six-month minimum commitment required to complete the JPG program through Tier 2, and I am prepared to fulfill that commitment." checked={values.ack_time_commitment} onChange={e => handleChange('ack_time_commitment', e.target.checked)} />
+      <div style={{ color: GOLD, fontSize: 12, fontWeight: 700, letterSpacing: '1px', marginBottom: 10, marginTop: 4 }}>CLIENT COMMITMENT STATEMENT</div>
+      <TA label="Why are you applying to the Jones Performance Group program?" value={values.why_applying} onChange={e => handleChange('why_applying', e.target.value)} />
+      <TA label="What are the top three behaviors you can see yourself implementing through this program?" value={values.top_three_behaviors} onChange={e => handleChange('top_three_behaviors', e.target.value)} />
+      <TA label="What is your current system for overcoming difficulty when faced with challenging tasks?" value={values.overcoming_difficulty} onChange={e => handleChange('overcoming_difficulty', e.target.value)} />
+      <div style={sBox}>All JPG frameworks, systems, methodologies, program content, training materials, and tracking tools are exclusively owned by Jones Performance Group LLC. The client may not disclose, share, reproduce, or distribute any JPG system, methodology, or content to any third party without prior written authorization. This obligation survives termination of this Agreement.</div>
+      <CB label="I acknowledge that all JPG frameworks, systems, and content are the exclusive intellectual property of Jones Performance Group LLC. I will not share, reproduce, or distribute any JPG materials without prior written authorization." checked={values.ack_ip} onChange={e => handleChange('ack_ip', e.target.checked)} />
+      <div style={sBox}>The parties agree to attempt good-faith resolution of any dispute through direct communication before pursuing formal legal action. Disputes not resolved through good-faith communication shall be submitted to binding arbitration under rules mutually agreed upon by both parties.</div>
+      <CB label="I acknowledge the dispute resolution terms above, including the good-faith resolution requirement before formal legal action." checked={values.ack_dispute} onChange={e => handleChange('ack_dispute', e.target.checked)} />
+      <div style={sBox}>I confirm that I have read this Promotional Discount Program Agreement in its entirety and understand each section and its implications. I am entering this Agreement voluntarily, without duress, and with full understanding that it is a legally binding document.</div>
+      <CB label="I have read this Promotional Discount Program Agreement in full. I understand and agree to all terms. I am signing voluntarily and with full knowledge of my obligations." checked={values.ack_full_agreement} onChange={e => handleChange('ack_full_agreement', e.target.checked)} />
+      <TI label="Full Name (typed — serves as electronic signature)" req value={values.signature} onChange={e => handleChange('signature', e.target.value)} />
+      {error && <div style={errBox}>{error}</div>}
+      <button onClick={handleSubmit} style={{ background: GOLD, color: '#000', fontWeight: 700, fontSize: 13, padding: '10px 28px', borderRadius: 4, border: 'none', cursor: 'pointer', letterSpacing: '1px', marginTop: 8 }}>
+        SUBMIT
+      </button>
+    </div>
+  );
+}
+
 // ── Client agreements list ───────────────────────────────────────
 
 function ClientAgreementsView({ user, onSessionUpgrade }) {
@@ -555,6 +750,16 @@ function ClientAgreementsView({ user, onSessionUpgrade }) {
           />
         );
       })}
+
+      {agreements['form_007']?.sent === true && (
+        <ClientFormRow
+          key="form_007"
+          form={{ key: 'form_007', label: 'Promotional Discount Program Agreement' }}
+          submitted={!!agreements['form_007']?.submitted}
+          submittedAt={agreements['form_007']?.submitted_at}
+          onClick={() => setActiveForm('form_007')}
+        />
+      )}
     </div>
   );
 }
@@ -662,6 +867,11 @@ function CoachAgreementsView() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [expandedFormSend, setExpandedFormSend] = useState(null);
   const [emailInputs, setEmailInputs] = useState({});
+  const [promoClientId, setPromoClientId] = useState('');
+  const [promoType, setPromoType] = useState('');
+  const [promoNotes, setPromoNotes] = useState('');
+  const [promoExpiration, setPromoExpiration] = useState('');
+  const [promoConfirm, setPromoConfirm] = useState('');
 
   let clients = [];
   try {
@@ -694,6 +904,35 @@ function CoachAgreementsView() {
     const body = encodeURIComponent(EMAIL_BODY_ALL);
     window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_self');
   };
+
+  function handleSendPromo() {
+    if (!promoClientId || !promoType) {
+      setPromoConfirm('Please select a client and promotion type.');
+      return;
+    }
+    const client = clients.find(c => c.id === promoClientId);
+    if (!client) return;
+
+    const existing = getAgreements(client.username);
+    existing['form_007'] = {
+      sent: true,
+      sent_at: new Date().toISOString().split('T')[0],
+      promotion_type: promoType,
+      coach_notes: promoNotes,
+      expiration: promoExpiration,
+      submitted: false,
+      submitted_at: null,
+      data: {}
+    };
+    saveAgreements(client.username, existing);
+
+    setPromoConfirm(`Promotional Agreement sent to ${client.first_name} ${client.last_name}.`);
+    setTimeout(() => setPromoConfirm(''), 4000);
+    setPromoClientId('');
+    setPromoType('');
+    setPromoNotes('');
+    setPromoExpiration('');
+  }
 
   const handleDownload = (formKey) => {
     const link = document.createElement('a');
@@ -815,6 +1054,103 @@ function CoachAgreementsView() {
           </div>
         );
       })}
+
+      {/* Delineation */}
+      <div style={{ borderTop: '1px solid #5a4a1a', margin: '20px 0 14px 0' }} />
+      <div style={{ color: GOLD, fontWeight: 700, fontSize: 15, marginBottom: 14, paddingBottom: 8, borderBottom: `1px solid #5a4a1a` }}>
+        ADDITIONAL FORMS
+      </div>
+
+      {/* form_007 row */}
+      <div style={{ background: DARK, border: '1px solid #5a4a1a', borderRadius: 6, padding: '14px 20px', marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, flex: 1, marginRight: 16 }}>
+            Promotional Discount Program Agreement
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+            <button
+              onClick={() => handleDownload('form_007')}
+              style={{ background: 'none', border: `1px solid ${GOLD}`, color: GOLD, fontSize: 11, padding: '4px 8px', borderRadius: 4, cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 110 }}
+            >
+              DOWNLOAD PDF
+            </button>
+            <button
+              onClick={() => setExpandedFormSend(expandedFormSend === 'form_007' ? null : 'form_007')}
+              style={{ background: GOLD, border: 'none', color: '#000', fontWeight: 700, fontSize: 11, padding: '4px 8px', borderRadius: 4, cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 128 }}
+            >
+              {expandedFormSend === 'form_007' ? '▲ SEND OPTIONS' : '▼ SEND OPTIONS'}
+            </button>
+          </div>
+        </div>
+
+        {/* form_007 send panel */}
+        {expandedFormSend === 'form_007' && (
+          <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+            {/* Client selector */}
+            <select
+              value={promoClientId}
+              onChange={e => setPromoClientId(e.target.value)}
+              style={{ background: '#1a1a1a', border: '1px solid #5a4a1a', color: promoClientId ? '#fff' : '#888', borderRadius: 4, padding: '8px 12px', fontSize: 13, width: '100%' }}
+            >
+              <option value=''>Select client...</option>
+              {clients.filter(c => c.role === 'client').map(c => (
+                <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>
+              ))}
+            </select>
+
+            {/* Promotion type selector */}
+            <select
+              value={promoType}
+              onChange={e => {
+                const selected = PROMOTION_TYPES.find(p => p.key === e.target.value);
+                setPromoType(e.target.value);
+                setPromoNotes(selected ? selected.description : '');
+              }}
+              style={{ background: '#1a1a1a', border: '1px solid #5a4a1a', color: promoType ? '#fff' : '#888', borderRadius: 4, padding: '8px 12px', fontSize: 13, width: '100%' }}
+            >
+              <option value=''>Select promotion type...</option>
+              {PROMOTION_TYPES.map(p => (
+                <option key={p.key} value={p.key}>{p.label}</option>
+              ))}
+            </select>
+
+            {/* Editable promotion description / notes */}
+            <textarea
+              value={promoNotes}
+              onChange={e => setPromoNotes(e.target.value)}
+              placeholder='Promotion details (auto-populated on type selection, editable)...'
+              rows={3}
+              style={{ background: '#1a1a1a', border: '1px solid #5a4a1a', color: '#fff', borderRadius: 4, padding: '8px 12px', fontSize: 13, width: '100%', resize: 'vertical', fontFamily: 'inherit' }}
+            />
+
+            {/* Expiration / conditions */}
+            <input
+              type='text'
+              value={promoExpiration}
+              onChange={e => setPromoExpiration(e.target.value)}
+              placeholder='Expiration or conditions (optional)...'
+              style={{ background: '#1a1a1a', border: '1px solid #5a4a1a', color: '#fff', borderRadius: 4, padding: '8px 12px', fontSize: 13, width: '100%' }}
+            />
+
+            {/* Send button */}
+            <button
+              onClick={handleSendPromo}
+              style={{ background: '#ddb94a', border: '1.5px solid #000', color: '#000', borderRadius: 4, padding: '8px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start', letterSpacing: '0.08em' }}
+            >
+              SEND TO CLIENT
+            </button>
+
+            {/* Inline confirmation */}
+            {promoConfirm && (
+              <div style={{ color: promoConfirm.startsWith('Please') ? '#e05c5c' : '#ddb94a', fontSize: 13, fontStyle: 'italic' }}>
+                {promoConfirm}
+              </div>
+            )}
+
+          </div>
+        )}
+      </div>
 
       {/* ── CLIENTS SECTION ── */}
       <div style={{
