@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.3 | **Date:** 08/25/2026
+**Version:** v2.4 | **Date:** 08/27/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -40,21 +40,21 @@ JPG-HUB-App/
 │   ├── Login.jsx
 │   ├── Nav.jsx
 │   ├── Topbar.jsx
-│   ├── WheelView.jsx                 # 10-spoke SVG wheel. Two visual tiers. Phase + agreements gating. Prospect short-circuit in isSpokeUnlocked.
+│   ├── WheelView.jsx                 # 10-spoke SVG wheel. Two visual tiers. Phase + agreements gating. Prospect short-circuit in isSpokeUnlocked. Communications spoke opacity pulse (@keyframes commsPulse) when client has unread content — clears on spoke click.
 │   ├── ClientsView.jsx
 │   ├── SlidePanel.jsx                # 420px right panel. APPROVE/REVOKE APPROVAL button. Agreements gating on 4 spokes. 10 SPOKE_LABELS entries.
-│   ├── FullProfileView.jsx
-│   ├── CommunicationView.jsx         # Thin shell — 210 lines. Owns state. Passes to tab components.
+│   ├── FullProfileView.jsx           # 5-section read-only profile. USERNAME and PASSWORD rendered in PROGRAM STATUS section from client.username and client.password.
+│   ├── CommunicationView.jsx         # 282 lines. Owns all state. 3-tab bar. isClient role check. getSeen/saveSeen/computeUnread helpers — reads/writes hub_comms_seen_{username}. Gold dot on tab labels when unread. Passes isClient and clientId to all three tab components.
 │   ├── ReportsView.jsx
 │   ├── EventsBoardView.jsx           # Full forum-style thread board. hub_events storage.
-│   ├── AgreementsView.jsx            # 4 active forms. jpg_agreements_{username} storage. Prospect form_001 submission triggers credential generation + session upgrade. CoachDetailView and ClientAgreementsView are function components defined inside this file — not separate files.
+│   ├── AgreementsView.jsx            # 4 active standard forms + optional form_007 (Promotional Discount Program Agreement). jpg_agreements_{username} storage. Prospect form_001 submission triggers credential generation + session upgrade. CoachDetailView, ClientAgreementsView, and Form007View are function components defined inside this file — not separate files. TI, CB, TA helper components defined at module scope (NOT inside Form007View — causes focus loss if defined inside).
 │   ├── EducationView.jsx             # Two-level nav. 5 categories, 12 docs.
 │   ├── ClientViewMode.jsx
 │   ├── PlaceholderView.jsx
 │   └── tabs/
-│       ├── MessagesTab.jsx
-│       ├── AnnouncementsTab.jsx
-│       └── ScheduledTab.jsx
+│       ├── MessagesTab.jsx           # Coach view: multi-client checkbox messaging. Client view: single thread full-width, SEND bar, handleClientSendMessage. Props include isClient and clientId.
+│       ├── AnnouncementsTab.jsx      # Coach view: list + form + detail panel. Client view: read-only sorted list. Props include isClient and clientId.
+│       └── ScheduledTab.jsx          # Coach view: full scheduled comms. Client view: filtered by client_id, read-only sorted list. Props include isClient and clientId.
 ├── src/
 │   ├── components/
 │   │   ├── TrackingTechView.jsx      # Three-tab spoke view. Non-standard import path — cleanup at migration.
@@ -62,14 +62,14 @@ JPG-HUB-App/
 │   └── data/
 │       └── trackingTechData.js       # TRACKING_TECH_DATA export. 816 lines. No localStorage.
 ├── utils/
-│   ├── constants.js                  # GOLD, GOLD_LIGHT, DARK, DARKER, BORDER_DK, TEXT_DIM, NAV_ITEMS, SPOKE_URLS
+│   ├── constants.js                  # GOLD, GOLD_LIGHT, DARK, DARKER, BORDER_DK, TEXT_DIM, TEXT_MID, RED, GREEN, NAV_ITEMS, SPOKE_URLS
 │   └── styles.js                     # S object — shared style tokens
 ├── services/
 │   ├── clients.js                    # getClients, updateClient, createClientRecord, generateUsername, generatePassword, addClient, login, logout
 │   └── storage.js                    # getSession, saveSession, logoutService
 ├── public/
 │   ├── jpglogo.png                   # Center circle logo — replace with transparent PNG when available
-│   ├── agreement-forms/              # 4 active agreement PDFs (form_001, form_002, form_003, form_005)
+│   ├── agreement-forms/              # 5 PDFs: form_001, form_002, form_003, form_005, form_007 (Promotional Discount Program Agreement)
 │   └── edu-docs/                     # 12 education PDFs
 └── CLAUDE.md
 
@@ -86,7 +86,8 @@ JPG-HUB-App/
 | hub_scheduled | ScheduledTab | Array of scheduled items |
 | hub_scheduled_completed | ScheduledTab | Archive of completed/cancelled items |
 | hub_events | EventsBoardView | Array of event thread objects |
-| jpg_agreements_{username} | AgreementsView, SlidePanel, WheelView | Per-client agreement state — 4 active forms: form_001, form_002, form_003, form_005 |
+| jpg_agreements_{username} | AgreementsView, SlidePanel, WheelView | Per-client agreement state — 4 active forms: form_001, form_002, form_003, form_005. Optional form_007 entry present only if coach sent it to that client. |
+| hub_comms_seen_{username} | CommunicationView (direct localStorage), WheelView | Per-client last-seen timestamps for unread tracking. Shape: { messages: isoString\|null, announcements: isoString\|null, scheduled: isoString\|null } |
 
 InterfacePreferenceView has no localStorage access.
 
@@ -132,18 +133,23 @@ Prospect is a shared generic login. No real client record exists in hub_clients 
 
 ---
 
-## ACTIVE FORM KEYS (AgreementsView — confirmed in code 08/24/2026)
+## ACTIVE FORM KEYS (AgreementsView — confirmed in code 08/27/2026)
 
-| Key | Label |
-|---|---|
-| form_001 | Client Application (43 fields, 10 sections) |
-| form_002 | Program Overview & Agreement (14 fields, 6 static text blocks) |
-| form_003 | Liability Waiver & Disclaimer |
-| form_005 | Photo / Testimonial Release |
+| Key | Label | Type |
+|---|---|---|
+| form_001 | Client Application (43 fields, 10 sections) | Standard — always present |
+| form_002 | Program Overview & Agreement (14 fields, 6 static text blocks) | Standard — always present |
+| form_003 | Liability Waiver & Disclaimer | Standard — always present |
+| form_005 | Photo / Testimonial Release | Standard — always present |
+| form_007 | Promotional Discount Program Agreement | Optional — coach sends per client |
 
-countComplete() iterates activeKeys = ['form_001','form_002','form_003','form_005'] only.
+countComplete() iterates activeKeys = ['form_001','form_002','form_003','form_005'] only. form_007 does NOT count toward completion total.
 agreementsComplete() in both SlidePanel and WheelView uses keys ['form_001','form_002','form_003','form_005'].
-Completion count displays as "of 4 complete" in all 3 locations.
+Completion count displays as "of 4 complete" in all 3 locations — unchanged by form_007.
+
+form_007 is NOT in the FORMS constant array. Routing handled by ClientFormView null guard: `if (!formDef || formDef.key === 'form_007')` → Form007View. formDef null-safe: `const fields = formDef ? (FORM_FIELDS[formDef.key] || []) : []` and `useEffect(..., [formDef?.key])`.
+
+PROMOTION_TYPES constant (6 entries A–F) defined at module scope in AgreementsView.jsx.
 
 ---
 
@@ -302,11 +308,15 @@ Future build: Open/Guided/Structured version selection, two-path flow, snippet p
 - styles.js S.viewArea: overflowY auto. S.appShell: overflow auto. Do not revert to hidden.
 - Active forms are form_001, form_002, form_003, form_005. form_004 and form_006 are retired — do not reference.
 - countComplete() must iterate activeKeys only — never Object.values() of all agreements keys.
-- CoachDetailView and ClientAgreementsView are function components inside AgreementsView.jsx — not separate files.
+- CoachDetailView, ClientAgreementsView, and Form007View are function components inside AgreementsView.jsx — not separate files.
+- TI, CB, TA helper components in AgreementsView.jsx must be defined at MODULE SCOPE — never inside Form007View or any other component function body. Defining them inside a component causes remount on every keystroke (focus loss bug).
+- form_007 is NOT in the FORMS constant array. ClientFormView guard handles routing: `if (!formDef || formDef.key === 'form_007')` → Form007View. formDef must be null-safe in ClientFormView: fields lookup and useEffect dependency both use optional access.
+- form_007 does not count toward completion total. countComplete() activeKeys and agreementsComplete() keys are unchanged at 4 forms.
 - obt_unlocked defaults to false. APPROVE CLIENT is the only path to OBT unlock — not the spoke toggle.
 - client_approved and interface_unlocked are fields in every client record — both default false.
 - Prospect role: shared login, no client record in hub_clients. isSpokeUnlocked short-circuits — communication and agreements only.
 - Stage 3 auto-unlock deferred to post-Supabase. No obt_complete flag exists pre-Supabase.
+- hub_comms_seen_{username} is read directly via localStorage.getItem/setItem in CommunicationView — not via storage service. WheelView reads it the same way in computeUnread().
 
 ---
 
@@ -336,3 +346,6 @@ isSpokeUnlocked() — prospect short-circuit first, then phase gate (dop/pit onl
 | DARKER | #12121f | Secondary/panel background |
 | BORDER_DK | #2a2a4a | Borders |
 | TEXT_DIM | #888 | Secondary/muted text |
+| TEXT_MID | (confirm in constants.js) | Mid-level text — used in CommunicationView, MessagesTab, AnnouncementsTab, ScheduledTab, FullProfileView |
+| RED | (confirm in constants.js) | Used in ScheduledTab |
+| GREEN | (confirm in constants.js) | Used in ScheduledTab |
