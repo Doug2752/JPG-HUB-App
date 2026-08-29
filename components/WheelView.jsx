@@ -7,6 +7,22 @@ const HUB_AUTH_SPOKES = ['dop', 'pit', 'tracker'];
 
 const GATED_SPOKE_IDS = new Set(['dop', 'pit', 'daily', 'resources']);
 
+const PIT_URLS = {
+  // TODO: replace with real URL when Open PIT is built
+  open:       'http://localhost:5174',
+  // TODO: replace with real URL when Guided PIT is built
+  guided:     'http://localhost:5174',
+  structured: 'http://localhost:5174',
+};
+
+const DOP_URLS = {
+  // TODO: replace with real URL when Open DOP is built
+  open:       'http://localhost:5173',
+  // TODO: replace with real URL when Guided DOP is built
+  guided:     'http://localhost:5173',
+  structured: 'http://localhost:5173',
+};
+
 function agreementsComplete(username) {
   try {
     const raw = localStorage.getItem(`jpg_agreements_${username}`);
@@ -118,6 +134,24 @@ function spokeClick(spokeId, hubUser, role, onNavigate) {
     onNavigate('interface');
     return;
   }
+  if (role === 'client' && (spokeId === 'dop' || spokeId === 'pit')) {
+    let pref = 'structured';
+    try {
+      const raw = localStorage.getItem('hub_clients');
+      if (raw) {
+        const clients = JSON.parse(raw);
+        const record = clients.find(c => c.username === hubUser.username);
+        if (record?.interface_preference) pref = record.interface_preference;
+      }
+    } catch (_) {}
+    const urlMap = spokeId === 'pit' ? PIT_URLS : DOP_URLS;
+    let url = urlMap[pref] || urlMap['structured'];
+    const sep = url.includes('?') ? '&' : '?';
+    url = url + sep + 'hub_user=' + encodeURIComponent(hubUser.username || hubUser);
+    window.open(url, '_blank');
+    return;
+  }
+
   let url = SPOKE_URLS[spokeId];
   if (url) {
     if (HUB_AUTH_SPOKES.includes(spokeId) && hubUser) {

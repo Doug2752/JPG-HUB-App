@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { S } from '../utils/styles';
 import { GOLD, DARKER, BORDER_DK, TEXT_DIM, TEXT_MID } from '../utils/constants';
+import { updateClient } from '../services/clients';
 
 const sectionHeading = {
   fontSize: 13, fontWeight: 900, letterSpacing: '2px', color: '#fff',
@@ -48,9 +49,21 @@ function MigrationField({ label }) {
 }
 
 export default function FullProfileView({ client, onBack }) {
+  const [ifacePref, setIfacePref] = useState(client?.interface_preference || 'structured');
+
+  useEffect(() => {
+    setIfacePref(client?.interface_preference || 'structured');
+  }, [client?.interface_preference]);
+
   if (!client) return null;
 
   const fullName = (client.first_name + ' ' + client.last_name).toUpperCase();
+
+  async function handleIfaceChange(e) {
+    const val = e.target.value;
+    setIfacePref(val);
+    await updateClient(client.id, { interface_preference: val });
+  }
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '28px' }}>
@@ -106,6 +119,27 @@ export default function FullProfileView({ client, onBack }) {
         <div style={sectionCard}>
           <div style={sectionHeading}>PROGRAM STATUS</div>
           <Field label="CURRENT TIER" value={client.tier_name || 'Apprentice'} />
+          <div>
+            <div style={fieldLabel}>APP INTERFACE PREFERENCE</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ ...fieldValue, marginBottom: 0 }}>
+                {ifacePref.charAt(0).toUpperCase() + ifacePref.slice(1)}
+              </div>
+              <select
+                value={ifacePref}
+                onChange={handleIfaceChange}
+                style={{
+                  fontSize: 12, padding: '4px 8px', borderRadius: 4,
+                  border: '1px solid #555', background: '#1A1A1A', color: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="open">Open</option>
+                <option value="guided">Guided</option>
+                <option value="structured">Structured</option>
+              </select>
+            </div>
+          </div>
           <Field label="USERNAME" value={client.username} />
           <Field label="PASSWORD" value={client.password} />
           <MigrationField label="TIME IN CURRENT TIER" />
