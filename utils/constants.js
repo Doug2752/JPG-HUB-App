@@ -1,6 +1,7 @@
 // ── COLORS ────────────────────────────────────────────────────
-export const GOLD      = '#B8860B';
-export const DARK      = '#1A1A1A';
+export const GOLD       = '#B8860B';
+export const GOLD_LIGHT = '#ddb94a';
+export const DARK       = '#1A1A1A';
 export const DARKER    = '#0F0F0F';
 export const RED       = '#C0392B';
 export const GREEN     = '#2E5A4B';
