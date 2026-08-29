@@ -1,9 +1,9 @@
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { S } from '../../utils/styles';
 import { GOLD, DARK, DARKER, BORDER_DK, TEXT_DIM, TEXT_MID, RED, GREEN } from '../../utils/constants';
 import { storage } from '../../services/storage';
 
-const SCHED_TYPES = ['Phone Call', 'Text Message', 'Email', 'Online Video (Teams / Zoom)', 'In Person', 'Other'];
+const SCHED_TYPES = ['Phone Call', 'Text Message', 'Email', 'Online Video', 'In Person', 'Other'];
 
 const STATE_TZ_OFFSET = {
   CA: 0, OR: 0, WA: 0, NV: 0,
@@ -14,19 +14,64 @@ const STATE_TZ_OFFSET = {
   VA: 3, WV: 3, NC: 3, SC: 3, GA: 3, FL: 3, OH: 3, KY: 3,
 };
 
+const STATUS_BORDER = {
+  pending:     GOLD,
+  completed:   GREEN,
+  cancelled:   RED,
+  rescheduled: '#888',
+};
+
+const STATUS_LABELS = {
+  pending:     'UPCOMING',
+  completed:   'COMPLETED',
+  cancelled:   'CANCELLED',
+  rescheduled: 'RESCHEDULED',
+};
+
+function StatusLegend({ activeFilters, onToggle }) {
+  const items = [
+    { status: 'pending',     label: 'Upcoming' },
+    { status: 'completed',   label: 'Completed' },
+    { status: 'cancelled',   label: 'Cancelled' },
+    { status: 'rescheduled', label: 'Rescheduled' },
+  ];
+  return (
+    <div style={{
+      display: 'flex', flexWrap: 'wrap', gap: 16,
+      padding: '10px 18px', marginBottom: 8,
+    }}>
+      {items.map(({ status, label }) => {
+        const isActive = activeFilters.includes(status);
+        return (
+          <div
+            key={status}
+            onClick={() => onToggle(status)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+          >
+            <div style={{
+              width: 12, height: 12, borderRadius: 2,
+              border: `2px solid ${STATUS_BORDER[status]}`,
+              background: isActive ? STATUS_BORDER[status] : 'transparent',
+            }} />
+            <span style={{
+              fontSize: 10, fontWeight: 700,
+              letterSpacing: '1px',
+              color: isActive ? '#fff' : '#aaa',
+              textTransform: 'uppercase',
+            }}>{label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 async function getScheduledItems() {
   const v = await storage.get('hub_scheduled');
   return v && v.value ? JSON.parse(v.value) : [];
 }
 async function saveScheduledItems(items) {
   await storage.set('hub_scheduled', JSON.stringify(items));
-}
-async function getCompletedItems() {
-  const v = await storage.get('hub_scheduled_completed');
-  return v && v.value ? JSON.parse(v.value) : [];
-}
-async function saveCompletedItems(items) {
-  await storage.set('hub_scheduled_completed', JSON.stringify(items));
 }
 
 function formatDate(dateStr) {
@@ -72,6 +117,15 @@ const detailLabel = {
 
 export default function ScheduledTab({ user, clients, scheduled, setScheduled, schedFormData, setSchedFormData, showSchedForm, setShowSchedForm, schedError, setSchedError, selectedSched, setSelectedSched, schedFooterMode, setSchedFooterMode, reschedDate, setReschedDate, reschedTime, setReschedTime, coachNotes, setCoachNotes, isClient, clientId }) {
   const coachNotesTimerRef = useRef(null);
+  const [activeFilters, setActiveFilters] = useState([]);
+
+  function toggleFilter(status) {
+    setActiveFilters(prev =>
+      prev.includes(status)
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  }
 
   useEffect(() => {
     if (selectedSched) {
@@ -112,6 +166,7 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
       time: schedFormData.time,
       notes: schedFormData.notes.trim(),
       coach_notes: '',
+      status: 'pending',
       created_by: user.username,
       created_at: new Date().toISOString(),
     };
@@ -139,35 +194,35 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
   }, [selectedSched]);
 
   async function handleComplete() {
-    const completed = await getCompletedItems();
-    completed.push({
-      ...selectedSched,
+    const items = await getScheduledItems();
+    const idx = items.findIndex(s => s.id === selectedSched.id);
+    if (idx === -1) return;
+    items[idx] = {
+      ...items[idx],
       coach_notes: coachNotes,
       status: 'completed',
       completed_at: new Date().toISOString(),
       completion_notes: coachNotes,
-    });
-    await saveCompletedItems(completed);
-    const updated = scheduled.filter(s => s.id !== selectedSched.id);
-    await saveScheduledItems(updated);
-    setScheduled(updated);
+    };
+    await saveScheduledItems(items);
+    setScheduled(items);
     setSelectedSched(null);
     setSchedFooterMode(null);
   }
 
   async function handleCancel() {
-    const completed = await getCompletedItems();
-    completed.push({
-      ...selectedSched,
+    const items = await getScheduledItems();
+    const idx = items.findIndex(s => s.id === selectedSched.id);
+    if (idx === -1) return;
+    items[idx] = {
+      ...items[idx],
       coach_notes: coachNotes,
       status: 'cancelled',
       completed_at: new Date().toISOString(),
       completion_notes: coachNotes,
-    });
-    await saveCompletedItems(completed);
-    const updated = scheduled.filter(s => s.id !== selectedSched.id);
-    await saveScheduledItems(updated);
-    setScheduled(updated);
+    };
+    await saveScheduledItems(items);
+    setScheduled(items);
     setSelectedSched(null);
     setSchedFooterMode(null);
   }
@@ -184,6 +239,7 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
     }
     item.date = reschedDate;
     item.time = reschedTime;
+    item.status = 'rescheduled';
     items[idx] = item;
     const sorted = items.sort((a, b) => a.date.localeCompare(b.date));
     await saveScheduledItems(sorted);
@@ -197,7 +253,10 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
   if (isClient) {
     const clientItems = [...scheduled]
       .filter(s => s.client_id === clientId)
-      .sort((a, b) => a.date.localeCompare(b.date));
+      .sort((a, b) => b.date.localeCompare(a.date));
+    const filtered = activeFilters.length === 0
+      ? clientItems
+      : clientItems.filter(item => activeFilters.includes(item.status || 'pending'));
     return (
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
         <div style={S.sectionBar}>
@@ -209,15 +268,29 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
             No scheduled communications yet.
           </div>
         ) : (
-          <div style={S.clientTable}>
-            {clientItems.map((item, i) => (
+          <>
+            <StatusLegend activeFilters={activeFilters} onToggle={toggleFilter} />
+            <div style={S.clientTable}>
+              {filtered.map((item, i) => (
               <div key={item.id} style={{
                 padding: '14px 18px',
-                borderBottom: i < clientItems.length - 1 ? '1px solid #1a1a1a' : 'none',
+                border: `2px solid ${STATUS_BORDER[item.status] || STATUS_BORDER.pending}`,
+                marginBottom: 8,
+                borderRadius: 5,
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                   <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '1px' }}>
                     {item.title}
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, letterSpacing: '1px',
+                      textTransform: 'uppercase', padding: '2px 6px', borderRadius: 3,
+                      border: `1px solid ${STATUS_BORDER[item.status] || STATUS_BORDER.pending}`,
+                      color: STATUS_BORDER[item.status] || STATUS_BORDER.pending,
+                      background: 'transparent', marginLeft: 8,
+                      display: 'inline-block', verticalAlign: 'middle',
+                    }}>
+                      {STATUS_LABELS[item.status] || 'UPCOMING'}
+                    </span>
                   </span>
                   <span style={{ color: TEXT_DIM, fontSize: 11, letterSpacing: '1px', flexShrink: 0, marginLeft: 12 }}>
                     {formatDate(item.date)}{item.time ? ' ' + formatTime(item.time) : ''}
@@ -227,8 +300,15 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
                   <span style={{
                     color: GOLD, fontSize: 10, fontWeight: 700, letterSpacing: '1px',
                     background: 'rgba(184,134,11,0.1)', padding: '2px 8px', borderRadius: 2,
+                    whiteSpace: 'nowrap',
                   }}>
                     {item.type.toUpperCase()}
+                  </span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, letterSpacing: '1px',
+                    color: STATUS_BORDER[item.status] || STATUS_BORDER.pending,
+                  }}>
+                    {((item.status || 'pending').charAt(0).toUpperCase() + (item.status || 'pending').slice(1)).toUpperCase()}
                   </span>
                   {item.notes && (
                     <span style={{ color: TEXT_DIM, fontSize: 11, letterSpacing: '0.5px' }}>
@@ -238,13 +318,17 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          </>
         )}
       </div>
     );
   }
 
-  const sorted = [...scheduled].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = [...scheduled].sort((a, b) => b.date.localeCompare(a.date));
+  const filtered = activeFilters.length === 0
+    ? sorted
+    : sorted.filter(item => activeFilters.includes(item.status || 'pending'));
   const tzHelper = getTimezoneHelper();
 
   return (
@@ -371,8 +455,10 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
             No scheduled communications yet.
           </div>
         ) : sorted.length > 0 ? (
-          <div style={S.clientTable}>
-            {sorted.map((item, i) => {
+          <>
+            <StatusLegend activeFilters={activeFilters} onToggle={toggleFilter} />
+            <div style={S.clientTable}>
+            {filtered.map((item, i) => {
               const isActive = selectedSched && selectedSched.id === item.id;
               return (
                 <div
@@ -380,18 +466,31 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
                   onClick={() => setSelectedSched(isActive ? null : item)}
                   style={{
                     padding: '14px 18px', cursor: 'pointer',
-                    borderBottom: i < sorted.length - 1 ? '1px solid #1a1a1a' : 'none',
+                    border: `2px solid ${STATUS_BORDER[item.status] || STATUS_BORDER.pending}`,
+                    marginBottom: 8,
+                    borderRadius: 5,
                     background: isActive ? 'rgba(184,134,11,0.08)' : 'transparent',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}
                 >
                   <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '1px' }}>
                     {item.title}
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, letterSpacing: '1px',
+                      textTransform: 'uppercase', padding: '2px 6px', borderRadius: 3,
+                      border: `1px solid ${STATUS_BORDER[item.status] || STATUS_BORDER.pending}`,
+                      color: STATUS_BORDER[item.status] || STATUS_BORDER.pending,
+                      background: 'transparent', marginLeft: 8,
+                      display: 'inline-block', verticalAlign: 'middle',
+                    }}>
+                      {STATUS_LABELS[item.status] || 'UPCOMING'}
+                    </span>
                   </span>
                   <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                     <span style={{
                       color: GOLD, fontSize: 10, fontWeight: 700, letterSpacing: '1px',
                       background: 'rgba(184,134,11,0.1)', padding: '3px 8px', borderRadius: 2,
+                      whiteSpace: 'nowrap',
                     }}>
                       {item.type.toUpperCase()}
                     </span>
@@ -403,7 +502,8 @@ export default function ScheduledTab({ user, clients, scheduled, setScheduled, s
                 </div>
               );
             })}
-          </div>
+            </div>
+          </>
         ) : null}
       </div>
 
