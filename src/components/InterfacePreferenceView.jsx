@@ -134,7 +134,7 @@ export default function InterfacePreferenceView({ user }) {
 
   useEffect(() => {
     const record = getClientRecord(user.username);
-    setSelectedInterface(record?.interface_preference || null);
+    setSelectedInterface(record?.interface_preference || 'structured');
   }, [user.username]);
 
   function handleSelect(key) {
