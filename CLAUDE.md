@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.4 | **Date:** 08/27/2026
+**Version:** v2.5 | **Date:** 08/28/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -40,10 +40,10 @@ JPG-HUB-App/
 │   ├── Login.jsx
 │   ├── Nav.jsx
 │   ├── Topbar.jsx
-│   ├── WheelView.jsx                 # 10-spoke SVG wheel. Two visual tiers. Phase + agreements gating. Prospect short-circuit in isSpokeUnlocked. Communications spoke opacity pulse (@keyframes commsPulse) when client has unread content — clears on spoke click.
+│   ├── WheelView.jsx                 # 10-spoke SVG wheel. Two visual tiers. Phase + agreements gating. Prospect short-circuit in isSpokeUnlocked. Communications spoke opacity pulse (@keyframes commsPulse) when client has unread content — clears on spoke click. PIT_URLS and DOP_URLS stub maps at module scope — client DOP/PIT clicks route based on interface_preference (ADDED 08/28/2026).
 │   ├── ClientsView.jsx
 │   ├── SlidePanel.jsx                # 420px right panel. APPROVE/REVOKE APPROVAL button. Agreements gating on 4 spokes. 10 SPOKE_LABELS entries.
-│   ├── FullProfileView.jsx           # 5-section read-only profile. USERNAME and PASSWORD rendered in PROGRAM STATUS section from client.username and client.password.
+│   ├── FullProfileView.jsx           # 5-section read-only profile. USERNAME and PASSWORD rendered in PROGRAM STATUS section. APP INTERFACE PREFERENCE row with coach override dropdown — saves immediately via updateClient (ADDED 08/28/2026). useState/useEffect hooks before early return (hooks-order fix 08/28/2026).
 │   ├── CommunicationView.jsx         # 282 lines. Owns all state. 3-tab bar. isClient role check. getSeen/saveSeen/computeUnread helpers — reads/writes hub_comms_seen_{username}. Gold dot on tab labels when unread. Passes isClient and clientId to all three tab components.
 │   ├── ReportsView.jsx
 │   ├── EventsBoardView.jsx           # Full forum-style thread board. hub_events storage.
@@ -54,15 +54,15 @@ JPG-HUB-App/
 │   └── tabs/
 │       ├── MessagesTab.jsx           # Coach view: multi-client checkbox messaging. Client view: single thread full-width, SEND bar, handleClientSendMessage. Props include isClient and clientId.
 │       ├── AnnouncementsTab.jsx      # Coach view: list + form + detail panel. Client view: read-only sorted list. Props include isClient and clientId.
-│       └── ScheduledTab.jsx          # Coach view: full scheduled comms. Client view: filtered by client_id, read-only sorted list. Props include isClient and clientId.
+│       └── ScheduledTab.jsx          # Full status system (UPDATED 08/28/2026). STATUS_BORDER constant. All items remain in hub_scheduled with status field (pending/completed/cancelled/rescheduled). hub_scheduled_completed RETIRED. handleComplete/handleCancel rewritten to update in place. StatusLegend multi-select filter in coach and client views. Full border cards, marginBottom 8, borderRadius 5, sort descending. Status badge inline with title. Type badge nowrap. Online Video label updated.
 ├── src/
 │   ├── components/
 │   │   ├── TrackingTechView.jsx      # Three-tab spoke view. Non-standard import path — cleanup at migration.
-│   │   └── InterfacePreferenceView.jsx  # Shell — title, description, coming-soon block; props: { user }
+│   │   └── InterfacePreferenceView.jsx  # Phase Two COMPLETE (UPDATED 08/28/2026). Full selection logic — OBT-style BrandBar, explainer block, three interface cards (Open/Guided/Structured), hub_clients read/write for interface_preference field, default-to-structured when field absent, StatusLegend multi-select filter. Props: { user }.
 │   └── data/
 │       └── trackingTechData.js       # TRACKING_TECH_DATA export. 816 lines. No localStorage.
 ├── utils/
-│   ├── constants.js                  # GOLD, GOLD_LIGHT, DARK, DARKER, BORDER_DK, TEXT_DIM, TEXT_MID, RED, GREEN, NAV_ITEMS, SPOKE_URLS
+│   ├── constants.js                  # GOLD, GOLD_LIGHT (#ddb94a — ADDED 08/28/2026), DARK, DARKER, BORDER_DK, TEXT_DIM, TEXT_MID, RED, GREEN, BORDER_LT, CHAR, TEXT_ROLE, LOGO, NAV_ITEMS, SPOKE_URLS
 │   └── styles.js                     # S object — shared style tokens
 ├── services/
 │   ├── clients.js                    # getClients, updateClient, createClientRecord, generateUsername, generatePassword, addClient, login, logout
@@ -79,17 +79,18 @@ JPG-HUB-App/
 
 | Key | Owner | Description |
 |---|---|---|
-| hub_clients | ClientsView, SlidePanel, WheelView | Array of all client objects |
+| hub_clients | ClientsView, SlidePanel, WheelView, InterfacePreferenceView, FullProfileView | Array of all client objects |
 | hub_session | Login, HUBApp | Current logged-in user session |
 | hub_messages | MessagesTab | Array of message thread objects |
 | hub_announcements | AnnouncementsTab | Array of announcement objects |
-| hub_scheduled | ScheduledTab | Array of scheduled items |
-| hub_scheduled_completed | ScheduledTab | Archive of completed/cancelled items |
+| hub_scheduled | ScheduledTab | ALL scheduled items — pending, completed, cancelled, rescheduled. Status field on every item. hub_scheduled_completed RETIRED 08/28/2026. |
 | hub_events | EventsBoardView | Array of event thread objects |
 | jpg_agreements_{username} | AgreementsView, SlidePanel, WheelView | Per-client agreement state — 4 active forms: form_001, form_002, form_003, form_005. Optional form_007 entry present only if coach sent it to that client. |
 | hub_comms_seen_{username} | CommunicationView (direct localStorage), WheelView | Per-client last-seen timestamps for unread tracking. Shape: { messages: isoString\|null, announcements: isoString\|null, scheduled: isoString\|null } |
 
-InterfacePreferenceView has no localStorage access.
+**RETIRED 08/28/2026:** hub_scheduled_completed — do not read or write. All scheduled data lives in hub_scheduled with status field.
+
+InterfacePreferenceView reads and writes hub_clients (interface_preference field).
 
 **Retired form keys (do not reference):** form_004 (Program Agreement — retired 08/24/2026), form_006 (Client Information — retired 08/24/2026)
 
@@ -109,7 +110,7 @@ Prospect is a shared generic login. No real client record exists in hub_clients 
 
 ---
 
-## CLIENT RECORD SHAPE (createClientRecord — confirmed in code 08/25/2026)
+## CLIENT RECORD SHAPE (createClientRecord — updated 08/28/2026)
 
 ```js
 {
@@ -117,6 +118,7 @@ Prospect is a shared generic login. No real client record exists in hub_clients 
   phone, email, program_start_date, tracking_start_date: null,
   current_cycle_start: null, onramp_end: null,
   tier: 4, tier_name: 'Apprentice', cap_override_minutes: null,
+  interface_preference: null,   // open|guided|structured|null — ADDED 08/28/2026
   obt_unlocked: false,          // approval gate is the only path — changed 08/25/2026
   dop_unlocked: false,
   pit_unlocked: false,
@@ -205,6 +207,8 @@ External routes (SPOKE_URLS — appends ?hub_user param for HUB_AUTH_SPOKES):
 
 HUB_AUTH_SPOKES: dop, pit, tracker
 
+**Client DOP/PIT routing (ADDED 08/28/2026):** When role === 'client' and spokeId is 'dop' or 'pit', spokeClick reads interface_preference from hub_clients and routes via PIT_URLS or DOP_URLS map. Defaults to 'structured' when field absent. Coach clicks bypass intercept — always use SPOKE_URLS directly. Open and Guided URL stubs currently point to existing apps — replace when versions are built (TODO comments in code).
+
 Do NOT add to SPOKE_URLS: agreements, eventsboard, edu, communication, daily, interface
 
 ---
@@ -281,15 +285,46 @@ No localStorage. Gated behind agreements completion.
 
 ---
 
-## INTERFACE PREFERENCE SPOKE (InterfacePreferenceView.jsx)
+## INTERFACE PREFERENCE SPOKE (InterfacePreferenceView.jsx — UPDATED 08/28/2026)
 
-Shell only — no selection logic built yet.
-Props: { user }. No localStorage.
+Phase Two build COMPLETE. Full selection logic built.
+Props: { user }.
+Storage: reads and writes hub_clients — field: interface_preference (open|guided|structured|null).
+Default: 'structured' when field is null or absent — display default only, no write on init.
+Three interface cards: Open, Guided, Structured. OBT-style BrandBar. Explainer block.
+Button states: CURRENT SELECTION (GOLD_LIGHT, selected), SELECT (#e8e8e8, unselected).
+StatusLegend multi-select filter above cards — activeFilters state, toggleFilter handler.
 Routing: 'interface' case in renderView() → InterfacePreferenceView.
 flagMap entry: interface → 'interface_unlocked'.
 Spoke position: cx=360, cy=645 (bottom-center). Working spoke tier (#1C3A5C / #B8860B).
 Always freely accessible — exempt from agreements gating and phase gating.
-Future build: Open/Guided/Structured version selection, two-path flow, snippet previews.
+Placeholder screenshot boxes on each card — swap real screenshots when PIT/DOP versions built.
+Coach override: FullProfileView PROGRAM STATUS section — dropdown saves immediately via updateClient.
+
+---
+
+## SCHEDULED COMMUNICATIONS STATUS SYSTEM (ScheduledTab.jsx — UPDATED 08/28/2026)
+
+STATUS_BORDER constant: pending=GOLD, completed=GREEN, cancelled=RED, rescheduled='#888'
+STATUS_LABELS constant: pending='UPCOMING', completed='COMPLETED', cancelled='CANCELLED', rescheduled='RESCHEDULED'
+
+All items remain in hub_scheduled — items never move to archive on status change.
+hub_scheduled_completed: FULLY RETIRED. Zero reads or writes. getCompletedItems/saveCompletedItems removed.
+
+handleSaveScheduled: new items include status: 'pending'.
+handleComplete: writes status:'completed', completed_at, completion_notes in place.
+handleCancel: writes status:'cancelled', completed_at, completion_notes in place.
+handleReschedule: adds status:'rescheduled' to item.
+
+StatusLegend component: props { activeFilters, onToggle }. Multi-select. Filled solid when active, border-only when inactive. Rendered above card list in both coach and client views.
+activeFilters state: useState([]) — string array. toggleFilter handler.
+Filtered list: activeFilters.length === 0 → all items. Otherwise filter by status match.
+
+Card rendering: full border 2px solid STATUS_BORDER[status]. marginBottom:8. borderRadius:5.
+Sort: descending by date in both coach and client views.
+Status badge: inline with title, fontSize 9, outlined in STATUS_BORDER color, text from STATUS_LABELS.
+Type badge: whiteSpace:'nowrap'.
+SCHED_TYPES: 'Online Video (Teams / Zoom)' renamed to 'Online Video'.
 
 ---
 
@@ -314,9 +349,12 @@ Future build: Open/Guided/Structured version selection, two-path flow, snippet p
 - form_007 does not count toward completion total. countComplete() activeKeys and agreementsComplete() keys are unchanged at 4 forms.
 - obt_unlocked defaults to false. APPROVE CLIENT is the only path to OBT unlock — not the spoke toggle.
 - client_approved and interface_unlocked are fields in every client record — both default false.
+- interface_preference is a field in every client record — defaults to null (ADDED 08/28/2026).
 - Prospect role: shared login, no client record in hub_clients. isSpokeUnlocked short-circuits — communication and agreements only.
 - Stage 3 auto-unlock deferred to post-Supabase. No obt_complete flag exists pre-Supabase.
 - hub_comms_seen_{username} is read directly via localStorage.getItem/setItem in CommunicationView — not via storage service. WheelView reads it the same way in computeUnread().
+- hub_scheduled_completed is RETIRED — do not read or write it anywhere. All scheduled data lives in hub_scheduled with status field.
+- Client DOP/PIT spoke clicks route via PIT_URLS/DOP_URLS based on interface_preference. Coach clicks always use SPOKE_URLS directly.
 
 ---
 
@@ -341,11 +379,14 @@ isSpokeUnlocked() — prospect short-circuit first, then phase gate (dop/pit onl
 | Constant | Value | Use |
 |---|---|---|
 | GOLD | #B8860B | Informational/non-interactive |
-| GOLD_LIGHT | #ddb94a | Clickable/action elements |
+| GOLD_LIGHT | #ddb94a | Clickable/action elements (ADDED 08/28/2026) |
 | DARK | #1a1a2e | Primary background |
 | DARKER | #12121f | Secondary/panel background |
 | BORDER_DK | #2a2a4a | Borders |
 | TEXT_DIM | #888 | Secondary/muted text |
 | TEXT_MID | (confirm in constants.js) | Mid-level text — used in CommunicationView, MessagesTab, AnnouncementsTab, ScheduledTab, FullProfileView |
-| RED | (confirm in constants.js) | Used in ScheduledTab |
-| GREEN | (confirm in constants.js) | Used in ScheduledTab |
+| RED | #C0392B | Used in ScheduledTab STATUS_BORDER cancelled |
+| GREEN | #2E5A4B | Used in ScheduledTab STATUS_BORDER completed |
+| BORDER_LT | #CCCCCC | Light borders |
+| CHAR | #3A3A3A | (confirm use) |
+| TEXT_ROLE | #aaaaaa | Role/label text |
