@@ -207,7 +207,7 @@ External routes (SPOKE_URLS — appends ?hub_user param for HUB_AUTH_SPOKES):
 
 HUB_AUTH_SPOKES: dop, pit, tracker
 
-**Client DOP/PIT routing (ADDED 08/28/2026):** When role === 'client' and spokeId is 'dop' or 'pit', spokeClick reads interface_preference from hub_clients and routes via PIT_URLS or DOP_URLS map. Defaults to 'structured' when field absent. Coach clicks bypass intercept — always use SPOKE_URLS directly. Open and Guided URL stubs currently point to existing apps — replace when versions are built (TODO comments in code).
+**Client DOP/PIT routing (ADDED 08/28/2026):** When role === 'client' and spokeId is 'dop' or 'pit', spokeClick reads interface_preference from hub_clients and routes via PIT_URLS or DOP_URLS map. Defaults to 'structured' when field absent. Coach clicks bypass intercept — always use SPOKE_URLS directly. IS_PROD = import.meta.env.PROD. APP_BASE = https://app.jonesperformancegroup.org. PIT_URLS: structured=5174, guided=5175, open=5176 (prod: /pit, /pit-guided, /pit-open). DOP_URLS: all versions=5173 (prod: /dop, /dop-guided, /dop-open). Updated 09/07/2026.
 
 Do NOT add to SPOKE_URLS: agreements, eventsboard, edu, communication, daily, interface
 
@@ -255,6 +255,7 @@ REVOKE writes: client_approved: false, obt_unlocked: false, edu_unlocked: false,
 
 obt_unlocked default is false — handleApproval is the only path to OBT unlock.
 edu_unlocked is set by approval, not by coach spoke toggle or agreements gate.
+handleToggleSpoke DOP/PIT branch (ADDED 09/07/2026 — BUG-HUB-01 fix): When flagKey is dop_unlocked or pit_unlocked and isUnlocking is true, writes { [flagKey]: true, interface_unlocked: true } in one updateClient call. Interface Preference spoke auto-unlocks when coach unlocks DOP or PIT.
 
 ---
 
@@ -285,20 +286,20 @@ No localStorage. Gated behind agreements completion.
 
 ---
 
-## INTERFACE PREFERENCE SPOKE (InterfacePreferenceView.jsx — UPDATED 08/28/2026)
+## INTERFACE PREFERENCE SPOKE (InterfacePreferenceView.jsx — UPDATED 09/07/2026)
 
 Phase Two build COMPLETE. Full selection logic built.
 Props: { user }.
 Storage: reads and writes hub_clients — field: interface_preference (open|guided|structured|null).
 Default: 'structured' when field is null or absent — display default only, no write on init.
 Three interface cards: Open, Guided, Structured. OBT-style BrandBar. Explainer block.
-Button states: CURRENT SELECTION (GOLD_LIGHT, selected), SELECT (#e8e8e8, unselected).
-StatusLegend multi-select filter above cards — activeFilters state, toggleFilter handler.
+Button states: CURRENT SELECTION (GOLD_LIGHT, disabled, selected), SELECT (#e8e8e8, unselected, allowed), LOCKED (#f5f5f5, disabled, period-locked).
+isChangeAllowed() — reads current_cycle_start from hub_clients, computes cycleDay, returns true when cycleDay > 30 or no cycle started. Period-lock: SELECT shows as LOCKED and disabled during active period days 1–30. Selection only allowed at period close day 31+. const allowed = isChangeAllowed() computed once per card render.
 Routing: 'interface' case in renderView() → InterfacePreferenceView.
 flagMap entry: interface → 'interface_unlocked'.
 Spoke position: cx=360, cy=645 (bottom-center). Working spoke tier (#1C3A5C / #B8860B).
 Always freely accessible — exempt from agreements gating and phase gating.
-Placeholder screenshot boxes on each card — swap real screenshots when PIT/DOP versions built.
+Real screenshots wired — /assets/pit-structured.png, /assets/pit-guided.png, /assets/pit-open.png. screenshotBox: 300x340, overflowY scroll. INTERFACES order: structured first, guided second, open third.
 Coach override: FullProfileView PROGRAM STATUS section — dropdown saves immediately via updateClient.
 
 ---
@@ -380,8 +381,8 @@ isSpokeUnlocked() — prospect short-circuit first, then phase gate (dop/pit onl
 |---|---|---|
 | GOLD | #B8860B | Informational/non-interactive |
 | GOLD_LIGHT | #ddb94a | Clickable/action elements (ADDED 08/28/2026) |
-| DARK | #1a1a2e | Primary background |
-| DARKER | #12121f | Secondary/panel background |
+| DARK | #1A1A1A | Primary background |
+| DARKER | #0F0F0F | Secondary/panel background |
 | BORDER_DK | #2a2a4a | Borders |
 | TEXT_DIM | #888 | Secondary/muted text |
 | TEXT_MID | (confirm in constants.js) | Mid-level text — used in CommunicationView, MessagesTab, AnnouncementsTab, ScheduledTab, FullProfileView |
