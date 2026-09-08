@@ -55,6 +55,8 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
     }
     if (flagKey === 'obt_unlocked' && isUnlocking) {
       await updateClient(client.id, { obt_unlocked: true, program_start_date: todayISO() });
+    } else if ((flagKey === 'dop_unlocked' || flagKey === 'pit_unlocked') && isUnlocking) {
+      await updateClient(client.id, { [flagKey]: true, interface_unlocked: true });
     } else {
       await updateClient(client.id, { [flagKey]: !client[flagKey] });
     }
