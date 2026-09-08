@@ -7,20 +7,19 @@ const HUB_AUTH_SPOKES = ['dop', 'pit', 'tracker'];
 
 const GATED_SPOKE_IDS = new Set(['dop', 'pit', 'daily', 'resources']);
 
+const IS_PROD = import.meta.env.PROD;
+const APP_BASE = 'https://app.jonesperformancegroup.org';
+
 const PIT_URLS = {
-  // TODO: replace with real URL when Open PIT is built
-  open:       'http://localhost:5174',
-  // TODO: replace with real URL when Guided PIT is built
-  guided:     'http://localhost:5174',
-  structured: 'http://localhost:5174',
+  structured: IS_PROD ? `${APP_BASE}/pit` : 'http://localhost:5174',
+  guided:     IS_PROD ? `${APP_BASE}/pit-guided` : 'http://localhost:5175',
+  open:       IS_PROD ? `${APP_BASE}/pit-open` : 'http://localhost:5176',
 };
 
 const DOP_URLS = {
-  // TODO: replace with real URL when Open DOP is built
-  open:       'http://localhost:5173',
-  // TODO: replace with real URL when Guided DOP is built
-  guided:     'http://localhost:5173',
-  structured: 'http://localhost:5173',
+  structured: IS_PROD ? `${APP_BASE}/dop` : 'http://localhost:5173',
+  guided:     IS_PROD ? `${APP_BASE}/dop-guided` : 'http://localhost:5173',
+  open:       IS_PROD ? `${APP_BASE}/dop-open` : 'http://localhost:5173',
 };
 
 function agreementsComplete(username) {
