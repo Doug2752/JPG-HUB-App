@@ -131,6 +131,22 @@ export default function InterfacePreferenceView({ user }) {
     setSelectedInterface(record?.interface_preference || 'structured');
   }, [user.username]);
 
+  function isChangeAllowed() {
+    try {
+      const raw = localStorage.getItem('hub_clients');
+      if (!raw) return true;
+      const clients = JSON.parse(raw);
+      const client = clients.find(c => c.username === user.username);
+      if (!client || !client.current_cycle_start) return true;
+      const today = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z');
+      const start = new Date(client.current_cycle_start + 'T00:00:00Z');
+      const cycleDay = Math.floor((today - start) / 86400000) + 1;
+      return cycleDay > 30;
+    } catch (_) {
+      return true;
+    }
+  }
+
   function handleSelect(key) {
     saveInterfacePreference(user.username, key);
     setSelectedInterface(key);
@@ -151,6 +167,7 @@ export default function InterfacePreferenceView({ user }) {
 
         {INTERFACES.map(card => {
           const isSelected = selectedInterface === card.key;
+          const allowed = isChangeAllowed();
           return (
             <div key={card.key} style={cardStyle}>
               <div style={screenshotBox}>
@@ -184,21 +201,22 @@ export default function InterfacePreferenceView({ user }) {
                   </button>
                 ) : (
                   <button
-                    onClick={() => handleSelect(iface.key)}
+                    onClick={() => allowed && handleSelect(card.key)}
+                    disabled={!allowed}
                     style={{
                       alignSelf: 'flex-start',
-                      background: '#e8e8e8',
-                      color: '#888',
-                      border: '1.5px solid #ccc',
+                      background: allowed ? '#e8e8e8' : '#f5f5f5',
+                      color: allowed ? '#888' : '#bbb',
+                      border: allowed ? '1.5px solid #ccc' : '1.5px solid #e0e0e0',
                       borderRadius: 5,
                       fontWeight: 700,
                       fontSize: 13,
                       padding: '8px 16px',
-                      cursor: 'pointer',
+                      cursor: allowed ? 'pointer' : 'not-allowed',
                       fontFamily: 'inherit',
                     }}
                   >
-                    SELECT
+                    {allowed ? 'SELECT' : 'LOCKED'}
                   </button>
                 )}
               </div>
