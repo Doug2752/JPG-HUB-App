@@ -17,7 +17,7 @@ const FIELDS = [
 ];
 
 export default function TrackingTechView({ user }) {
-  const [activeTab, setActiveTab] = useState('wearables');
+  const [activeTab, setActiveTab] = useState('devices');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -141,7 +141,7 @@ export default function TrackingTechView({ user }) {
     );
   }
 
-  function renderWearables() {
+  function renderDevices() {
     if (!selectedCategory) {
       return (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
@@ -203,16 +203,109 @@ export default function TrackingTechView({ user }) {
     );
   }
 
-  function renderRecommendations() {
+  function renderAITools() {
+    const isPanel = selectedCategory?.recId === 'aitools-core' || selectedCategory?.recId === 'aitools-ext';
+
+    function closePanel() {
+      setSelectedCategory(null);
+    }
+
+    function panelContent() {
+      const items = selectedCategory?.recId === 'aitools-core'
+        ? TRACKING_TECH_DATA.aiTools.corePlatforms
+        : TRACKING_TECH_DATA.aiTools.extensions;
+      return (
+        <>
+          {items.map(item => (
+            <div key={item.name} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: `1px solid ${BORDER_DK}` }}>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{item.name}</div>
+              <div style={{ color: TEXT_DIM, fontSize: 12, marginBottom: 4 }}>
+                <span style={{ color: '#ddb94a', fontWeight: 700 }}>BEST FOR  </span>{item.bestFor}
+              </div>
+              <div style={{ color: TEXT_DIM, fontSize: 12, marginBottom: 4 }}>
+                <span style={{ color: '#ddb94a', fontWeight: 700 }}>FREE  </span>{item.freeOption}
+              </div>
+              <div style={{ color: TEXT_DIM, fontSize: 12, marginBottom: 6 }}>
+                <span style={{ color: '#ddb94a', fontWeight: 700 }}>PAID  </span>{item.paid}
+              </div>
+              <a href={item.link} target="_blank" rel="noreferrer" style={{ color: '#ddb94a', fontSize: 12 }}>{item.link}</a>
+            </div>
+          ))}
+        </>
+      );
+    }
+
+    const panelTitle = selectedCategory?.recId === 'aitools-core' ? 'CORE AI PLATFORMS' : 'EXTENSIONS & ADD-ONS';
+
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, paddingTop: 60 }}>
-        <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, letterSpacing: '3px', marginBottom: 12 }}>
-          COACH RECOMMENDATIONS
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+          {categoryCard('aitools-core', 'CORE AI PLATFORMS', 9, () => setSelectedCategory({ recId: 'aitools-core' }))}
+          {categoryCard('aitools-ext', 'EXTENSIONS & ADD-ONS', 7, () => setSelectedCategory({ recId: 'aitools-ext' }))}
         </div>
-        <div style={{ color: TEXT_DIM, fontSize: 13 }}>
-          Personalized recommendations by client profile and goal coming soon.
+        {isPanel && (
+          <>
+            <div onClick={closePanel} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 98 }} />
+            <div style={{
+              position: 'fixed', top: 0, right: 0, bottom: 0,
+              width: 480,
+              background: DARKER,
+              zIndex: 99,
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '-4px 0 24px rgba(0,0,0,0.5)',
+            }}>
+              <div style={{
+                padding: '20px 24px',
+                borderBottom: `1px solid ${BORDER_DK}`,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexShrink: 0,
+              }}>
+                <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, letterSpacing: '1px' }}>{panelTitle}</div>
+                <button onClick={closePanel} style={{
+                  background: 'transparent', border: 'none', color: TEXT_DIM,
+                  fontSize: 22, cursor: 'pointer', fontFamily: 'inherit', lineHeight: 1, padding: 0,
+                }}>×</button>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+                {panelContent()}
+              </div>
+            </div>
+          </>
+        )}
+      </>
+    );
+  }
+
+  function renderBooks() {
+    return (
+      <>
+        <div style={{ borderBottom: `1px solid ${BORDER_DK}`, paddingBottom: 16, marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: GOLD, fontSize: 14 }}>★</span>
+            <span style={{ color: TEXT_DIM, fontSize: 12 }}>Doug's Priority Recommendation</span>
+          </div>
         </div>
-      </div>
+        {TRACKING_TECH_DATA.books.map(bookCat => (
+          <div key={bookCat.category} style={{ marginBottom: 28 }}>
+            <div style={{ color: GOLD, fontWeight: 700, fontSize: 11, letterSpacing: '2px', marginBottom: 14 }}>
+              {bookCat.category.toUpperCase()}
+            </div>
+            {bookCat.items.map(book => (
+              <div key={book.title} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: `1px solid ${BORDER_DK}` }}>
+                <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, marginBottom: 2 }}>
+                  {book.dougPick && <span style={{ color: '#ddb94a', marginRight: 6 }}>★</span>}
+                  {book.title}
+                </div>
+                <div style={{ color: TEXT_DIM, fontSize: 12, marginBottom: 6 }}>{book.author}</div>
+                <div style={{ color: '#ccc', fontSize: 13, lineHeight: 1.6 }}>{book.description}</div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </>
     );
   }
 
@@ -294,17 +387,19 @@ export default function TrackingTechView({ user }) {
       <div style={{ marginBottom: 20 }}>
         <div style={{ ...titleStyle, marginBottom: 16 }}>RECOMMENDATIONS & TECHNOLOGY TOOLS</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <button onClick={() => switchTab('wearables')} style={tabBtnStyle('wearables')}>WEARABLES</button>
+          <button onClick={() => switchTab('devices')} style={tabBtnStyle('devices')}>DEVICES</button>
           <button onClick={() => switchTab('apps')} style={tabBtnStyle('apps')}>APPS</button>
-          <button onClick={() => switchTab('recommendations')} style={tabBtnStyle('recommendations')}>RECOMMENDATIONS</button>
+          <button onClick={() => switchTab('aitools')} style={tabBtnStyle('aitools')}>AI TOOLS</button>
+          <button onClick={() => switchTab('books')} style={tabBtnStyle('books')}>BOOKS</button>
         </div>
         <div style={{ height: 1, background: GOLD, opacity: 0.6 }} />
       </div>
 
       <div style={{ flex: 1 }}>
-        {activeTab === 'wearables' && renderWearables()}
+        {activeTab === 'devices' && renderDevices()}
         {activeTab === 'apps' && renderApps()}
-        {activeTab === 'recommendations' && renderRecommendations()}
+        {activeTab === 'aitools' && renderAITools()}
+        {activeTab === 'books' && renderBooks()}
       </div>
 
       {renderSlidePanel()}
