@@ -316,8 +316,8 @@ export default function WheelView({ hubUser, role, onNavigate }) {
         {/* TRACKING & TECHNOLOGY */}
         <g style={spokeStyle('daily', hubUser, role)} onClick={() => spokeClick('daily', hubUser, role, onNavigate)}>
           <circle cx="89" cy="448" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
-          <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="9"  fontWeight="700" letterSpacing="1.5" fontFamily="Lato">TRACKING &</text>
-          <text x="89" y="451" textAnchor="middle" fill="#fff"    fontSize="11" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">TECHNOLOGY</text>
+          <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="7"  fontWeight="700" letterSpacing="1.5" fontFamily="Lato">RECOMMENDATIONS</text>
+          <text x="89" y="451" textAnchor="middle" fill="#fff"    fontSize="11" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">& TECHNOLOGY</text>
           <text x="89" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">TOOLS</text>
         </g>
 

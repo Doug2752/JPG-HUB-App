@@ -292,7 +292,7 @@ export default function TrackingTechView({ user }) {
   return (
     <div style={{ padding: 28, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
       <div style={{ marginBottom: 20 }}>
-        <div style={{ ...titleStyle, marginBottom: 16 }}>TRACKING & TECHNOLOGY</div>
+        <div style={{ ...titleStyle, marginBottom: 16 }}>RECOMMENDATIONS & TECHNOLOGY TOOLS</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
           <button onClick={() => switchTab('wearables')} style={tabBtnStyle('wearables')}>WEARABLES</button>
           <button onClick={() => switchTab('apps')} style={tabBtnStyle('apps')}>APPS</button>

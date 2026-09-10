@@ -29,7 +29,7 @@ const SPOKE_LABELS = [
   { key: 'agreements_unlocked', label: 'AGREEMENTS' },
   { key: 'interface_unlocked',  label: 'INTERFACE PREFERENCE' },
   { key: 'eventsboard_unlocked', label: 'EVENTS BOARD' },
-  { key: 'daily_unlocked',       label: 'TRACKING & TECHNOLOGY' },
+  { key: 'daily_unlocked',       label: 'RECOMMENDATIONS & TECHNOLOGY TOOLS' },
   { key: 'resources_unlocked',   label: 'RESOURCES VAULT' },
 ];
 
