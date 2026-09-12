@@ -10,6 +10,7 @@ export default defineConfig({
   server: {
     open: false,
     port: 5179,
+    strictPort: true,
   },
   optimizeDeps: {
     esbuildOptions: {
