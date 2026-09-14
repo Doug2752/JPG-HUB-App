@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.5 | **Date:** 08/28/2026
+**Version:** v2.6 | **Date:** 08/28/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -146,7 +146,7 @@ Prospect is a shared generic login. No real client record exists in hub_clients 
 | form_007 | Promotional Discount Program Agreement | Optional — coach sends per client |
 
 countComplete() iterates activeKeys = ['form_001','form_002','form_003','form_005'] only. form_007 does NOT count toward completion total.
-agreementsComplete() in both SlidePanel and WheelView uses keys ['form_001','form_002','form_003','form_005'].
+agreementsComplete() in WheelView checks for form_007 first: if data['form_007']?.submitted === true, required keys are ['form_001', 'form_003', 'form_005', 'form_007']; otherwise standard set ['form_001', 'form_002', 'form_003', 'form_005']. Promotional clients who have signed form_007 satisfy the agreements gate without form_002. SlidePanel does not call agreementsComplete() — gating there uses GATED_SPOKES flag checks only.
 Completion count displays as "of 4 complete" in all 3 locations — unchanged by form_007.
 
 form_007 is NOT in the FORMS constant array. Routing handled by ClientFormView null guard: `if (!formDef || formDef.key === 'form_007')` → Form007View. formDef null-safe: `const fields = formDef ? (FORM_FIELDS[formDef.key] || []) : []` and `useEffect(..., [formDef?.key])`.
@@ -239,7 +239,7 @@ interface_unlocked: never in gating sets. Interface Preference always freely acc
 
 Exempt from gating (always accessible): tracker, communication, agreements, interface, eventsboard, edu (approval-controlled)
 
-agreementsComplete() checks jpg_agreements_{username} — all 4 active forms .submitted === true.
+agreementsComplete() checks jpg_agreements_{username} — if form_007 is submitted, required keys are ['form_001', 'form_003', 'form_005', 'form_007']; otherwise ['form_001', 'form_002', 'form_003', 'form_005']. Promotional clients bypass form_002 when form_007 is signed (UPDATED 09/14/2026).
 
 SPOKE_LABELS (SlidePanel — 10 entries, confirmed in code 08/25/2026):
 interface_unlocked present | eventsboard_unlocked present but NOT in GATED_SPOKES | edu_unlocked present but NOT in GATED_SPOKES
@@ -347,7 +347,7 @@ SCHED_TYPES: 'Online Video (Teams / Zoom)' renamed to 'Online Video'.
 - CoachDetailView, ClientAgreementsView, and Form007View are function components inside AgreementsView.jsx — not separate files.
 - TI, CB, TA helper components in AgreementsView.jsx must be defined at MODULE SCOPE — never inside Form007View or any other component function body. Defining them inside a component causes remount on every keystroke (focus loss bug).
 - form_007 is NOT in the FORMS constant array. ClientFormView guard handles routing: `if (!formDef || formDef.key === 'form_007')` → Form007View. formDef must be null-safe in ClientFormView: fields lookup and useEffect dependency both use optional access.
-- form_007 does not count toward completion total. countComplete() activeKeys and agreementsComplete() keys are unchanged at 4 forms.
+- form_007 does not count toward completion total. countComplete() activeKeys are unchanged at ['form_001','form_002','form_003','form_005']. agreementsComplete() now has conditional logic based on form_007 submission — see AGREEMENTS GATING and ACTIVE FORM KEYS sections (UPDATED 09/14/2026).
 - obt_unlocked defaults to false. APPROVE CLIENT is the only path to OBT unlock — not the spoke toggle.
 - client_approved and interface_unlocked are fields in every client record — both default false.
 - interface_preference is a field in every client record — defaults to null (ADDED 08/28/2026).
