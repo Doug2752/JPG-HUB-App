@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GOLD, DARK, DARKER, TEXT_DIM } from '../utils/constants';
 import { generateUsername, generatePassword, createClientRecord, addClient } from '../services/clients';
+import TK007GeneratorView from './TK007GeneratorView';
 
 const FORMS = [
   { key: 'form_001', label: 'Client Application' },
@@ -856,6 +857,10 @@ function CoachDetailView({ client, onBack }) {
           </div>
         );
       })}
+
+      {client.agreements_unlocked === true && (
+        <TK007GeneratorView client={client} />
+      )}
 
     </div>
   );
