@@ -1055,12 +1055,6 @@ function CoachAgreementsView() {
         );
       })}
 
-      {/* Delineation */}
-      <div style={{ borderTop: '1px solid #5a4a1a', margin: '20px 0 14px 0' }} />
-      <div style={{ color: GOLD, fontWeight: 700, fontSize: 15, marginBottom: 14, paddingBottom: 8, borderBottom: `1px solid #5a4a1a` }}>
-        ADDITIONAL FORMS
-      </div>
-
       {/* form_007 row */}
       <div style={{ background: DARK, border: '1px solid #5a4a1a', borderRadius: 6, padding: '14px 20px', marginBottom: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

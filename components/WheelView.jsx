@@ -26,7 +26,10 @@ function agreementsComplete(username) {
   try {
     const raw = localStorage.getItem(`jpg_agreements_${username}`);
     const data = raw ? JSON.parse(raw) : {};
-    const keys = ['form_001','form_002','form_003','form_005'];
+    const hasPromo = data['form_007']?.submitted === true;
+    const keys = hasPromo
+      ? ['form_001', 'form_003', 'form_005', 'form_007']
+      : ['form_001', 'form_002', 'form_003', 'form_005'];
     return keys.every(k => data[k]?.submitted === true);
   } catch (_) {
     return false;
