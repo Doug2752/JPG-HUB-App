@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.6 | **Date:** 08/28/2026
+**Version:** v2.7 | **Date:** 09/14/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -152,6 +152,8 @@ Completion count displays as "of 4 complete" in all 3 locations — unchanged by
 form_007 is NOT in the FORMS constant array. Routing handled by ClientFormView null guard: `if (!formDef || formDef.key === 'form_007')` → Form007View. formDef null-safe: `const fields = formDef ? (FORM_FIELDS[formDef.key] || []) : []` and `useEffect(..., [formDef?.key])`.
 
 PROMOTION_TYPES constant (6 entries A–F) defined at module scope in AgreementsView.jsx.
+
+form_007 is NOT in the FORMS constant array — it is handled separately via TK007GeneratorView (coach side) and ClientFormView null guard (client side). Do not add form_007 to FORMS.
 
 ---
 
@@ -329,6 +331,66 @@ SCHED_TYPES: 'Online Video (Teams / Zoom)' renamed to 'Online Video'.
 
 ---
 
+## TK-007 PROMOTIONAL AGREEMENT GENERATOR (ADDED 09/14/2026)
+
+**Component:** `src/components/TK007GeneratorView.jsx`
+
+**Purpose:** Coach-only component. Generates a configured TK-007 Promotional Discount Program Agreement PDF for a specific client. Client never sees other promo types — only the selected type renders in Sections 5 and 6.
+
+**Props:** `{ client }` — requires client object with `username`, `first_name`, `last_name` fields.
+
+**Placement:** Rendered inside `CoachDetailView` in `AgreementsView.jsx` after the `FORMS.map()` block. Render condition: `client.agreements_unlocked === true`.
+
+**Import in AgreementsView.jsx (line 4):**
+`import TK007GeneratorView from './TK007GeneratorView';`
+
+**State variables:**
+- `clientName` — string, blank on init. Coach enters manually.
+- `effectiveDate` — string, blank on init.
+- `promoType` — string, blank on init. Single select A–F.
+- `promoRate` — string, blank on init. Only used when promoType === 'C'.
+- `generating` — boolean. Button disabled and labeled GENERATING... while PDF builds.
+- `generated` — boolean. True after successful generation. Resets on any field change.
+
+**PROMO_TYPES (six entries):**
+- A — Full Scholarship ($0)
+- B — Two Month Trial ($0 months 1-2, then $1,500/mo)
+- C — Reduced Rate (custom) — triggers promoRate field
+- D — Greatness Prepay ($9,450 — 7 months)
+- E — Unstoppable Prepay ($13,500 — 10 months)
+- F — Friends & Family ($500/mo)
+
+**PDF Generation (pdf-lib):**
+- Library: pdf-lib 1.17.1
+- Logo: imported via Vite asset import `import logoUrl from '../assets/jpglogo.png'` — fetched and embedded as PNG
+- Logo file location: `src/assets/jpglogo.png`
+- Fonts: HelveticaBold (fB), Helvetica (fR), HelveticaOblique (fI)
+- Page size: US Letter (612 x 792pt)
+- Continuous page flow — no forced page breaks. checkPage(needed) triggers addPageWithFooter() when y < 60 + needed.
+- addPageWithFooter() — page 1: y starts at 750, manual header block draws after. Pages 2+: compact header draws (logo 120x50 at x:50,y:745, doc ID at y:728, rule at y:718), y set to 700.
+- Footer: centered at y:20 on every page — "JPG-TK-007-PromotionalAgreement-WRK-v1.1 | Jones Performance Group LLC | Promotional Discount Program Agreement | CONFIDENTIAL | Page N"
+- All 12 sections built in order: Parties & Effective Date, Agreement Basis, Scope of Service, Tier Structure & Progression, Promotional Terms (suppressed), Financial Terms Promotional (suppressed), Time Commitment, Client Commitment Statement, Program Acknowledgments, IP & Confidentiality, Dispute Resolution, Acknowledgment & Execution.
+- pdfSafe() helper — replaces em dash and en dash with plain hyphens before drawing text.
+
+**Suppression logic (CRITICAL):**
+- Section 5 and Section 6 each contain independent if/else if blocks keyed on promoType.
+- Only the block matching the selected promoType renders. All other type blocks are omitted entirely.
+- Client never sees other promotional options.
+- Type C in Section 5 additionally renders the coach-entered promoRate field value.
+
+**Output filename:** `JPGTK007-[clientName-hyphenated]-[effectiveDate].pdf`
+
+**localStorage write — on successful generation:**
+- Key: `jpg_agreements_{client.username}`
+- Writes form_007 object: `{ sent: true, sentDate: ISO string, promoType, clientName, effectiveDate }`
+- Spreads existing agreements record — does not overwrite other form keys.
+
+**Success message:** Green text below Generate button — "Agreement generated and sent to client agreements spoke." Resets to false on any field change.
+
+**GENERATE AGREEMENT button:** Disabled until all required fields filled (promoRate required only when Type C). Shows GENERATING... and disables while PDF is building.
+
+---
+
 ## LOCKED DECISIONS
 
 - Two-tier gold system: GOLD_LIGHT (#ddb94a) = clickable/action. GOLD (#B8860B) = informational.
@@ -391,3 +453,11 @@ isSpokeUnlocked() — prospect short-circuit first, then phase gate (dop/pit onl
 | BORDER_LT | #CCCCCC | Light borders |
 | CHAR | #3A3A3A | (confirm use) |
 | TEXT_ROLE | #aaaaaa | Role/label text |
+
+---
+
+## VERSION HISTORY
+
+| Version | Date | Summary |
+|---|---|---|
+| v2.7 | 09/14/2026 | TK-007 generator added — TK007GeneratorView.jsx new component. pdf-lib 1.17.1 installed. Coach-side PDF generation with promo type suppression. localStorage write to jpg_agreements_{username} form_007 sent state. Logo asset added to src/assets/jpglogo.png. AgreementsView.jsx import and render block added in CoachDetailView. |
