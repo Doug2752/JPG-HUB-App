@@ -473,12 +473,19 @@ function TA({ label, value, onChange }) {
 
 function Form007View({ entry, username, onBack, onSubmitted }) {
   const init = () => ({
-    full_legal_name: '', email: '', phone: '',
-    effective_date: '', anticipated_start_date: '',
-    ack_supersession: false, ack_scope: false, ack_tier_structure: false,
-    ack_financial_terms: false, ack_time_commitment: false,
+    email: '', phone: '', anticipated_start_date: '',
+    ack_agreement_basis: false,
+    ack_scope: false,
+    ack_tier_structure: false,
+    ack_financial_terms: false,
+    ack_time_commitment: false,
     why_applying: '', top_three_behaviors: '', overcoming_difficulty: '',
-    ack_ip: false, ack_dispute: false, ack_full_agreement: false,
+    prog_ack_1: false, prog_ack_2: false, prog_ack_3: false,
+    prog_ack_4: false, prog_ack_5: false, prog_ack_6: false,
+    prog_ack_7: false, prog_ack_8: false, prog_ack_9: false,
+    ack_ip: false,
+    ack_dispute: false,
+    ack_full_agreement: false,
     signature: '',
   });
 
@@ -487,17 +494,19 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
   const [editMode, setEditMode] = useState(false);
 
   const isSubmitted = entry && entry.submitted;
-  const promoTypeObj = PROMOTION_TYPES.find(p => p.key === entry?.promotion_type);
-  const promoLabel = promoTypeObj ? promoTypeObj.label : (entry?.promotion_type || '—');
+  const promoTypeObj = PROMOTION_TYPES.find(p => p.key === entry?.promoType);
+  const promoLabel = promoTypeObj ? promoTypeObj.label : (entry?.promoType || '—');
+  const promoDescription = promoTypeObj ? promoTypeObj.description : '';
+  const clientName = entry?.clientName || '—';
+  const effectiveDate = entry?.effectiveDate || '—';
 
   function handleChange(key, val) { setValues(prev => ({ ...prev, [key]: val })); setError(''); }
 
   function handleSubmit() {
     const required = [
-      { key: 'full_legal_name', type: 'text', label: 'Full Legal Name' },
       { key: 'email', type: 'text', label: 'Email Address' },
       { key: 'phone', type: 'text', label: 'Phone Number' },
-      { key: 'ack_supersession', type: 'cb', label: 'Section 2 acknowledgment' },
+      { key: 'ack_agreement_basis', type: 'cb', label: 'Section 2 acknowledgment' },
       { key: 'ack_scope', type: 'cb', label: 'Section 3 acknowledgment' },
       { key: 'ack_tier_structure', type: 'cb', label: 'Section 4 acknowledgment' },
       { key: 'ack_financial_terms', type: 'cb', label: 'Section 6 acknowledgment' },
@@ -505,10 +514,19 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
       { key: 'why_applying', type: 'text', label: 'Why are you applying' },
       { key: 'top_three_behaviors', type: 'text', label: 'Top three behaviors' },
       { key: 'overcoming_difficulty', type: 'text', label: 'Overcoming difficulty' },
+      { key: 'prog_ack_1', type: 'cb', label: 'Program acknowledgment 1' },
+      { key: 'prog_ack_2', type: 'cb', label: 'Program acknowledgment 2' },
+      { key: 'prog_ack_3', type: 'cb', label: 'Program acknowledgment 3' },
+      { key: 'prog_ack_4', type: 'cb', label: 'Program acknowledgment 4' },
+      { key: 'prog_ack_5', type: 'cb', label: 'Program acknowledgment 5' },
+      { key: 'prog_ack_6', type: 'cb', label: 'Program acknowledgment 6' },
+      { key: 'prog_ack_7', type: 'cb', label: 'Program acknowledgment 7' },
+      { key: 'prog_ack_8', type: 'cb', label: 'Program acknowledgment 8' },
+      { key: 'prog_ack_9', type: 'cb', label: 'Program acknowledgment 9' },
       { key: 'ack_ip', type: 'cb', label: 'Section 10 acknowledgment' },
       { key: 'ack_dispute', type: 'cb', label: 'Section 11 acknowledgment' },
       { key: 'ack_full_agreement', type: 'cb', label: 'Section 12 acknowledgment' },
-      { key: 'signature', type: 'text', label: 'Signature (typed full name)' },
+      { key: 'signature', type: 'text', label: 'Full Name (typed signature)' },
     ];
     for (const r of required) {
       const v = values[r.key];
@@ -526,15 +544,25 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
   function handleEdit() {
     const d = entry.data || {};
     setValues({
-      full_legal_name: d.full_legal_name || '', email: d.email || '', phone: d.phone || '',
-      effective_date: d.effective_date || '', anticipated_start_date: d.anticipated_start_date || '',
-      ack_supersession: d.ack_supersession ?? false, ack_scope: d.ack_scope ?? false,
-      ack_tier_structure: d.ack_tier_structure ?? false, ack_financial_terms: d.ack_financial_terms ?? false,
+      email: d.email || '', phone: d.phone || '',
+      anticipated_start_date: d.anticipated_start_date || '',
+      ack_agreement_basis: d.ack_agreement_basis ?? false,
+      ack_scope: d.ack_scope ?? false,
+      ack_tier_structure: d.ack_tier_structure ?? false,
+      ack_financial_terms: d.ack_financial_terms ?? false,
       ack_time_commitment: d.ack_time_commitment ?? false,
-      why_applying: d.why_applying || '', top_three_behaviors: d.top_three_behaviors || '',
+      why_applying: d.why_applying || '',
+      top_three_behaviors: d.top_three_behaviors || '',
       overcoming_difficulty: d.overcoming_difficulty || '',
-      ack_ip: d.ack_ip ?? false, ack_dispute: d.ack_dispute ?? false,
-      ack_full_agreement: d.ack_full_agreement ?? false, signature: d.signature || '',
+      prog_ack_1: d.prog_ack_1 ?? false, prog_ack_2: d.prog_ack_2 ?? false,
+      prog_ack_3: d.prog_ack_3 ?? false, prog_ack_4: d.prog_ack_4 ?? false,
+      prog_ack_5: d.prog_ack_5 ?? false, prog_ack_6: d.prog_ack_6 ?? false,
+      prog_ack_7: d.prog_ack_7 ?? false, prog_ack_8: d.prog_ack_8 ?? false,
+      prog_ack_9: d.prog_ack_9 ?? false,
+      ack_ip: d.ack_ip ?? false,
+      ack_dispute: d.ack_dispute ?? false,
+      ack_full_agreement: d.ack_full_agreement ?? false,
+      signature: d.signature || '',
     });
     setEditMode(true);
   }
@@ -542,20 +570,16 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
   const sBox = { background: '#1a1a2e', border: '1px solid #5a4a1a', borderRadius: 4, padding: '14px 16px', marginBottom: 10, color: '#ccc', fontSize: 13, lineHeight: 1.7 };
   const pBox = { background: '#0f1e0f', border: '1px solid #2a4a2a', borderRadius: 4, padding: '14px 16px', marginBottom: 10, color: '#ccc', fontSize: 13, lineHeight: 1.7 };
   const errBox = { color: '#e57373', fontSize: 13, marginBottom: 16, padding: '8px 12px', background: '#1a0a0a', borderRadius: 4 };
-
-  const PromoCard = () => (
-    <div style={pBox}>
-      <div><strong style={{ color: GOLD }}>Promotion Type:</strong> {promoLabel}</div>
-      {entry?.coach_notes && <div style={{ marginTop: 6 }}><strong style={{ color: GOLD }}>Terms:</strong> {entry.coach_notes}</div>}
-      {entry?.expiration && <div style={{ marginTop: 6 }}><strong style={{ color: GOLD }}>Conditions:</strong> {entry.expiration}</div>}
-    </div>
-  );
+  const secHead = { color: GOLD, fontWeight: 700, fontSize: 13, letterSpacing: '1px', marginBottom: 10, marginTop: 24, borderBottom: `1px solid #3a2e00`, paddingBottom: 6 };
+  const subHead = { color: GOLD, fontWeight: 700, fontSize: 12, letterSpacing: '1px', marginBottom: 8, marginTop: 16 };
+  const bodyText = { color: '#ccc', fontSize: 13, lineHeight: 1.7, marginBottom: 10 };
+  const italicText = { color: '#aaa', fontSize: 12, fontStyle: 'italic', lineHeight: 1.6, marginBottom: 14 };
 
   const header = (
     <>
       <button onClick={onBack} style={backBtnStyle}>← Back</button>
       <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Promotional Discount Program Agreement</div>
-      <div style={{ color: GOLD, fontSize: 11, marginBottom: 16, opacity: 0.7 }}>JPG-TK-007-PromotionalAgreement-WRK-v1.0</div>
+      <div style={{ color: GOLD, fontSize: 11, marginBottom: 16, opacity: 0.7 }}>JPG-TK-007-PromotionalAgreement-WRK-v1.1</div>
     </>
   );
 
@@ -565,7 +589,11 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
         {header}
         <div style={{ color: '#4caf50', fontSize: 13, marginBottom: 12 }}>✓ Submitted {entry.submitted_at}</div>
         <button onClick={handleEdit} style={{ ...backBtnStyle, marginBottom: 24 }}>EDIT</button>
-        <PromoCard />
+        <div style={pBox}>
+          <div><strong style={{ color: GOLD }}>Client Name:</strong> {clientName}</div>
+          <div style={{ marginTop: 6 }}><strong style={{ color: GOLD }}>Effective Date:</strong> {effectiveDate}</div>
+          <div style={{ marginTop: 6 }}><strong style={{ color: GOLD }}>Promotion Type:</strong> {promoLabel}</div>
+        </div>
         {Object.entries(entry.data || {}).map(([key, val]) => (
           <div key={key} style={{ marginBottom: 14 }}>
             <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 3 }}>{fieldLabel(key)}</div>
@@ -579,33 +607,132 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
   return (
     <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
       {header}
-      <TI label="Full Legal Name" req value={values.full_legal_name} onChange={e => handleChange('full_legal_name', e.target.value)} />
+
+      <div style={secHead}>SECTION 1 — PARTIES &amp; EFFECTIVE DATE</div>
+      <div style={bodyText}>This Agreement is entered into between Jones Performance Group LLC ("JPG") and the client identified below. Services begin only on or after the effective date and only upon full execution of this Agreement.</div>
+      <div style={pBox}>
+        <div><strong style={{ color: GOLD }}>Full Legal Name:</strong> {clientName}</div>
+        <div style={{ marginTop: 6 }}><strong style={{ color: GOLD }}>Effective Date:</strong> {effectiveDate}</div>
+      </div>
       <TI label="Email Address" req value={values.email} onChange={e => handleChange('email', e.target.value)} />
       <TI label="Phone Number" req value={values.phone} onChange={e => handleChange('phone', e.target.value)} />
-      <TI label="Effective Date (MM/DD/YYYY)" placeholder="MM/DD/YYYY" value={values.effective_date} onChange={e => handleChange('effective_date', e.target.value)} />
       <TI label="Anticipated Start Date (MM/DD/YYYY)" placeholder="MM/DD/YYYY" value={values.anticipated_start_date} onChange={e => handleChange('anticipated_start_date', e.target.value)} />
-      <div style={sBox}>This Promotional Discount Program Agreement supersedes and replaces the JPG Program Overview &amp; Agreement (TK-002) with respect to financial terms only. All other terms, conditions, obligations, and acknowledgments contained in the JPG Program Overview &amp; Agreement remain in full force and effect and are incorporated herein by reference.</div>
-      <CB label="I understand that this document modifies only the financial terms of my program agreement. All other terms from the JPG Program Overview & Agreement remain in effect." checked={values.ack_supersession} onChange={e => handleChange('ack_supersession', e.target.checked)} />
-      <div style={sBox}>JPG provides performance coaching, fitness programming, mindset development, life architecture, and business and career momentum coaching. JPG does not provide medical diagnoses, therapy, registered dietary services, legal advice, financial planning, or crisis intervention of any kind.</div>
-      <CB label="I understand the scope of JPG coaching services and acknowledge that JPG does not provide medical, therapeutic, dietary, legal, or financial services of any kind." checked={values.ack_scope} onChange={e => handleChange('ack_scope', e.target.checked)} />
-      <div style={sBox}>All clients enter JPG at Tier 4 — Apprentice. Progression through Tier 4 → Tier 3 → Tier 2 is mandatory. Tier 1 — Unstoppable is optional and available only after successful Tier 2 completion.</div>
+
+      <div style={secHead}>SECTION 2 — AGREEMENT BASIS</div>
+      <div style={bodyText}>This Agreement serves as the complete program agreement for clients enrolled under a promotional arrangement.</div>
+      <div style={italicText}>I understand that this is my complete program agreement and governs all terms of my enrollment.</div>
+      <CB label="I understand that this is my complete program agreement and governs all terms of my enrollment." checked={values.ack_agreement_basis} onChange={e => handleChange('ack_agreement_basis', e.target.checked)} />
+
+      <div style={secHead}>SECTION 3 — SCOPE OF SERVICE</div>
+      <div style={bodyText}>Jones Performance Group LLC provides performance coaching services to enrolled clients. Services include access to the JPG coaching framework, Four Foundations programming, DOP (Daily Operational Process), PIT (Personal Investment Time), OBT (14-Day Baseline Tracker), and all associated tools and materials made available through the JPG platform.</div>
+      <div style={bodyText}>JPG coaching is not medical advice, physical therapy, clinical treatment, or nutritional counseling. No JPG service constitutes a licensed medical, psychological, or dietary service of any kind.</div>
+      <div style={bodyText}>Service delivery is contingent on full execution of this Agreement and satisfaction of applicable payment terms.</div>
+      <div style={italicText}>I understand the scope of services provided by JPG and acknowledge that coaching services are not a substitute for licensed medical, psychological, or nutritional care.</div>
+      <CB label="I understand the scope of JPG coaching services and acknowledge that coaching services are not a substitute for licensed medical, psychological, or nutritional care." checked={values.ack_scope} onChange={e => handleChange('ack_scope', e.target.checked)} />
+
+      <div style={secHead}>SECTION 4 — TIER STRUCTURE &amp; PROGRESSION</div>
+      <div style={{ ...sBox, marginBottom: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 1fr', gap: '6px 12px', marginBottom: 10 }}>
+          <div style={{ color: GOLD, fontWeight: 700, fontSize: 12 }}>Tier</div>
+          <div style={{ color: GOLD, fontWeight: 700, fontSize: 12 }}>Duration</div>
+          <div style={{ color: GOLD, fontWeight: 700, fontSize: 12 }}>Description</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Tier 4 — Apprentice</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>1 month</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Mandatory entry tier. Baseline tracking and onboarding.</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Tier 3 — Performance</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>3 months</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Active development and goal progression.</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Tier 2 — Greatness</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>3 months</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Mandatory program completion point.</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Tier 1 — Unstoppable</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>3+ months (optional)</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Peak tier. Available only after Tier 2 completion.</div>
+        </div>
+        <div style={{ color: '#bbb', fontSize: 12, lineHeight: 1.6 }}>— All clients enter JPG at Tier 4 — Apprentice. No enrollment above Tier 4 is permitted under any circumstance.</div>
+        <div style={{ color: '#bbb', fontSize: 12, lineHeight: 1.6, marginTop: 6 }}>— Progression through Tier 4 → Tier 3 → Tier 2 is mandatory. No client may exit before completing Tier 2 without formal written agreement.</div>
+        <div style={{ color: '#bbb', fontSize: 12, lineHeight: 1.6, marginTop: 6 }}>— Tier 1 — Unstoppable is optional and available only after successful completion of Tier 2. Separate written disclosure is required before Tier 1 activates.</div>
+        <div style={{ color: '#bbb', fontSize: 12, lineHeight: 1.6, marginTop: 6 }}>— Upon completing Tier 2, the client may advance to Tier 1, join the JPG Finishers Group, enter Maintenance Stage, or complete exit.</div>
+      </div>
+      <div style={italicText}>I understand the tier progression structure and accept that entry at Tier 4 is mandatory, progression through Tier 2 is required, and Tier 1 is optional.</div>
       <CB label="I understand the tier progression structure and accept that entry at Tier 4 is mandatory, progression through Tier 2 is required, and Tier 1 is optional." checked={values.ack_tier_structure} onChange={e => handleChange('ack_tier_structure', e.target.checked)} />
-      <PromoCard />
-      <div style={sBox}>The financial terms applicable to this agreement are governed by the promotional arrangement identified in Section 5. Standard billing mechanics, reinstatement terms, and non-refundable provisions apply as described in the full agreement document.</div>
+
+      <div style={secHead}>SECTION 5 — PROMOTIONAL TERMS</div>
+      <div style={bodyText}>This section identifies the specific promotional arrangement applicable to this client.</div>
+      <div style={pBox}>
+        <div><strong style={{ color: GOLD }}>Client Name:</strong> {clientName}</div>
+        <div style={{ marginTop: 6 }}><strong style={{ color: GOLD }}>Effective Date of Promotion:</strong> {effectiveDate}</div>
+        <div style={{ marginTop: 6 }}><strong style={{ color: GOLD }}>Promotion Type Selected:</strong> {promoLabel}</div>
+      </div>
+      <div style={{ ...sBox, marginBottom: 14 }}>
+        <div style={{ color: GOLD, fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{promoLabel}</div>
+        <div style={bodyText}>{promoDescription}</div>
+      </div>
+
+      <div style={secHead}>SECTION 6 — FINANCIAL TERMS (PROMOTIONAL)</div>
+      <div style={bodyText}>The financial terms below correspond to the promotion type selected in Section 5. Only one type governs this agreement.</div>
+      <div style={{ ...sBox, marginBottom: 14 }}>
+        <div style={{ color: GOLD, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>{promoLabel}</div>
+        {entry?.promoType === 'A' && <><div style={bodyText}>Rate: $0.00 for the full duration of the program through Tier 2 completion.</div><div style={bodyText}>Billing: No invoice will be generated for any program month covered under this scholarship.</div><div style={bodyText}>Non-refundable: This scholarship carries no monetary value and is non-transferable.</div><div style={bodyText}>Termination: Standard 14-day written notice applies.</div></>}
+        {entry?.promoType === 'B' && <><div style={bodyText}>Rate: $0.00 for months 1 and 2. Standard rate of $1,500/month applies from month 3 forward.</div><div style={bodyText}>Billing: No invoice for trial months. Standard billing resumes automatically on month 3.</div><div style={bodyText}>Non-refundable: Trial months carry no monetary value and are non-transferable.</div><div style={bodyText}>Termination: Standard 14-day written notice applies after trial period.</div></>}
+        {entry?.promoType === 'C' && <><div style={bodyText}>Rate: ${entry?.promoRate || '—'}/month for the duration of the program.</div><div style={bodyText}>Billing: Monthly invoice at the reduced rate stated above.</div><div style={bodyText}>Non-refundable: All payments are non-refundable.</div><div style={bodyText}>Termination: Standard 14-day written notice applies.</div></>}
+        {entry?.promoType === 'D' && <><div style={bodyText}>Rate: $9,450 prepaid — covers 7 months of the program (10% discount off standard rate of $10,500).</div><div style={bodyText}>Billing: Single prepayment due prior to program start.</div><div style={bodyText}>Non-refundable: Prepayment is non-refundable.</div><div style={bodyText}>Termination: No refund on prepaid balance. Program access continues through prepaid period.</div></>}
+        {entry?.promoType === 'E' && <><div style={bodyText}>Rate: $13,500 prepaid — covers 10 months of the program (10% discount off standard rate of $15,000).</div><div style={bodyText}>Billing: Single prepayment due prior to program start.</div><div style={bodyText}>Non-refundable: Prepayment is non-refundable.</div><div style={bodyText}>Termination: No refund on prepaid balance. Program access continues through prepaid period.</div></>}
+        {entry?.promoType === 'F' && <><div style={bodyText}>Rate: $500/month flat rate for the full duration of the program.</div><div style={bodyText}>Billing: Monthly invoice at the Friends &amp; Family rate.</div><div style={bodyText}>Non-refundable: All payments are non-refundable.</div><div style={bodyText}>Termination: Standard 14-day written notice applies.</div></>}
+      </div>
+      <div style={italicText}>I understand and agree to the financial terms associated with my selected promotion type as described above. I authorize Jones Performance Group LLC to invoice me accordingly and will maintain a current payment method on file at all times.</div>
       <CB label="I understand and agree to the financial terms associated with my selected promotion type. I authorize Jones Performance Group LLC to invoice me accordingly." checked={values.ack_financial_terms} onChange={e => handleChange('ack_financial_terms', e.target.checked)} />
-      <div style={sBox}>The JPG program requires a minimum six-month commitment covering Tier 4 through Tier 2 completion. Promotional arrangements do not alter the minimum time commitment unless explicitly stated in the applicable promotion type terms.</div>
+
+      <div style={secHead}>SECTION 7 — TIME COMMITMENT</div>
+      <div style={bodyText}>The JPG program requires a minimum six-month commitment covering Tier 4 through Tier 2 completion. Promotional arrangements do not alter the minimum time commitment unless explicitly stated in the applicable promotion type terms in Section 6.</div>
+      <div style={italicText}>I understand the six-month minimum commitment required to complete the JPG program through Tier 2, and I am prepared to fulfill that commitment.</div>
       <CB label="I understand the six-month minimum commitment required to complete the JPG program through Tier 2, and I am prepared to fulfill that commitment." checked={values.ack_time_commitment} onChange={e => handleChange('ack_time_commitment', e.target.checked)} />
-      <div style={{ color: GOLD, fontSize: 12, fontWeight: 700, letterSpacing: '1px', marginBottom: 10, marginTop: 4 }}>CLIENT COMMITMENT STATEMENT</div>
+
+      <div style={secHead}>SECTION 8 — CLIENT COMMITMENT STATEMENT</div>
+      <div style={bodyText}>I am entering the Jones Performance Group program with full understanding of what is required of me. I am not here to explore the possibility of change — I am here to make it. I understand that this program demands consistent effort, honest self-assessment, and a willingness to be challenged. I accept that results are earned through execution, not intention. I enter this program as a committed participant, not a passive observer, and I hold myself accountable to the standard JPG requires.</div>
       <TA label="Why are you applying to the Jones Performance Group program?" value={values.why_applying} onChange={e => handleChange('why_applying', e.target.value)} />
       <TA label="What are the top three behaviors you can see yourself implementing through this program?" value={values.top_three_behaviors} onChange={e => handleChange('top_three_behaviors', e.target.value)} />
       <TA label="What is your current system for overcoming difficulty when faced with challenging tasks?" value={values.overcoming_difficulty} onChange={e => handleChange('overcoming_difficulty', e.target.value)} />
-      <div style={sBox}>All JPG frameworks, systems, methodologies, program content, training materials, and tracking tools are exclusively owned by Jones Performance Group LLC. The client may not disclose, share, reproduce, or distribute any JPG system, methodology, or content to any third party without prior written authorization. This obligation survives termination of this Agreement.</div>
-      <CB label="I acknowledge that all JPG frameworks, systems, and content are the exclusive intellectual property of Jones Performance Group LLC. I will not share, reproduce, or distribute any JPG materials without prior written authorization." checked={values.ack_ip} onChange={e => handleChange('ack_ip', e.target.checked)} />
-      <div style={sBox}>The parties agree to attempt good-faith resolution of any dispute through direct communication before pursuing formal legal action. Disputes not resolved through good-faith communication shall be submitted to binding arbitration under rules mutually agreed upon by both parties.</div>
-      <CB label="I acknowledge the dispute resolution terms above, including the good-faith resolution requirement before formal legal action." checked={values.ack_dispute} onChange={e => handleChange('ack_dispute', e.target.checked)} />
-      <div style={sBox}>I confirm that I have read this Promotional Discount Program Agreement in its entirety and understand each section and its implications. I am entering this Agreement voluntarily, without duress, and with full understanding that it is a legally binding document.</div>
-      <CB label="I agree to all terms stated herein, including the supersession of financial terms from my prior JPG Program Overview & Agreement." checked={values.ack_full_agreement} onChange={e => handleChange('ack_full_agreement', e.target.checked)} />
+
+      <div style={secHead}>SECTION 9 — PROGRAM ACKNOWLEDGMENTS</div>
+      <div style={bodyText}>I have read and understand the following. Each item reflects a non-negotiable condition of my enrollment.</div>
+      <CB label="All clients enter JPG at Tier 4 — Apprentice. There is no alternative entry point regardless of prior experience, fitness level, or background." checked={values.prog_ack_1} onChange={e => handleChange('prog_ack_1', e.target.checked)} />
+      <CB label="Progression through Tier 4 → Tier 3 → Tier 2 is mandatory. I may not exit the program before completing Tier 2 without formal written agreement." checked={values.prog_ack_2} onChange={e => handleChange('prog_ack_2', e.target.checked)} />
+      <CB label="Tier 1 — Unstoppable is optional and available only after successful completion of Tier 2. Separate written disclosure is required before Tier 1 activates." checked={values.prog_ack_3} onChange={e => handleChange('prog_ack_3', e.target.checked)} />
+      <CB label="Payment is governed by the promotional terms in Section 6. The 7-day grace period is a professional courtesy — not a negotiable extension. Non-payment by the 8th results in immediate program removal." checked={values.prog_ack_4} onChange={e => handleChange('prog_ack_4', e.target.checked)} />
+      <CB label="Program removal for non-payment is immediate and without exception. All sessions are cancelled and access is suspended until the account is current and reinstatement fee is paid." checked={values.prog_ack_5} onChange={e => handleChange('prog_ack_5', e.target.checked)} />
+      <CB label="The Tier 4 entry period and first full month payment terms are governed by my selected promotion type. Refund eligibility for Tier 3 and Tier 2 is reviewed at the coach's sole discretion." checked={values.prog_ack_6} onChange={e => handleChange('prog_ack_6', e.target.checked)} />
+      <CB label="No specific outcome or result is guaranteed. Results are determined by my consistency, effort, and execution. JPG provides the framework — I am responsible for applying it." checked={values.prog_ack_7} onChange={e => handleChange('prog_ack_7', e.target.checked)} />
+      <CB label="JPG coaching is not medical advice, therapy, or clinical treatment of any kind. I will consult a licensed medical professional before beginning any fitness or nutrition programming." checked={values.prog_ack_8} onChange={e => handleChange('prog_ack_8', e.target.checked)} />
+      <CB label="I am entering this program voluntarily and with full commitment. I understand that my results are a direct reflection of my effort and I hold myself to the standard this program requires." checked={values.prog_ack_9} onChange={e => handleChange('prog_ack_9', e.target.checked)} />
+
+      <div style={secHead}>SECTION 10 — INTELLECTUAL PROPERTY &amp; CONFIDENTIALITY</div>
+      <div style={subHead}>JPG IP OWNERSHIP</div>
+      <div style={bodyText}>All JPG frameworks, systems, methodologies, program content, training materials, tracking tools, and operational documents are exclusively owned by Jones Performance Group LLC. This includes but is not limited to: the Four Foundations framework, LIMITLESS doctrine, tier progression system, JPG Hub, Personal Investment Time (PIT), Daily Operational Process (DOP), and all associated tools, templates, and proprietary content.</div>
+      <div style={subHead}>CLIENT IP OBLIGATIONS</div>
+      <div style={bodyText}>The client may not disclose, share, reproduce, publish, distribute, or transmit any JPG system, methodology, framework, or content to any third party without prior written authorization from Jones Performance Group LLC. This obligation survives termination of this Agreement.</div>
+      <div style={subHead}>JPG CONFIDENTIALITY OBLIGATION</div>
+      <div style={bodyText}>Jones Performance Group LLC will not disclose client personal information, progress data, biometrics, or session content to any third party without written client consent, except where disclosure is required by applicable law or court order.</div>
+      <div style={subHead}>CLIENT CONFIDENTIALITY OBLIGATION</div>
+      <div style={bodyText}>The client acknowledges that all JPG program materials, frameworks, and operational systems are proprietary and confidential. The client will not disclose, share, reproduce, or publish any JPG system, methodology, or content without prior written authorization from Jones Performance Group LLC. This obligation survives termination of this Agreement.</div>
+      <div style={italicText}>I acknowledge that all JPG frameworks, systems, and content are the exclusive intellectual property of Jones Performance Group LLC. I will not share, reproduce, or distribute any JPG materials without prior written authorization. I acknowledge the mutual confidentiality obligations stated above.</div>
+      <CB label="I acknowledge JPG's intellectual property rights and my confidentiality obligations. I will not share, reproduce, or distribute any JPG materials without prior written authorization." checked={values.ack_ip} onChange={e => handleChange('ack_ip', e.target.checked)} />
+
+      <div style={secHead}>SECTION 11 — DISPUTE RESOLUTION</div>
+      <div style={subHead}>GOVERNING LAW</div>
+      <div style={bodyText}>This Agreement shall be governed by and construed in accordance with the laws of the state in which Jones Performance Group LLC is legally organized at the time of the dispute. In the event of entity relocation, active clients will be notified in writing before any change in governing jurisdiction takes effect. Client agreements executed prior to relocation remain governed by the law in effect at time of signing unless a written amendment is fully executed by both parties.</div>
+      <div style={subHead}>DISPUTE PROCESS</div>
+      <div style={bodyText}>The parties agree to attempt good-faith resolution of any dispute through direct communication before pursuing formal legal action. In the event good-faith resolution is not achieved, disputes shall be submitted to binding arbitration in accordance with the rules of a mutually agreed arbitration body. The prevailing party shall be entitled to recover reasonable attorney's fees and costs.</div>
+      <div style={italicText}>I agree to attempt good-faith resolution before pursuing formal legal action and accept binding arbitration as the dispute resolution mechanism for this Agreement.</div>
+      <CB label="I acknowledge the dispute resolution terms, including the governing law provision and the good-faith resolution requirement before formal legal action." checked={values.ack_dispute} onChange={e => handleChange('ack_dispute', e.target.checked)} />
+
+      <div style={secHead}>SECTION 12 — ACKNOWLEDGMENT &amp; EXECUTION</div>
+      <div style={bodyText}>I, the undersigned, confirm that I have read this Promotional Discount Program Agreement in its entirety and understand each section and its implications. I am entering this Agreement voluntarily, without duress, and with full understanding that it is a legally binding document. I acknowledge that I had the opportunity to seek independent legal counsel before signing and have chosen to proceed.</div>
+      <div style={bodyText}>I agree to all terms stated herein. I understand that no services will begin until this Agreement is fully executed and all applicable payment requirements have been satisfied.</div>
+      <div style={italicText}>I have read this Promotional Discount Program Agreement in full. I understand and agree to all terms. I am signing voluntarily and with full knowledge of my obligations under this Agreement.</div>
+      <CB label="I agree to all terms stated herein, including all sections of this Promotional Discount Program Agreement." checked={values.ack_full_agreement} onChange={e => handleChange('ack_full_agreement', e.target.checked)} />
       <TI label="Full Name (typed — serves as electronic signature)" req value={values.signature} onChange={e => handleChange('signature', e.target.value)} />
+
       {error && <div style={errBox}>{error}</div>}
       <button onClick={handleSubmit} style={{ background: GOLD, color: '#000', fontWeight: 700, fontSize: 13, padding: '10px 28px', borderRadius: 4, border: 'none', cursor: 'pointer', letterSpacing: '1px', marginTop: 8 }}>
         SUBMIT
