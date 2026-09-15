@@ -202,6 +202,10 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
     return <Form003View entry={entry} username={username} onBack={onBack} onSubmitted={onSubmitted} />;
   }
 
+  if (formDef.key === 'form_005') {
+    return <Form005View entry={entry} username={username} onBack={onBack} onSubmitted={onSubmitted} />;
+  }
+
   function handleChange(key, val) {
     setValues(prev => ({ ...prev, [key]: val }));
     setError('');
@@ -735,6 +739,184 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
       <div style={bodyText}>I agree to all terms stated herein. I understand that no services will begin until this Agreement is fully executed and all applicable payment requirements have been satisfied.</div>
       <div style={italicText}>I have read this Promotional Discount Program Agreement in full. I understand and agree to all terms. I am signing voluntarily and with full knowledge of my obligations under this Agreement.</div>
       <CB label="I agree to all terms stated herein, including all sections of this Promotional Discount Program Agreement." checked={values.ack_full_agreement} onChange={e => handleChange('ack_full_agreement', e.target.checked)} />
+      <TI label="Full Name (typed — serves as electronic signature)" req value={values.signature} onChange={e => handleChange('signature', e.target.value)} />
+
+      {error && <div style={errBox}>{error}</div>}
+      <button onClick={handleSubmit} style={{ background: GOLD, color: '#000', fontWeight: 700, fontSize: 13, padding: '10px 28px', borderRadius: 4, border: 'none', cursor: 'pointer', letterSpacing: '1px', marginTop: 8 }}>
+        SUBMIT
+      </button>
+    </div>
+  );
+}
+
+// ── Form 005 — Photo / Testimonial Release ──────────────────────
+
+function Form005View({ entry, username, onBack, onSubmitted }) {
+  const init = () => ({
+    full_name: '', email: '', phone: '',
+    auth_photographs: false,
+    auth_video: false,
+    auth_before_after: false,
+    auth_written_testimonial: false,
+    auth_verbal_testimonial: false,
+    auth_progress_updates: false,
+    auth_case_reference: false,
+    use_website: false,
+    use_social_media: false,
+    use_email_marketing: false,
+    use_marketing_materials: false,
+    use_educational_content: false,
+    use_presentations: false,
+    ack_full_release: false,
+    signature: '',
+  });
+
+  const [values, setValues] = useState(init);
+  const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+
+  const isSubmitted = entry && entry.submitted;
+
+  function handleChange(key, val) { setValues(prev => ({ ...prev, [key]: val })); setError(''); }
+
+  function handleSubmit() {
+    const required = [
+      { key: 'full_name', type: 'text', label: 'Full Name' },
+      { key: 'email', type: 'text', label: 'Email Address' },
+      { key: 'phone', type: 'text', label: 'Phone Number' },
+      { key: 'ack_full_release', type: 'cb', label: 'Section 5 acknowledgment' },
+      { key: 'signature', type: 'text', label: 'Full Name (typed signature)' },
+    ];
+    for (const r of required) {
+      const v = values[r.key];
+      if (r.type === 'cb' && !v) { setError(`Please check: "${r.label}"`); return; }
+      if (r.type === 'text' && !String(v).trim()) { setError(`"${r.label}" is required.`); return; }
+    }
+    const all = getAgreements(username);
+    const now = new Date().toISOString().slice(0, 10);
+    all['form_005'] = { submitted: true, submitted_at: now, data: { ...values } };
+    saveAgreements(username, all);
+    onSubmitted();
+  }
+
+  function handleEdit() {
+    const d = entry.data || {};
+    setValues({
+      full_name: d.full_name || '', email: d.email || '', phone: d.phone || '',
+      auth_photographs: d.auth_photographs ?? false,
+      auth_video: d.auth_video ?? false,
+      auth_before_after: d.auth_before_after ?? false,
+      auth_written_testimonial: d.auth_written_testimonial ?? false,
+      auth_verbal_testimonial: d.auth_verbal_testimonial ?? false,
+      auth_progress_updates: d.auth_progress_updates ?? false,
+      auth_case_reference: d.auth_case_reference ?? false,
+      use_website: d.use_website ?? false,
+      use_social_media: d.use_social_media ?? false,
+      use_email_marketing: d.use_email_marketing ?? false,
+      use_marketing_materials: d.use_marketing_materials ?? false,
+      use_educational_content: d.use_educational_content ?? false,
+      use_presentations: d.use_presentations ?? false,
+      ack_full_release: d.ack_full_release ?? false,
+      signature: d.signature || '',
+    });
+    setEditMode(true);
+  }
+
+  const sBox = { background: '#1a1a2e', border: '1px solid #5a4a1a', borderRadius: 4, padding: '14px 16px', marginBottom: 10, color: '#ccc', fontSize: 13, lineHeight: 1.7 };
+  const errBox = { color: '#e57373', fontSize: 13, marginBottom: 16, padding: '8px 12px', background: '#1a0a0a', borderRadius: 4 };
+  const secHead = { color: GOLD, fontWeight: 700, fontSize: 13, letterSpacing: '1px', marginBottom: 10, marginTop: 24, borderBottom: `1px solid #3a2e00`, paddingBottom: 6 };
+  const subHead = { color: GOLD, fontWeight: 700, fontSize: 12, letterSpacing: '1px', marginBottom: 8, marginTop: 16 };
+  const bodyText = { color: '#ccc', fontSize: 13, lineHeight: 1.7, marginBottom: 10 };
+  const italicText = { color: '#aaa', fontSize: 12, fontStyle: 'italic', lineHeight: 1.6, marginBottom: 14 };
+  const noteText = { color: '#888', fontSize: 12, fontStyle: 'italic', lineHeight: 1.6, marginBottom: 10, marginTop: -4 };
+
+  const CBOpt = ({ label, stateKey }) => (
+    <div style={{ marginBottom: 12 }}>
+      <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+        <input type="checkbox" checked={values[stateKey]} onChange={e => handleChange(stateKey, e.target.checked)} style={{ marginTop: 2, accentColor: GOLD, flexShrink: 0, width: 16, height: 16 }} />
+        <span style={{ color: '#ccc', fontSize: 13, lineHeight: 1.5 }}>{label}</span>
+      </label>
+    </div>
+  );
+
+  const header = (
+    <>
+      <button onClick={onBack} style={backBtnStyle}>← Back</button>
+      <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Photo / Testimonial Release</div>
+      <div style={{ color: GOLD, fontSize: 11, marginBottom: 16, opacity: 0.7 }}>JPG-TK-005-PhotoRelease-WRK-v1.0</div>
+    </>
+  );
+
+  if (isSubmitted && !editMode) {
+    return (
+      <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+        {header}
+        <div style={{ color: '#4caf50', fontSize: 13, marginBottom: 12 }}>✓ Submitted {entry.submitted_at}</div>
+        <button onClick={handleEdit} style={{ ...backBtnStyle, marginBottom: 24 }}>EDIT</button>
+        {Object.entries(entry.data || {}).map(([key, val]) => (
+          <div key={key} style={{ marginBottom: 14 }}>
+            <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 3 }}>{fieldLabel(key)}</div>
+            <div style={{ color: '#ccc', fontSize: 13 }}>{fieldValue(val)}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+      {header}
+
+      <div style={secHead}>SECTION 1 — CLIENT INFORMATION</div>
+      <TI label="Full Name" req value={values.full_name} onChange={e => handleChange('full_name', e.target.value)} />
+      <TI label="Email Address" req value={values.email} onChange={e => handleChange('email', e.target.value)} />
+      <TI label="Phone Number" req value={values.phone} onChange={e => handleChange('phone', e.target.value)} />
+
+      <div style={secHead}>SECTION 2 — SCOPE OF AUTHORIZATION</div>
+      <div style={bodyText}>Select all content types you authorize Jones Performance Group LLC to use. You may select one, several, or all.</div>
+
+      <div style={subHead}>PHOTOGRAPHY &amp; VIDEO</div>
+      <CBOpt stateKey="auth_photographs" label="Photographs — still images of me taken during coaching sessions, events, or program activities." />
+      <CBOpt stateKey="auth_video" label="Video footage — video recordings of me taken during coaching sessions, events, or program activities." />
+      <CBOpt stateKey="auth_before_after" label="Before & after imagery — comparative progress photographs taken at program milestones." />
+      <div style={noteText}>Note: Before & after imagery will never be published without your explicit written approval of the specific images.</div>
+
+      <div style={subHead}>WRITTEN &amp; VERBAL CONTENT</div>
+      <CBOpt stateKey="auth_written_testimonial" label="Written testimonial — a statement written by me describing my experience with JPG." />
+      <CBOpt stateKey="auth_verbal_testimonial" label="Verbal testimonial — a recorded statement by me describing my experience with JPG." />
+      <CBOpt stateKey="auth_progress_updates" label="Progress updates — written summaries of my progress, results, or milestones shared by JPG." />
+      <CBOpt stateKey="auth_case_reference" label="Case reference — anonymized or named reference to my program participation and outcomes." />
+      <div style={noteText}>Note: Named case references require separate written confirmation before publication.</div>
+
+      <div style={secHead}>SECTION 3 — PERMITTED USES</div>
+      <div style={bodyText}>Select all channels and uses you authorize. JPG will only publish authorized content through channels you select below.</div>
+
+      <div style={subHead}>DIGITAL &amp; ONLINE</div>
+      <CBOpt stateKey="use_website" label="JPG website — jonesperformancegroup.com and any associated subdomains." />
+      <CBOpt stateKey="use_social_media" label="Social media — JPG-owned accounts on Instagram, Facebook, LinkedIn, X, or similar platforms." />
+      <CBOpt stateKey="use_email_marketing" label="Email marketing — JPG client newsletters, promotional emails, or broadcast communications." />
+
+      <div style={subHead}>MARKETING &amp; EDUCATIONAL CONTENT</div>
+      <CBOpt stateKey="use_marketing_materials" label="Marketing materials — digital or printed promotional materials including ads, flyers, and campaign assets." />
+      <CBOpt stateKey="use_educational_content" label="Educational content — JPG educational documents, reference materials, or program guides." />
+      <CBOpt stateKey="use_presentations" label="Presentations & speaking — use in presentations, speaking engagements, or media appearances by Doug Jones." />
+
+      <div style={secHead}>SECTION 4 — TERMS &amp; CONDITIONS</div>
+      <div style={subHead}>NO COMPENSATION</div>
+      <div style={bodyText}>This authorization is granted voluntarily and without financial compensation of any kind. No payment, credit, or other consideration is owed or implied by JPG for use of authorized content.</div>
+      <div style={subHead}>RIGHT TO WITHDRAW</div>
+      <div style={bodyText}>This authorization may be withdrawn at any time by submitting written notice to Jones Performance Group LLC. Withdrawal takes effect within 30 calendar days of written notice receipt. Content already published at the time of withdrawal is not subject to retroactive removal unless JPG determines removal is feasible.</div>
+      <div style={subHead}>IDENTIFIABLE CONTENT</div>
+      <div style={bodyText}>Jones Performance Group LLC will not publish identifiable photographs, video, or named testimonials without a fully executed copy of this release on file. Anonymized references to client results do not require a signed release and are governed separately.</div>
+      <div style={subHead}>ACCURACY</div>
+      <div style={bodyText}>JPG will not alter or misrepresent the substance of any written or verbal testimonial. Minor editing for length, clarity, or formatting may occur without altering the original meaning.</div>
+      <div style={subHead}>NO ENDORSEMENT IMPLIED</div>
+      <div style={bodyText}>Use of client content does not imply endorsement of any specific product, third-party service, or external organization. All content will be used solely in connection with JPG coaching services.</div>
+
+      <div style={secHead}>SECTION 5 — ACKNOWLEDGMENT &amp; SIGNATURE</div>
+      <div style={sBox}>I, the undersigned, voluntarily authorize Jones Performance Group LLC to use the content types and channels I have selected above. I confirm that I have read and understood all terms in this release. I understand that this authorization is revocable with 30 days written notice and that existing published content is not subject to retroactive removal. I am signing this release freely and without duress.</div>
+      <div style={italicText}>I confirm my selections above are accurate and I agree to all terms stated in this release.</div>
+      <CB label="I confirm my selections above are accurate and I agree to all terms stated in this release." checked={values.ack_full_release} onChange={e => handleChange('ack_full_release', e.target.checked)} />
       <TI label="Full Name (typed — serves as electronic signature)" req value={values.signature} onChange={e => handleChange('signature', e.target.value)} />
 
       {error && <div style={errBox}>{error}</div>}
