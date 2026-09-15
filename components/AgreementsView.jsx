@@ -210,6 +210,10 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted, onSessi
     return <Form001View entry={entry} username={username} onBack={onBack} onSubmitted={onSubmitted} onSessionUpgrade={onSessionUpgrade} userRole={userRole} />;
   }
 
+  if (formDef.key === 'form_002') {
+    return <Form002View entry={entry} username={username} onBack={onBack} onSubmitted={onSubmitted} />;
+  }
+
   function handleChange(key, val) {
     setValues(prev => ({ ...prev, [key]: val }));
     setError('');
@@ -744,6 +748,192 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
       <div style={italicText}>I have read this Promotional Discount Program Agreement in full. I understand and agree to all terms. I am signing voluntarily and with full knowledge of my obligations under this Agreement.</div>
       <CB label="I agree to all terms stated herein, including all sections of this Promotional Discount Program Agreement." checked={values.ack_full_agreement} onChange={e => handleChange('ack_full_agreement', e.target.checked)} />
       <TI label="Full Name (typed — serves as electronic signature)" req value={values.signature} onChange={e => handleChange('signature', e.target.value)} />
+
+      {error && <div style={errBox}>{error}</div>}
+      <button onClick={handleSubmit} style={{ background: GOLD, color: '#000', fontWeight: 700, fontSize: 13, padding: '10px 28px', borderRadius: 4, border: 'none', cursor: 'pointer', letterSpacing: '1px', marginTop: 8 }}>
+        SUBMIT
+      </button>
+    </div>
+  );
+}
+
+// ── Form 002 — Program Application & Commitment Statement ───────
+
+function Form002View({ entry, username, onBack, onSubmitted }) {
+  const init = () => ({
+    full_name: '', preferred_name: '', email: '', phone: '',
+    anticipated_start_date: '',
+    fin_rate: false, fin_billing: false, fin_reinstatement: false,
+    fin_nonrefundable: false, fin_auth: false,
+    why_applying: '', top_three_behaviors: '', overcoming_difficulty: '',
+    prog_ack_1: false, prog_ack_2: false, prog_ack_3: false,
+    prog_ack_4: false, prog_ack_5: false, prog_ack_6: false,
+    prog_ack_7: false, prog_ack_8: false, prog_ack_9: false,
+    signature: '',
+  });
+
+  const [values, setValues] = useState(init);
+  const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+
+  const isSubmitted = entry && entry.submitted;
+
+  function handleChange(key, val) { setValues(prev => ({ ...prev, [key]: val })); setError(''); }
+
+  function handleSubmit() {
+    const required = [
+      { key: 'full_name', type: 'text', label: 'Full Name' },
+      { key: 'email', type: 'text', label: 'Email Address' },
+      { key: 'phone', type: 'text', label: 'Phone Number' },
+      { key: 'fin_rate', type: 'cb', label: 'Financial — program rate' },
+      { key: 'fin_billing', type: 'cb', label: 'Financial — billing schedule' },
+      { key: 'fin_reinstatement', type: 'cb', label: 'Financial — reinstatement' },
+      { key: 'fin_nonrefundable', type: 'cb', label: 'Financial — non-refundable' },
+      { key: 'fin_auth', type: 'cb', label: 'Financial — billing authorization' },
+      { key: 'why_applying', type: 'text', label: 'Why are you applying' },
+      { key: 'top_three_behaviors', type: 'text', label: 'Top three behaviors' },
+      { key: 'overcoming_difficulty', type: 'text', label: 'Overcoming difficulty' },
+      { key: 'prog_ack_1', type: 'cb', label: 'Program acknowledgment 1' },
+      { key: 'prog_ack_2', type: 'cb', label: 'Program acknowledgment 2' },
+      { key: 'prog_ack_3', type: 'cb', label: 'Program acknowledgment 3' },
+      { key: 'prog_ack_4', type: 'cb', label: 'Program acknowledgment 4' },
+      { key: 'prog_ack_5', type: 'cb', label: 'Program acknowledgment 5' },
+      { key: 'prog_ack_6', type: 'cb', label: 'Program acknowledgment 6' },
+      { key: 'prog_ack_7', type: 'cb', label: 'Program acknowledgment 7' },
+      { key: 'prog_ack_8', type: 'cb', label: 'Program acknowledgment 8' },
+      { key: 'prog_ack_9', type: 'cb', label: 'Program acknowledgment 9' },
+      { key: 'signature', type: 'text', label: 'Full Name (typed signature)' },
+    ];
+    for (const r of required) {
+      const v = values[r.key];
+      if (r.type === 'cb' && !v) { setError(`Please check: "${r.label}"`); return; }
+      if (r.type === 'text' && !String(v).trim()) { setError(`"${r.label}" is required.`); return; }
+    }
+    const all = getAgreements(username);
+    const now = new Date().toISOString().slice(0, 10);
+    all['form_002'] = { submitted: true, submitted_at: now, data: { ...values, date_submitted: now } };
+    saveAgreements(username, all);
+    onSubmitted();
+  }
+
+  function handleEdit() {
+    const d = entry.data || {};
+    setValues({
+      full_name: d.full_name || '', preferred_name: d.preferred_name || '',
+      email: d.email || '', phone: d.phone || '',
+      anticipated_start_date: d.anticipated_start_date || '',
+      fin_rate: d.fin_rate ?? false, fin_billing: d.fin_billing ?? false,
+      fin_reinstatement: d.fin_reinstatement ?? false,
+      fin_nonrefundable: d.fin_nonrefundable ?? false, fin_auth: d.fin_auth ?? false,
+      why_applying: d.why_applying || '',
+      top_three_behaviors: d.top_three_behaviors || '',
+      overcoming_difficulty: d.overcoming_difficulty || '',
+      prog_ack_1: d.prog_ack_1 ?? false, prog_ack_2: d.prog_ack_2 ?? false,
+      prog_ack_3: d.prog_ack_3 ?? false, prog_ack_4: d.prog_ack_4 ?? false,
+      prog_ack_5: d.prog_ack_5 ?? false, prog_ack_6: d.prog_ack_6 ?? false,
+      prog_ack_7: d.prog_ack_7 ?? false, prog_ack_8: d.prog_ack_8 ?? false,
+      prog_ack_9: d.prog_ack_9 ?? false,
+      signature: d.signature || '',
+    });
+    setEditMode(true);
+  }
+
+  const sBox = { background: '#1a1a2e', border: '1px solid #5a4a1a', borderRadius: 4, padding: '14px 16px', marginBottom: 10, color: '#ccc', fontSize: 13, lineHeight: 1.7 };
+  const errBox = { color: '#e57373', fontSize: 13, marginBottom: 16, padding: '8px 12px', background: '#1a0a0a', borderRadius: 4 };
+  const secHead = { color: GOLD, fontWeight: 700, fontSize: 13, letterSpacing: '1px', marginBottom: 10, marginTop: 24, borderBottom: `1px solid #3a2e00`, paddingBottom: 6 };
+  const bodyText = { color: '#ccc', fontSize: 13, lineHeight: 1.7, marginBottom: 10 };
+  const italicText = { color: '#aaa', fontSize: 12, fontStyle: 'italic', lineHeight: 1.6, marginBottom: 14 };
+
+  const header = (
+    <>
+      <button onClick={onBack} style={backBtnStyle}>← Back</button>
+      <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Program Application &amp; Commitment Statement</div>
+      <div style={{ color: GOLD, fontSize: 11, marginBottom: 16, opacity: 0.7 }}>JPG-TK-002-ProgramApplication-WRK-v1.0</div>
+    </>
+  );
+
+  if (isSubmitted && !editMode) {
+    return (
+      <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+        {header}
+        <div style={{ color: '#4caf50', fontSize: 13, marginBottom: 12 }}>✓ Submitted {entry.submitted_at}</div>
+        <button onClick={handleEdit} style={{ ...backBtnStyle, marginBottom: 24 }}>EDIT</button>
+        {Object.entries(entry.data || {}).map(([key, val]) => (
+          <div key={key} style={{ marginBottom: 14 }}>
+            <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 3 }}>{fieldLabel(key)}</div>
+            <div style={{ color: '#ccc', fontSize: 13 }}>{fieldValue(val)}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+      {header}
+
+      <div style={secHead}>SECTION 1 — APPLICANT INFORMATION</div>
+      <TI label="Full Name" req value={values.full_name} onChange={e => handleChange('full_name', e.target.value)} />
+      <TI label="Preferred Name" value={values.preferred_name} onChange={e => handleChange('preferred_name', e.target.value)} />
+      <TI label="Email Address" req value={values.email} onChange={e => handleChange('email', e.target.value)} />
+      <TI label="Phone Number" req value={values.phone} onChange={e => handleChange('phone', e.target.value)} />
+
+      <div style={secHead}>SECTION 2 — PROGRAM ENTRY</div>
+      <div style={bodyText}>All JPG clients enter at Tier 4 — Apprentice. There are no exceptions and no alternative entry points.</div>
+      <div style={{ ...sBox, marginBottom: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 1fr', gap: '6px 12px', marginBottom: 10 }}>
+          <div style={{ color: GOLD, fontWeight: 700, fontSize: 12 }}>Tier</div>
+          <div style={{ color: GOLD, fontWeight: 700, fontSize: 12 }}>Duration</div>
+          <div style={{ color: GOLD, fontWeight: 700, fontSize: 12 }}>Description</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Tier 4 — Apprentice</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>1 month</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Mandatory entry tier. Baseline tracking and onboarding.</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Tier 3 — Performance</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>3 months</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Active development and goal progression.</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Tier 2 — Greatness</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>3 months</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Mandatory program completion point.</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Tier 1 — Unstoppable</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>3+ months (optional)</div>
+          <div style={{ color: '#ccc', fontSize: 12 }}>Peak tier. Available only after Tier 2 completion.</div>
+        </div>
+      </div>
+      <TI label="Anticipated Start Date (MM/DD/YYYY)" placeholder="MM/DD/YYYY" value={values.anticipated_start_date} onChange={e => handleChange('anticipated_start_date', e.target.value)} />
+
+      <div style={secHead}>SECTION 3 — FINANCIAL COMMITMENT</div>
+      <div style={sBox}>
+        <div style={{ color: GOLD, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>STANDARD PROGRAM RATE: $1,500 / month</div>
+        <div style={bodyText}>Consistent across all tiers — no variation by tier or phase.</div>
+      </div>
+      <CB label="$1,500 per month is the standard program rate, consistent across all tiers and all phases of the program." checked={values.fin_rate} onChange={e => handleChange('fin_rate', e.target.checked)} />
+      <CB label="Monthly billing is due on the 1st of each month. A 7-day grace period applies. Failure to pay by the 8th results in immediate removal from the program." checked={values.fin_billing} onChange={e => handleChange('fin_billing', e.target.checked)} />
+      <CB label="Reinstatement after non-payment removal requires a $500 reinstatement fee plus the current month payment in full, paid before re-entry." checked={values.fin_reinstatement} onChange={e => handleChange('fin_reinstatement', e.target.checked)} />
+      <CB label="The Tier 4 entry period and first full month payment are non-refundable in all cases." checked={values.fin_nonrefundable} onChange={e => handleChange('fin_nonrefundable', e.target.checked)} />
+      <CB label="I authorize Jones Performance Group LLC to invoice me monthly at the agreed rate and I will maintain a current payment method on file." checked={values.fin_auth} onChange={e => handleChange('fin_auth', e.target.checked)} />
+
+      <div style={secHead}>SECTION 4 — COMMITMENT STATEMENT</div>
+      <div style={sBox}>I am applying to the Jones Performance Group program with full understanding of what is required of me. I am not here to explore the possibility of change — I am here to make it. I understand that this program demands consistent effort, honest self-assessment, and a willingness to be challenged. I accept that results are earned through execution, not intention. I enter this program as a committed participant, not a passive observer, and I hold myself accountable to the standard JPG requires.</div>
+      <TA label="Why are you applying to the Jones Performance Group program?" value={values.why_applying} onChange={e => handleChange('why_applying', e.target.value)} />
+      <TA label="What are the top three behaviors you can see yourself implementing through this program?" value={values.top_three_behaviors} onChange={e => handleChange('top_three_behaviors', e.target.value)} />
+      <TA label="What is your current system for overcoming difficulty when faced with challenging tasks?" value={values.overcoming_difficulty} onChange={e => handleChange('overcoming_difficulty', e.target.value)} />
+
+      <div style={secHead}>SECTION 5 — PROGRAM ACKNOWLEDGMENTS</div>
+      <div style={bodyText}>I have read and understand the following. Each item reflects a non-negotiable condition of my enrollment.</div>
+      <CB label="All clients enter JPG at Tier 4 — Apprentice. There is no alternative entry point regardless of prior experience, fitness level, or background." checked={values.prog_ack_1} onChange={e => handleChange('prog_ack_1', e.target.checked)} />
+      <CB label="Progression through Tier 4 → Tier 3 → Tier 2 is mandatory. I may not exit the program before completing Tier 2 without formal agreement." checked={values.prog_ack_2} onChange={e => handleChange('prog_ack_2', e.target.checked)} />
+      <CB label="Tier 1 — Unstoppable is optional and available only after successful completion of Tier 2. Separate written disclosure is required before Tier 1 activates." checked={values.prog_ack_3} onChange={e => handleChange('prog_ack_3', e.target.checked)} />
+      <CB label="Payment is due on the 1st of each month. The 7-day grace period is a professional courtesy — not a negotiable extension. Non-payment by the 8th results in immediate program removal." checked={values.prog_ack_4} onChange={e => handleChange('prog_ack_4', e.target.checked)} />
+      <CB label="Program removal for non-payment is immediate and without exception. All sessions are cancelled and access is suspended until the account is current and reinstatement fee is paid." checked={values.prog_ack_5} onChange={e => handleChange('prog_ack_5', e.target.checked)} />
+      <CB label="The Tier 4 entry period and my first full month payment are non-refundable. Refund eligibility for Tier 3 and Tier 2 is reviewed on a case-by-case basis at the coach's sole discretion." checked={values.prog_ack_6} onChange={e => handleChange('prog_ack_6', e.target.checked)} />
+      <CB label="No specific outcome or result is guaranteed. Results are determined by my consistency, effort, and execution. JPG provides the framework — I am responsible for applying it." checked={values.prog_ack_7} onChange={e => handleChange('prog_ack_7', e.target.checked)} />
+      <CB label="JPG coaching is not medical advice, therapy, or clinical treatment of any kind. I will consult a licensed medical professional before beginning any fitness or nutrition programming." checked={values.prog_ack_8} onChange={e => handleChange('prog_ack_8', e.target.checked)} />
+      <CB label="I am entering this program voluntarily and with full commitment. I understand that my results are a direct reflection of my effort and I hold myself to the standard this program requires." checked={values.prog_ack_9} onChange={e => handleChange('prog_ack_9', e.target.checked)} />
+
+      <div style={secHead}>SECTION 6 — SIGNATURE &amp; SUBMISSION</div>
+      <div style={bodyText}>By submitting this form, I confirm that my responses are truthful and complete. I understand that this application, once submitted, initiates the enrollment review process and does not constitute final enrollment. Final enrollment is contingent upon execution of the JPG Program Agreement and receipt of initial payment.</div>
+      <div style={italicText}>Full Name typed below serves as your electronic signature for Phase 1 of enrollment.</div>
+      <TI label="Full Name (typed — serves as signature for Phase 1)" req value={values.signature} onChange={e => handleChange('signature', e.target.value)} />
 
       {error && <div style={errBox}>{error}</div>}
       <button onClick={handleSubmit} style={{ background: GOLD, color: '#000', fontWeight: 700, fontSize: 13, padding: '10px 28px', borderRadius: 4, border: 'none', cursor: 'pointer', letterSpacing: '1px', marginTop: 8 }}>
