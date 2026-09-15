@@ -173,7 +173,7 @@ const inputBase = {
 
 // ── Client form view (fill out or view submitted) ───────────────
 
-function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
+function ClientFormView({ formDef, entry, username, onBack, onSubmitted, onSessionUpgrade, userRole }) {
   const fields = formDef ? (FORM_FIELDS[formDef.key] || []) : [];
   const isSubmitted = entry && entry.submitted;
 
@@ -204,6 +204,10 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
 
   if (formDef.key === 'form_005') {
     return <Form005View entry={entry} username={username} onBack={onBack} onSubmitted={onSubmitted} />;
+  }
+
+  if (formDef.key === 'form_001') {
+    return <Form001View entry={entry} username={username} onBack={onBack} onSubmitted={onSubmitted} onSessionUpgrade={onSessionUpgrade} userRole={userRole} />;
   }
 
   function handleChange(key, val) {
@@ -749,6 +753,244 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
   );
 }
 
+// ── Form 001 — Client Intake & Application ──────────────────────
+
+function Form001View({ entry, username, onBack, onSubmitted, onSessionUpgrade, userRole }) {
+  const init = () => ({
+    full_name: '', preferred_name: '', age: '', birth_month: '',
+    phone: '', email: '', occupation: '',
+    residential_street: '', residential_city: '', residential_state: '', residential_zip: '',
+    mailing_same: false, mailing_street: '', mailing_city: '', mailing_state: '', mailing_zip: '',
+    who_are_you: '', who_do_you_want_to_become: '', holding_you_back: '',
+    desired_outcomes: '',
+    total_commitment_response: '',
+    daily_routine: '', prevented_progress: '', why_ready_now: '', ready_for_structure: '',
+    time_commitment_response: '', six_month_commitment: false,
+    non_negotiables: '', hobbies: '', current_fitness: '', eating_habits: '', sleep: '', injuries: '',
+    emergency_contact_name: '', emergency_contact_phone: '',
+    program_agreement_acknowledged: false,
+    decl_honest: false, decl_patterns: false, decl_structure: false,
+    decl_accountability: false, decl_selective: false, decl_coachable: false,
+    full_name_signature: '', date_submitted: '',
+  });
+
+  const [values, setValues] = useState(init);
+  const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+
+  const isSubmitted = entry && entry.submitted;
+
+  function handleChange(key, val) { setValues(prev => ({ ...prev, [key]: val })); setError(''); }
+
+  async function handleSubmit() {
+    const required = [
+      { key: 'full_name', type: 'text', label: 'Full Name' },
+      { key: 'phone', type: 'text', label: 'Phone Number' },
+      { key: 'email', type: 'text', label: 'Email Address' },
+      { key: 'occupation', type: 'text', label: 'Occupation' },
+      { key: 'residential_street', type: 'text', label: 'Residential Street' },
+      { key: 'who_are_you', type: 'text', label: 'Who are you right now?' },
+      { key: 'who_do_you_want_to_become', type: 'text', label: 'Who do you want to become?' },
+      { key: 'holding_you_back', type: 'text', label: 'What patterns or habits are holding you back?' },
+      { key: 'desired_outcomes', type: 'text', label: 'Desired outcomes' },
+      { key: 'total_commitment_response', type: 'text', label: 'Total commitment response' },
+      { key: 'daily_routine', type: 'text', label: 'Daily routine' },
+      { key: 'prevented_progress', type: 'text', label: 'What has prevented progress' },
+      { key: 'why_ready_now', type: 'text', label: 'Why are you ready now' },
+      { key: 'ready_for_structure', type: 'text', label: 'Ready for structure' },
+      { key: 'time_commitment_response', type: 'text', label: 'Time commitment response' },
+      { key: 'six_month_commitment', type: 'cb', label: 'Six month commitment' },
+      { key: 'non_negotiables', type: 'text', label: 'Non-Negotiables' },
+      { key: 'current_fitness', type: 'text', label: 'Current Fitness Activity' },
+      { key: 'eating_habits', type: 'text', label: 'Current Eating Habits' },
+      { key: 'sleep', type: 'text', label: 'Sleep patterns' },
+      { key: 'injuries', type: 'text', label: 'Injuries / Physical Limitations' },
+      { key: 'emergency_contact_name', type: 'text', label: 'Emergency Contact Name' },
+      { key: 'emergency_contact_phone', type: 'text', label: 'Emergency Contact Phone' },
+      { key: 'program_agreement_acknowledged', type: 'cb', label: 'Program Agreement acknowledgment' },
+      { key: 'full_name_signature', type: 'text', label: 'Full Name (typed signature)' },
+    ];
+    for (const r of required) {
+      const v = values[r.key];
+      if (r.type === 'cb' && !v) { setError(`Please check: "${r.label}"`); return; }
+      if (r.type === 'text' && !String(v).trim()) { setError(`"${r.label}" is required.`); return; }
+    }
+
+    const now = new Date().toISOString().slice(0, 10);
+    const all = getAgreements(username);
+    all['form_001'] = { submitted: true, submitted_at: now, data: { ...values, date_submitted: now } };
+    saveAgreements(username, all);
+
+    if (userRole === 'prospect' && onSessionUpgrade) {
+      const formData = values;
+      const firstName = formData.full_name?.split(' ')[0] || 'Client';
+      const lastName = formData.full_name?.split(' ').slice(1).join(' ') || 'User';
+      const phone = formData.phone || '0000000000';
+      const newUsername = generateUsername(firstName, lastName);
+      const newPassword = generatePassword(lastName, phone, now);
+      const newRecord = createClientRecord(firstName, lastName, phone, formData.email || '', now);
+      newRecord.username = newUsername;
+      newRecord.password = newPassword;
+      await addClient(newRecord);
+      const oldKey = 'jpg_agreements_prospect';
+      const newKey = `jpg_agreements_${newUsername}`;
+      const existing = localStorage.getItem(oldKey);
+      if (existing) localStorage.setItem(newKey, existing);
+      onSessionUpgrade({ id: newRecord.id, role: 'client', username: newUsername, first_name: firstName, last_name: lastName }, { username: newUsername, password: newPassword });
+      return;
+    }
+    onSubmitted();
+  }
+
+  function handleEdit() {
+    const d = entry.data || {};
+    setValues({
+      full_name: d.full_name || '', preferred_name: d.preferred_name || '',
+      age: d.age || '', birth_month: d.birth_month || '',
+      phone: d.phone || '', email: d.email || '', occupation: d.occupation || '',
+      residential_street: d.residential_street || '', residential_city: d.residential_city || '',
+      residential_state: d.residential_state || '', residential_zip: d.residential_zip || '',
+      mailing_same: d.mailing_same ?? false,
+      mailing_street: d.mailing_street || '', mailing_city: d.mailing_city || '',
+      mailing_state: d.mailing_state || '', mailing_zip: d.mailing_zip || '',
+      who_are_you: d.who_are_you || '', who_do_you_want_to_become: d.who_do_you_want_to_become || '',
+      holding_you_back: d.holding_you_back || '',
+      desired_outcomes: d.desired_outcomes || '',
+      total_commitment_response: d.total_commitment_response || '',
+      daily_routine: d.daily_routine || '', prevented_progress: d.prevented_progress || '',
+      why_ready_now: d.why_ready_now || '', ready_for_structure: d.ready_for_structure || '',
+      time_commitment_response: d.time_commitment_response || '',
+      six_month_commitment: d.six_month_commitment ?? false,
+      non_negotiables: d.non_negotiables || '', hobbies: d.hobbies || '',
+      current_fitness: d.current_fitness || '', eating_habits: d.eating_habits || '',
+      sleep: d.sleep || '', injuries: d.injuries || '',
+      emergency_contact_name: d.emergency_contact_name || '',
+      emergency_contact_phone: d.emergency_contact_phone || '',
+      program_agreement_acknowledged: d.program_agreement_acknowledged ?? false,
+      decl_honest: d.decl_honest ?? false, decl_patterns: d.decl_patterns ?? false,
+      decl_structure: d.decl_structure ?? false, decl_accountability: d.decl_accountability ?? false,
+      decl_selective: d.decl_selective ?? false, decl_coachable: d.decl_coachable ?? false,
+      full_name_signature: d.full_name_signature || '', date_submitted: d.date_submitted || '',
+    });
+    setEditMode(true);
+  }
+
+  const sBox = { background: '#1a1a2e', border: '1px solid #5a4a1a', borderRadius: 4, padding: '14px 16px', marginBottom: 10, color: '#ccc', fontSize: 13, lineHeight: 1.7 };
+  const errBox = { color: '#e57373', fontSize: 13, marginBottom: 16, padding: '8px 12px', background: '#1a0a0a', borderRadius: 4 };
+  const secHead = { color: GOLD, fontWeight: 700, fontSize: 13, letterSpacing: '1px', marginBottom: 10, marginTop: 24, borderBottom: `1px solid #3a2e00`, paddingBottom: 6 };
+  const bodyText = { color: '#ccc', fontSize: 13, lineHeight: 1.7, marginBottom: 10 };
+  const italicText = { color: '#aaa', fontSize: 12, fontStyle: 'italic', lineHeight: 1.6, marginBottom: 14 };
+
+  const header = (
+    <>
+      <button onClick={onBack} style={backBtnStyle}>← Back</button>
+      <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Client Intake &amp; Application</div>
+      <div style={{ color: GOLD, fontSize: 11, marginBottom: 16, opacity: 0.7 }}>JPG-TK-001-ClientIntake-WRK-v1.0</div>
+    </>
+  );
+
+  if (isSubmitted && !editMode) {
+    return (
+      <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+        {header}
+        <div style={{ color: '#4caf50', fontSize: 13, marginBottom: 12 }}>✓ Submitted {entry.submitted_at}</div>
+        <button onClick={handleEdit} style={{ ...backBtnStyle, marginBottom: 24 }}>EDIT</button>
+        {Object.entries(entry.data || {}).map(([key, val]) => (
+          <div key={key} style={{ marginBottom: 14 }}>
+            <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 3 }}>{fieldLabel(key)}</div>
+            <div style={{ color: '#ccc', fontSize: 13 }}>{fieldValue(val)}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+      {header}
+
+      <div style={secHead}>SECTION 1 — PERSONAL INFORMATION</div>
+      <TI label="Full Name (first and last)" req value={values.full_name} onChange={e => handleChange('full_name', e.target.value)} />
+      <TI label="Preferred Name" value={values.preferred_name} onChange={e => handleChange('preferred_name', e.target.value)} />
+      <TI label="Age" value={values.age} onChange={e => handleChange('age', e.target.value)} />
+      <TI label="Birth Month (Jan – Dec)" value={values.birth_month} onChange={e => handleChange('birth_month', e.target.value)} />
+      <TI label="Phone Number" req value={values.phone} onChange={e => handleChange('phone', e.target.value)} />
+      <TI label="Email Address" req value={values.email} onChange={e => handleChange('email', e.target.value)} />
+      <TI label="Occupation" req value={values.occupation} onChange={e => handleChange('occupation', e.target.value)} />
+
+      <div style={secHead}>SECTION 2 — ADDRESS</div>
+      <TI label="Residential Street" req value={values.residential_street} onChange={e => handleChange('residential_street', e.target.value)} />
+      <TI label="City" value={values.residential_city} onChange={e => handleChange('residential_city', e.target.value)} />
+      <TI label="State" value={values.residential_state} onChange={e => handleChange('residential_state', e.target.value)} />
+      <TI label="Zip" value={values.residential_zip} onChange={e => handleChange('residential_zip', e.target.value)} />
+      <CB label="Mailing address same as residential" checked={values.mailing_same} onChange={e => handleChange('mailing_same', e.target.checked)} />
+      {!values.mailing_same && <>
+        <TI label="Mailing Street" value={values.mailing_street} onChange={e => handleChange('mailing_street', e.target.value)} />
+        <TI label="Mailing City" value={values.mailing_city} onChange={e => handleChange('mailing_city', e.target.value)} />
+        <TI label="Mailing State" value={values.mailing_state} onChange={e => handleChange('mailing_state', e.target.value)} />
+        <TI label="Mailing Zip" value={values.mailing_zip} onChange={e => handleChange('mailing_zip', e.target.value)} />
+      </>}
+
+      <div style={secHead}>SECTION 3 — IDENTITY &amp; SELF-AWARENESS</div>
+      <div style={bodyText}>These questions help establish who you are right now and where you want to go. Answer honestly — this is the starting point of your coaching plan.</div>
+      <TA label="Who are you right now?" value={values.who_are_you} onChange={e => handleChange('who_are_you', e.target.value)} />
+      <TA label="Who do you want to become?" value={values.who_do_you_want_to_become} onChange={e => handleChange('who_do_you_want_to_become', e.target.value)} />
+      <TA label="What patterns or habits are currently holding you back?" value={values.holding_you_back} onChange={e => handleChange('holding_you_back', e.target.value)} />
+
+      <div style={secHead}>SECTION 4 — DESIRED OUTCOMES</div>
+      <div style={bodyText}>What do you want to achieve? Be specific. These outcomes become the foundation of your coaching plan.</div>
+      <TA label="What are your desired outcomes from this program?" value={values.desired_outcomes} onChange={e => handleChange('desired_outcomes', e.target.value)} />
+
+      <div style={secHead}>SECTION 5 — TOTAL COMMITMENT</div>
+      <div style={sBox}>Real, lasting results are completely attainable. JPG uses a multifaceted approach that focuses on building multiple foundations. I am not just a fitness coach — I am a total life coach whose tools and methods reach into many aspects of daily life. To get there you have to be honest with me — about what's working, what isn't, and what you're struggling with. We work on everything together: how you move, how you eat, how you sleep, and how you think. None of it is optional.</div>
+      <TA label="Having read the above — what is your response? What does total commitment mean to you in the context of this program?" value={values.total_commitment_response} onChange={e => handleChange('total_commitment_response', e.target.value)} />
+
+      <div style={secHead}>SECTION 6 — READINESS &amp; DISCIPLINE</div>
+      <TA label="Describe your current daily routine — what does a typical day look like from morning to night?" value={values.daily_routine} onChange={e => handleChange('daily_routine', e.target.value)} />
+      <TA label="What has prevented progress in the past?" value={values.prevented_progress} onChange={e => handleChange('prevented_progress', e.target.value)} />
+      <TA label="Why are you ready now?" value={values.why_ready_now} onChange={e => handleChange('why_ready_now', e.target.value)} />
+      <TA label="Are you ready for daily structure and accountability? Describe what that means to you." value={values.ready_for_structure} onChange={e => handleChange('ready_for_structure', e.target.value)} />
+
+      <div style={secHead}>SECTION 7 — TIME &amp; COMMITMENT</div>
+      <div style={bodyText}>This program requires a consistent weekly time investment. The system is designed to build sustainable habits without overwhelming your schedule.</div>
+      <TA label="Are you willing to commit the time each week that the program requires?" value={values.time_commitment_response} onChange={e => handleChange('time_commitment_response', e.target.value)} />
+      <CB label="I understand that this program requires a minimum six-month commitment. I am prepared to honor that commitment." checked={values.six_month_commitment} onChange={e => handleChange('six_month_commitment', e.target.checked)} />
+
+      <div style={secHead}>SECTION 8 — HEALTH &amp; LIFESTYLE BASELINE</div>
+      <div style={bodyText}>This information establishes your starting point. Answer honestly — this is your baseline, not a judgment.</div>
+      <TA label="Non-Negotiables — What will you not compromise on during this program?" value={values.non_negotiables} onChange={e => handleChange('non_negotiables', e.target.value)} />
+      <TA label="Hobbies & Interests" value={values.hobbies} onChange={e => handleChange('hobbies', e.target.value)} />
+      <TA label="Current Fitness Activity — write None if no current fitness activity" value={values.current_fitness} onChange={e => handleChange('current_fitness', e.target.value)} />
+      <TA label="Current Eating Habits — describe a typical day" value={values.eating_habits} onChange={e => handleChange('eating_habits', e.target.value)} />
+      <TA label="Sleep — typical bedtime, wake time, and quality on a 1–10 scale (10 = Great)" value={values.sleep} onChange={e => handleChange('sleep', e.target.value)} />
+      <TA label="Injuries, Medical Conditions, or Physical Limitations" value={values.injuries} onChange={e => handleChange('injuries', e.target.value)} />
+
+      <div style={secHead}>SECTION 9 — EMERGENCY CONTACT</div>
+      <TI label="Emergency Contact Name" req value={values.emergency_contact_name} onChange={e => handleChange('emergency_contact_name', e.target.value)} />
+      <TI label="Emergency Contact Phone" req value={values.emergency_contact_phone} onChange={e => handleChange('emergency_contact_phone', e.target.value)} />
+
+      <div style={secHead}>SECTION 10 — READINESS DECLARATIONS</div>
+      <div style={bodyText}>Check all that apply. These are not required — they are an honest assessment of where you stand.</div>
+      <CB label="I am ready to be honest about who I am." checked={values.decl_honest} onChange={e => handleChange('decl_honest', e.target.checked)} />
+      <CB label="I am willing to confront my patterns." checked={values.decl_patterns} onChange={e => handleChange('decl_patterns', e.target.checked)} />
+      <CB label="I am ready to follow daily structure." checked={values.decl_structure} onChange={e => handleChange('decl_structure', e.target.checked)} />
+      <CB label="I am ready for accountability." checked={values.decl_accountability} onChange={e => handleChange('decl_accountability', e.target.checked)} />
+      <CB label="I understand that acceptance is selective and not guaranteed." checked={values.decl_selective} onChange={e => handleChange('decl_selective', e.target.checked)} />
+      <CB label="I am willing to accept coaching, criticism, encouragement, and hard conversations when needed." checked={values.decl_coachable} onChange={e => handleChange('decl_coachable', e.target.checked)} />
+
+      <div style={secHead}>SECTION 11 — ACKNOWLEDGMENT</div>
+      <div style={bodyText}>By submitting this form, I confirm that the information provided is accurate and complete. I understand this form initiates my application to the Jones Performance Group coaching program and does not constitute enrollment. Enrollment is contingent upon execution of the JPG Program Agreement.</div>
+      <CB label="I have reviewed the JPG Program Agreement and understand the program investment and commitment required." checked={values.program_agreement_acknowledged} onChange={e => handleChange('program_agreement_acknowledged', e.target.checked)} />
+      <TI label="Full Name (typed — serves as signature for Phase 1)" req value={values.full_name_signature} onChange={e => handleChange('full_name_signature', e.target.value)} />
+
+      {error && <div style={errBox}>{error}</div>}
+      <button onClick={handleSubmit} style={{ background: GOLD, color: '#000', fontWeight: 700, fontSize: 13, padding: '10px 28px', borderRadius: 4, border: 'none', cursor: 'pointer', letterSpacing: '1px', marginTop: 8 }}>
+        SUBMIT
+      </button>
+    </div>
+  );
+}
+
 // ── Form 005 — Photo / Testimonial Release ──────────────────────
 
 function Form005View({ entry, username, onBack, onSubmitted }) {
@@ -1092,39 +1334,17 @@ function ClientAgreementsView({ user, onSessionUpgrade }) {
   const agreements = getAgreements(user.username);
   const complete = countComplete(agreements);
 
-  async function handleFormSubmitted() {
-    if (activeForm === 'form_001' && user.role === 'prospect') {
-      const updatedAgreements = getAgreements(user.username);
-      const formData = updatedAgreements['form_001'].data;
-      const firstName = formData.full_name?.split(' ')[0] || 'Client';
-      const lastName = formData.full_name?.split(' ').slice(1).join(' ') || 'User';
-      const phone = formData.phone || '0000000000';
-      const today = new Date().toISOString().split('T')[0];
-      const newUsername = generateUsername(firstName, lastName);
-      const newPassword = generatePassword(lastName, phone, today);
-      const newRecord = createClientRecord(firstName, lastName, phone,
-        formData.email || '', today);
-      newRecord.username = newUsername;
-      newRecord.password = newPassword;
-      await addClient(newRecord);
-      const oldKey = 'jpg_agreements_prospect';
-      const newKey = `jpg_agreements_${newUsername}`;
-      const existing = localStorage.getItem(oldKey);
-      if (existing) localStorage.setItem(newKey, existing);
-      const newSession = {
-        id: newRecord.id,
-        role: 'client',
-        username: newUsername,
-        first_name: firstName,
-        last_name: lastName,
-      };
-      setProspectCredentials({ username: newUsername, password: newPassword });
+  function handleFormSubmitted() {
+    setActiveForm(null);
+  }
+
+  function handleForm001Upgrade(session, credentials) {
+    if (credentials) {
+      setProspectCredentials(credentials);
       setShowCredentialBanner(true);
-      setActiveForm(null);
-      if (onSessionUpgrade) onSessionUpgrade(newSession);
-      return;
     }
     setActiveForm(null);
+    if (onSessionUpgrade) onSessionUpgrade(session);
   }
 
   if (activeForm) {
@@ -1137,6 +1357,8 @@ function ClientAgreementsView({ user, onSessionUpgrade }) {
         username={user.username}
         onBack={() => setActiveForm(null)}
         onSubmitted={handleFormSubmitted}
+        onSessionUpgrade={handleForm001Upgrade}
+        userRole={user.role}
       />
     );
   }
