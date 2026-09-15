@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.7 | **Date:** 09/14/2026
+**Version:** v2.8 | **Date:** 09/15/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -157,16 +157,20 @@ form_007 is NOT in the FORMS constant array — it is handled separately via TK0
 
 ---
 
-## PROSPECT FORM_001 SUBMISSION FLOW (AgreementsView — built 08/25/2026)
+## PROSPECT FORM_001 SUBMISSION FLOW (AgreementsView — built 08/25/2026, updated 09/15/2026)
+
+Flow is now owned end-to-end by `Form001View`. The prospect upgrade branch has been removed from `handleFormSubmitted` in `ClientAgreementsView` — `handleFormSubmitted` is now a single-line `setActiveForm(null)`. `handleForm001Upgrade(session, credentials)` is the wrapper in `ClientAgreementsView` that receives the two-arg call from `Form001View`, stores credentials for the banner, then calls the external single-arg `onSessionUpgrade(session)` upstream to HUBApp.
 
 When role === 'prospect' and form_001 is submitted:
 1. generateUsername and generatePassword called with form_001 data
 2. createClientRecord called — pre-populated with form_001 data
 3. addClient adds record to hub_clients
 4. jpg_agreements_prospect copied to jpg_agreements_{newUsername} in localStorage
-5. onSessionUpgrade called → upgradeSession in HUBApp updates hub_session and user state
-6. Credential banner displayed — position fixed, zIndex 1000, full-screen modal
-7. Banner dismissed by "I HAVE SAVED MY CREDENTIALS" button only — not auto-dismissed
+5. Form001View calls onSessionUpgrade(session, credentials) — two args
+6. handleForm001Upgrade in ClientAgreementsView receives both args: stores credentials, shows banner, calls external onSessionUpgrade(session) — one arg
+7. upgradeSession in HUBApp updates hub_session and user state
+8. Credential banner displayed — position fixed, zIndex 1000, full-screen modal
+9. Banner dismissed by "I HAVE SAVED MY CREDENTIALS" button only — not auto-dismissed
 
 ---
 
@@ -391,6 +395,18 @@ SCHED_TYPES: 'Online Video (Teams / Zoom)' renamed to 'Online Video'.
 
 ---
 
+## DYNAMIC FORM COMPONENTS (AgreementsView.jsx — ADDED 09/15/2026)
+
+All five client-facing form views are function components defined inside `components/AgreementsView.jsx`. Each bypasses the generic `ClientFormView` field renderer via an early-return routing guard.
+
+- **Form007View** — client-facing TK-007 Promotional Discount Agreement. Reads form_007 sent state from `jpg_agreements_{username}`. Props: `{ entry, username, onBack, onSubmitted }`
+- **Form002View** — client-facing TK-002 Program Application & Commitment Statement. Props: `{ entry, username, onBack, onSubmitted }`
+- **Form001View** — client-facing TK-001 Client Intake & Application. Prospect submission triggers credential generation and session upgrade via `handleForm001Upgrade`. Props: `{ entry, username, onBack, onSubmitted, onSessionUpgrade, userRole }`
+- **Form005View** — client-facing TK-005 Photo / Testimonial Release. Section 2 and 3 checkboxes are optional multi-select. Props: `{ entry, username, onBack, onSubmitted }`
+- **Form003View** — client-facing TK-003 Liability Waiver & Disclaimer. Props: `{ entry, username, onBack, onSubmitted }`
+
+---
+
 ## LOCKED DECISIONS
 
 - Two-tier gold system: GOLD_LIGHT (#ddb94a) = clickable/action. GOLD (#B8860B) = informational.
@@ -408,7 +424,7 @@ SCHED_TYPES: 'Online Video (Teams / Zoom)' renamed to 'Online Video'.
 - countComplete() must iterate activeKeys only — never Object.values() of all agreements keys.
 - CoachDetailView, ClientAgreementsView, and Form007View are function components inside AgreementsView.jsx — not separate files.
 - TI, CB, TA helper components in AgreementsView.jsx must be defined at MODULE SCOPE — never inside Form007View or any other component function body. Defining them inside a component causes remount on every keystroke (focus loss bug).
-- form_007 is NOT in the FORMS constant array. ClientFormView guard handles routing: `if (!formDef || formDef.key === 'form_007')` → Form007View. formDef must be null-safe in ClientFormView: fields lookup and useEffect dependency both use optional access.
+- form_007 is NOT in the FORMS constant array. ClientFormView routes all five custom forms to dedicated components — the generic field renderer is bypassed for all five: form_007 → Form007View (null guard: `if (!formDef || formDef.key === 'form_007')`), form_003 → Form003View, form_005 → Form005View, form_001 → Form001View (passes onSessionUpgrade and userRole), form_002 → Form002View. formDef must be null-safe in ClientFormView: fields lookup and useEffect dependency both use optional access.
 - form_007 does not count toward completion total. countComplete() activeKeys are unchanged at ['form_001','form_002','form_003','form_005']. agreementsComplete() now has conditional logic based on form_007 submission — see AGREEMENTS GATING and ACTIVE FORM KEYS sections (UPDATED 09/14/2026).
 - obt_unlocked defaults to false. APPROVE CLIENT is the only path to OBT unlock — not the spoke toggle.
 - client_approved and interface_unlocked are fields in every client record — both default false.
@@ -460,4 +476,5 @@ isSpokeUnlocked() — prospect short-circuit first, then phase gate (dop/pit onl
 
 | Version | Date | Summary |
 |---|---|---|
+| v2.8 | 09/15/2026 | All five client-facing form views built and wired — Form007View, Form002View, Form001View, Form005View, Form003View. All five bypass ClientFormView generic renderer via routing guards. Form001View owns prospect upgrade flow end-to-end via handleForm001Upgrade two-arg wrapper. handleFormSubmitted simplified to single-line setActiveForm(null). DYNAMIC FORM COMPONENTS section added. |
 | v2.7 | 09/14/2026 | TK-007 generator added — TK007GeneratorView.jsx new component. pdf-lib 1.17.1 installed. Coach-side PDF generation with promo type suppression. localStorage write to jpg_agreements_{username} form_007 sent state. Logo asset added to src/assets/jpglogo.png. AgreementsView.jsx import and render block added in CoachDetailView. |
