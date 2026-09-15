@@ -198,6 +198,10 @@ function ClientFormView({ formDef, entry, username, onBack, onSubmitted }) {
     return <Form007View entry={entry} username={username} onBack={onBack} onSubmitted={onSubmitted} />;
   }
 
+  if (formDef.key === 'form_003') {
+    return <Form003View entry={entry} username={username} onBack={onBack} onSubmitted={onSubmitted} />;
+  }
+
   function handleChange(key, val) {
     setValues(prev => ({ ...prev, [key]: val }));
     setError('');
@@ -731,6 +735,161 @@ function Form007View({ entry, username, onBack, onSubmitted }) {
       <div style={bodyText}>I agree to all terms stated herein. I understand that no services will begin until this Agreement is fully executed and all applicable payment requirements have been satisfied.</div>
       <div style={italicText}>I have read this Promotional Discount Program Agreement in full. I understand and agree to all terms. I am signing voluntarily and with full knowledge of my obligations under this Agreement.</div>
       <CB label="I agree to all terms stated herein, including all sections of this Promotional Discount Program Agreement." checked={values.ack_full_agreement} onChange={e => handleChange('ack_full_agreement', e.target.checked)} />
+      <TI label="Full Name (typed — serves as electronic signature)" req value={values.signature} onChange={e => handleChange('signature', e.target.value)} />
+
+      {error && <div style={errBox}>{error}</div>}
+      <button onClick={handleSubmit} style={{ background: GOLD, color: '#000', fontWeight: 700, fontSize: 13, padding: '10px 28px', borderRadius: 4, border: 'none', cursor: 'pointer', letterSpacing: '1px', marginTop: 8 }}>
+        SUBMIT
+      </button>
+    </div>
+  );
+}
+
+// ── Form 003 — Liability Waiver & Disclaimer ────────────────────
+
+function Form003View({ entry, username, onBack, onSubmitted }) {
+  const init = () => ({
+    full_name: '', email: '', phone: '',
+    ack_medical: false,
+    ack_mental_health: false,
+    ack_results: false,
+    ack_assumption_of_risk: false,
+    ack_liability: false,
+    ack_full_waiver: false,
+    signature: '',
+  });
+
+  const [values, setValues] = useState(init);
+  const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+
+  const isSubmitted = entry && entry.submitted;
+
+  function handleChange(key, val) { setValues(prev => ({ ...prev, [key]: val })); setError(''); }
+
+  function handleSubmit() {
+    const required = [
+      { key: 'full_name', type: 'text', label: 'Full Name' },
+      { key: 'email', type: 'text', label: 'Email Address' },
+      { key: 'phone', type: 'text', label: 'Phone Number' },
+      { key: 'ack_medical', type: 'cb', label: 'Section 2 acknowledgment' },
+      { key: 'ack_mental_health', type: 'cb', label: 'Section 3 acknowledgment' },
+      { key: 'ack_results', type: 'cb', label: 'Section 4 acknowledgment' },
+      { key: 'ack_assumption_of_risk', type: 'cb', label: 'Section 5 acknowledgment' },
+      { key: 'ack_liability', type: 'cb', label: 'Section 6 acknowledgment' },
+      { key: 'ack_full_waiver', type: 'cb', label: 'Section 7 acknowledgment' },
+      { key: 'signature', type: 'text', label: 'Full Name (typed signature)' },
+    ];
+    for (const r of required) {
+      const v = values[r.key];
+      if (r.type === 'cb' && !v) { setError(`Please check: "${r.label}"`); return; }
+      if (r.type === 'text' && !String(v).trim()) { setError(`"${r.label}" is required.`); return; }
+    }
+    const all = getAgreements(username);
+    const now = new Date().toISOString().slice(0, 10);
+    all['form_003'] = { submitted: true, submitted_at: now, data: { ...values } };
+    saveAgreements(username, all);
+    onSubmitted();
+  }
+
+  function handleEdit() {
+    const d = entry.data || {};
+    setValues({
+      full_name: d.full_name || '', email: d.email || '', phone: d.phone || '',
+      ack_medical: d.ack_medical ?? false,
+      ack_mental_health: d.ack_mental_health ?? false,
+      ack_results: d.ack_results ?? false,
+      ack_assumption_of_risk: d.ack_assumption_of_risk ?? false,
+      ack_liability: d.ack_liability ?? false,
+      ack_full_waiver: d.ack_full_waiver ?? false,
+      signature: d.signature || '',
+    });
+    setEditMode(true);
+  }
+
+  const sBox = { background: '#1a1a2e', border: '1px solid #5a4a1a', borderRadius: 4, padding: '14px 16px', marginBottom: 10, color: '#ccc', fontSize: 13, lineHeight: 1.7 };
+  const errBox = { color: '#e57373', fontSize: 13, marginBottom: 16, padding: '8px 12px', background: '#1a0a0a', borderRadius: 4 };
+  const secHead = { color: GOLD, fontWeight: 700, fontSize: 13, letterSpacing: '1px', marginBottom: 10, marginTop: 24, borderBottom: `1px solid #3a2e00`, paddingBottom: 6 };
+  const subHead = { color: GOLD, fontWeight: 700, fontSize: 12, letterSpacing: '1px', marginBottom: 8, marginTop: 16 };
+  const bodyText = { color: '#ccc', fontSize: 13, lineHeight: 1.7, marginBottom: 10 };
+  const italicText = { color: '#aaa', fontSize: 12, fontStyle: 'italic', lineHeight: 1.6, marginBottom: 14 };
+
+  const header = (
+    <>
+      <button onClick={onBack} style={backBtnStyle}>← Back</button>
+      <div style={{ color: GOLD, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Liability Waiver &amp; Disclaimer</div>
+      <div style={{ color: GOLD, fontSize: 11, marginBottom: 16, opacity: 0.7 }}>JPG-TK-003-LiabilityWaiver-WRK-v1.0</div>
+    </>
+  );
+
+  if (isSubmitted && !editMode) {
+    return (
+      <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+        {header}
+        <div style={{ color: '#4caf50', fontSize: 13, marginBottom: 12 }}>✓ Submitted {entry.submitted_at}</div>
+        <button onClick={handleEdit} style={{ ...backBtnStyle, marginBottom: 24 }}>EDIT</button>
+        {Object.entries(entry.data || {}).map(([key, val]) => (
+          <div key={key} style={{ marginBottom: 14 }}>
+            <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 3 }}>{fieldLabel(key)}</div>
+            <div style={{ color: '#ccc', fontSize: 13 }}>{fieldValue(val)}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: 24, minHeight: '100vh', overflowY: 'auto', background: DARKER }}>
+      {header}
+
+      <div style={secHead}>SECTION 1 — APPLICANT INFORMATION</div>
+      <div style={bodyText}>This document constitutes a legally binding Liability Waiver and Disclaimer between the undersigned client and Jones Performance Group LLC. Read each section completely before signing. By submitting this form, you acknowledge that you have read, understood, and agreed to all terms contained herein.</div>
+      <TI label="Full Name" req value={values.full_name} onChange={e => handleChange('full_name', e.target.value)} />
+      <TI label="Email Address" req value={values.email} onChange={e => handleChange('email', e.target.value)} />
+      <TI label="Phone Number" req value={values.phone} onChange={e => handleChange('phone', e.target.value)} />
+
+      <div style={secHead}>SECTION 2 — HEALTH &amp; MEDICAL DISCLAIMER</div>
+      <div style={subHead}>JPG IS NOT A MEDICAL PROVIDER</div>
+      <div style={bodyText}>Doug Jones and Jones Performance Group LLC are not licensed physicians, medical doctors, nurses, or registered dietitians. No content, programming, communication, or coaching provided by JPG constitutes medical advice of any kind. Nothing communicated verbally, in writing, digitally, or through any JPG platform should be interpreted as a diagnosis, treatment recommendation, or medical opinion.</div>
+      <div style={subHead}>MEDICAL CLEARANCE REQUIRED</div>
+      <div style={bodyText}>Clients must consult a licensed medical professional and obtain clearance before beginning any fitness, nutrition, or performance program offered by JPG. By signing this document, the client confirms they have done so or assume full responsibility for participating without doing so.</div>
+      <div style={italicText}>I understand that JPG does not provide medical advice and I have consulted or will consult a licensed medical professional before beginning any fitness or nutrition programming.</div>
+      <CB label="I understand that JPG does not provide medical advice and I have consulted or will consult a licensed medical professional before beginning any fitness or nutrition programming." checked={values.ack_medical} onChange={e => handleChange('ack_medical', e.target.checked)} />
+
+      <div style={secHead}>SECTION 3 — MENTAL HEALTH DISCLAIMER</div>
+      <div style={subHead}>COACHING IS NOT THERAPY</div>
+      <div style={bodyText}>JPG coaches are not licensed therapists, psychologists, psychiatrists, or mental health counselors. Coaching provided by JPG is performance and accountability-based and does not constitute mental health treatment, psychological evaluation, or clinical intervention of any kind. JPG is not licensed or qualified to diagnose, treat, or evaluate any mental health condition.</div>
+      <div style={subHead}>MENTAL HEALTH SUPPORT</div>
+      <div style={bodyText}>Clients experiencing mental health challenges — including but not limited to depression, anxiety, trauma, substance dependency, or any condition requiring clinical support — must seek qualified professional care. JPG coaching is not a substitute for clinical mental health treatment.</div>
+      <div style={italicText}>I understand that JPG coaching is not therapy or mental health treatment. If I am experiencing mental health challenges, I will seek qualified clinical support separate from my JPG program.</div>
+      <CB label="I understand that JPG coaching is not therapy or mental health treatment. If I am experiencing mental health challenges, I will seek qualified clinical support separate from my JPG program." checked={values.ack_mental_health} onChange={e => handleChange('ack_mental_health', e.target.checked)} />
+
+      <div style={secHead}>SECTION 4 — RESULTS DISCLAIMER</div>
+      <div style={subHead}>NO GUARANTEED OUTCOMES</div>
+      <div style={bodyText}>Results achieved through JPG programs vary based on individual effort, consistency, adherence, and personal circumstances that are outside JPG's control. No specific outcome, result, transformation, or achievement is guaranteed by Jones Performance Group LLC or any JPG coach. Client testimonials and case references represent individual results only and do not imply guaranteed or typical outcomes for any other participant.</div>
+      <div style={italicText}>I understand that JPG does not guarantee specific results. I accept that my outcomes are determined by my own effort, consistency, and execution.</div>
+      <CB label="I understand that JPG does not guarantee specific results. I accept that my outcomes are determined by my own effort, consistency, and execution." checked={values.ack_results} onChange={e => handleChange('ack_results', e.target.checked)} />
+
+      <div style={secHead}>SECTION 5 — ASSUMPTION OF RISK</div>
+      <div style={subHead}>INHERENT RISK ACKNOWLEDGMENT</div>
+      <div style={bodyText}>Physical training, performance programming, and personal development activities carry inherent risk of physical injury, discomfort, or adverse outcomes. By participating in any JPG program, the client expressly assumes all risk associated with fitness programming, performance training, mindset work, and personal development activities undertaken as part of any JPG engagement. This assumption of risk is voluntary, knowing, and made with full understanding of the nature of the program.</div>
+      <div style={subHead}>FITNESS TO PARTICIPATE</div>
+      <div style={bodyText}>The client confirms they are physically and medically fit to participate in the JPG program at the time of signing this waiver. The client accepts full responsibility for monitoring their own physical condition during program participation and agrees to immediately discontinue any activity that causes pain, injury, or concern, and to seek medical attention as appropriate.</div>
+      <div style={italicText}>I expressly assume all risk associated with my participation in any JPG program. I confirm I am physically fit to participate and accept full responsibility for my own safety during all program activities.</div>
+      <CB label="I expressly assume all risk associated with my participation in any JPG program. I confirm I am physically fit to participate and accept full responsibility for my own safety during all program activities." checked={values.ack_assumption_of_risk} onChange={e => handleChange('ack_assumption_of_risk', e.target.checked)} />
+
+      <div style={secHead}>SECTION 6 — LIABILITY LIMITATION</div>
+      <div style={subHead}>LIMITATION OF LIABILITY</div>
+      <div style={bodyText}>Jones Performance Group LLC total liability for any claim arising from coaching services, program participation, or any JPG engagement is strictly limited to the total fees paid by the client in the 30 days immediately preceding the claim. Under no circumstances shall JPG be liable for indirect, incidental, consequential, special, or punitive damages of any kind, regardless of whether JPG has been advised of the possibility of such damages.</div>
+      <div style={subHead}>RELEASE OF CLAIMS</div>
+      <div style={bodyText}>To the fullest extent permitted by applicable law, the client hereby releases, waives, and forever discharges Jones Performance Group LLC, its owner, agents, and representatives from any and all claims, demands, actions, or causes of action arising out of or related to participation in any JPG program, coaching service, or related activity — whether known or unknown at the time of signing.</div>
+      <div style={italicText}>I acknowledge and agree to the limitation of liability stated above. I understand that JPG's total liability is capped at fees paid in the 30 days preceding any claim, and I waive all claims beyond that scope to the fullest extent permitted by law.</div>
+      <CB label="I acknowledge and agree to the limitation of liability stated above. I understand that JPG's total liability is capped at fees paid in the 30 days preceding any claim, and I waive all claims beyond that scope to the fullest extent permitted by law." checked={values.ack_liability} onChange={e => handleChange('ack_liability', e.target.checked)} />
+
+      <div style={secHead}>SECTION 7 — ACKNOWLEDGMENT &amp; WAIVER</div>
+      <div style={sBox}>I, the undersigned, confirm that I have read this Liability Waiver and Disclaimer in its entirety. I understand each section and its implications. I am signing this document voluntarily, without duress, and with full understanding that it is a legally binding agreement. I acknowledge that I had the opportunity to seek independent legal counsel before signing and have chosen to proceed. I agree to all terms stated herein and waive all claims within the scope defined above.</div>
+      <div style={italicText}>I have read this Liability Waiver and Disclaimer in full. I understand and agree to all terms. I am signing voluntarily and with full knowledge of the implications.</div>
+      <CB label="I have read this Liability Waiver and Disclaimer in full. I understand and agree to all terms. I am signing voluntarily and with full knowledge of the implications." checked={values.ack_full_waiver} onChange={e => handleChange('ack_full_waiver', e.target.checked)} />
       <TI label="Full Name (typed — serves as electronic signature)" req value={values.signature} onChange={e => handleChange('signature', e.target.value)} />
 
       {error && <div style={errBox}>{error}</div>}
