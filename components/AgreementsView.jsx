@@ -1506,6 +1506,152 @@ function Form003View({ entry, username, onBack, onSubmitted }) {
   );
 }
 
+// ── Billing helpers ──────────────────────────────────────────────
+
+const BILL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function fmtBillCurrency(n) {
+  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtBillDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return `${BILL_MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function fmtBillPeriod(d) {
+  return `${BILL_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function computeNextBillDate() {
+  const t = new Date();
+  const m = t.getDate() === 1 ? t.getMonth() : t.getMonth() + 1;
+  const y = m > 11 ? t.getFullYear() + 1 : t.getFullYear();
+  return `${y}-${String((m % 12) + 1).padStart(2, '0')}-01`;
+}
+
+function generateInvoiceList(rec) {
+  if (!rec.first_invoice_date) return [];
+  const today = new Date();
+  const todayYM = today.getFullYear() * 12 + today.getMonth();
+  const trialEnd = rec.trial_end_date ? new Date(rec.trial_end_date + 'T00:00:00') : null;
+  const invoices = [];
+  let num = (rec.invoice_series_start || 10275) + 1;
+  const cur = new Date(rec.first_invoice_date + 'T00:00:00');
+  while (cur.getFullYear() * 12 + cur.getMonth() <= todayYM) {
+    const curYM = cur.getFullYear() * 12 + cur.getMonth();
+    const isThisMonth = curYM === todayYM;
+    const isTrial = trialEnd && cur <= trialEnd;
+    const iso = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-01`;
+    let status = isTrial ? 'trial' : isThisMonth ? 'current' : 'paid';
+    invoices.push({
+      number: `${rec.invoice_prefix}-${rec.client_code}-${num}`,
+      period: fmtBillPeriod(cur),
+      amount: rec.monthly_rate,
+      dueDate: fmtBillDate(iso),
+      status,
+    });
+    num++;
+    cur.setMonth(cur.getMonth() + 1);
+  }
+  return invoices;
+}
+
+// ── Client billing section ───────────────────────────────────────
+
+function ClientBillingSection({ username }) {
+  let rec = null;
+  try {
+    const raw = localStorage.getItem(`hub_billing_${username}`);
+    if (raw) rec = JSON.parse(raw);
+  } catch (_) {}
+  if (!rec) return null;
+
+  const billingTypeLabel = rec.billing_type === 'promotional'
+    ? `Promotional — Type ${rec.promo_type}`
+    : 'Standard';
+
+  const statusColor = { active: '#4caf50', scholarship: GOLD, trial: GOLD, suspended: '#e05a5a' };
+  const statusLabel = { active: 'ACTIVE', scholarship: 'SCHOLARSHIP', trial: 'TRIAL', suspended: 'SUSPENDED' };
+  const sColor = statusColor[rec.billing_status] || '#4caf50';
+  const sLabel = statusLabel[rec.billing_status] || (rec.billing_status || '').toUpperCase();
+
+  const invStatusColor = { paid: '#4caf50', current: GOLD, trial: GOLD, upcoming: TEXT_DIM };
+  const invStatusLabel = { paid: 'PAID', current: 'CURRENT', trial: 'TRIAL', upcoming: 'UPCOMING' };
+
+  const invoices = generateInvoiceList(rec);
+  const nextDate = rec.first_invoice_date ? fmtBillDate(computeNextBillDate()) : '—';
+
+  const colGrid = { display: 'grid', gridTemplateColumns: '2fr 1fr 1.2fr 1.2fr 1fr', gap: 8 };
+
+  return (
+    <div style={{ marginTop: 32 }}>
+      <div style={{
+        color: GOLD, fontWeight: 700, fontSize: 15,
+        marginBottom: 14, paddingBottom: 8, borderBottom: `1px solid #5a4a1a`,
+      }}>
+        BILLING & INVOICES
+      </div>
+
+      {/* Summary card */}
+      <div style={{
+        background: DARK, border: `1px solid ${GOLD}`,
+        borderRadius: 6, padding: '14px 20px', marginBottom: 16,
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{rec.tier_name || '—'}</div>
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '1px',
+            color: sColor, border: `1px solid ${sColor}`, borderRadius: 3, padding: '2px 6px',
+          }}>{sLabel}</span>
+        </div>
+        <div style={{ color: TEXT_DIM, fontSize: 12, marginBottom: 6 }}>{billingTypeLabel}</div>
+        <div style={{ color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 12 }}>
+          {fmtBillCurrency(rec.monthly_rate)} / month
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: TEXT_DIM, fontSize: 10, fontWeight: 700, letterSpacing: '1px' }}>NEXT INVOICE</span>
+          <span style={{ color: GOLD, fontSize: 12, fontWeight: 700 }}>{nextDate}</span>
+        </div>
+      </div>
+
+      {/* Invoice list */}
+      {!rec.first_invoice_date ? (
+        <div style={{ color: TEXT_DIM, fontSize: 13, fontStyle: 'italic' }}>
+          Invoice schedule not yet set.
+        </div>
+      ) : (
+        <div>
+          <div style={{ ...colGrid, padding: '4px 12px', marginBottom: 4 }}>
+            {['INVOICE #', 'PERIOD', 'AMOUNT', 'DUE DATE', 'STATUS'].map(col => (
+              <div key={col} style={{ color: TEXT_DIM, fontSize: 9, fontWeight: 700, letterSpacing: '1px' }}>{col}</div>
+            ))}
+          </div>
+          {invoices.map((inv, i) => (
+            <div key={i} style={{
+              ...colGrid,
+              background: DARK, border: '1px solid #2a2a2a',
+              borderRadius: 4, padding: '8px 12px', marginBottom: 5,
+              alignItems: 'center',
+            }}>
+              <div style={{ color: '#ccc', fontSize: 10, fontFamily: 'monospace' }}>{inv.number}</div>
+              <div style={{ color: '#ccc', fontSize: 12 }}>{inv.period}</div>
+              <div style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>{fmtBillCurrency(inv.amount)}</div>
+              <div style={{ color: TEXT_DIM, fontSize: 11 }}>{inv.dueDate}</div>
+              <span style={{
+                fontSize: 9, fontWeight: 700, letterSpacing: '0.5px',
+                color: invStatusColor[inv.status],
+                border: `1px solid ${invStatusColor[inv.status]}`,
+                borderRadius: 3, padding: '2px 5px', whiteSpace: 'nowrap',
+              }}>{invStatusLabel[inv.status]}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Client agreements list ───────────────────────────────────────
 
 function ClientAgreementsView({ user, onSessionUpgrade }) {
@@ -1633,6 +1779,8 @@ function ClientAgreementsView({ user, onSessionUpgrade }) {
           onClick={() => setActiveForm('form_007')}
         />
       )}
+
+      <ClientBillingSection username={user.username} />
     </div>
   );
 }
