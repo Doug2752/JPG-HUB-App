@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { S } from '../utils/styles';
-import { GOLD, TEXT_DIM } from '../utils/constants';
+import { GOLD, GOLD_LIGHT, TEXT_DIM } from '../utils/constants';
 import { updateClient } from '../services/clients';
 import { todayISO } from '../utils/date';
+import BillingSetupView from './BillingSetupView';
 
 function agreementsComplete(username) {
   try {
@@ -46,7 +47,10 @@ const actionBtn = {
 
 export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfile }) {
   const isOpen = !!client;
-  const [capInput, setCapInput] = useState('');
+  const [capInput,   setCapInput]   = useState('');
+  const [activeTab,  setActiveTab]  = useState('details');
+
+  useEffect(() => { setActiveTab('details'); }, [client?.id]);
 
   async function handleToggleSpoke(flagKey) {
     const isUnlocking = !client[flagKey];
@@ -112,6 +116,36 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
       </div>
 
       {client && (
+        <>
+          {/* ── Tab Bar ──────────────────────────────────────────── */}
+          <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a' }}>
+            {['details', 'billing'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  flex: 1, padding: '9px 0', fontSize: 10, fontWeight: 700,
+                  letterSpacing: '1.5px', border: 'none', cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  background: activeTab === tab ? '#1a1a1a' : '#111',
+                  color: activeTab === tab ? GOLD_LIGHT : TEXT_DIM,
+                  borderBottom: activeTab === tab ? `2px solid ${GOLD_LIGHT}` : '2px solid transparent',
+                }}
+              >
+                {tab.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          {/* ── BILLING tab ──────────────────────────────────────── */}
+          {activeTab === 'billing' && (
+            <div style={{ ...S.spBody, padding: '16px 0 0' }}>
+              <BillingSetupView client={client} onSave={onUpdate} />
+            </div>
+          )}
+
+          {/* ── DETAILS tab ──────────────────────────────────────── */}
+          {activeTab === 'details' && (
         <div style={S.spBody}>
           <div style={S.spRow}>
             <div style={S.spRowLbl}>TIER</div>
@@ -285,6 +319,8 @@ export default function SlidePanel({ client, onClose, onUpdate, onOpenFullProfil
             </div>
           </div>
         </div>
+          )}
+        </>
       )}
 
       <div style={S.spFooter}>
