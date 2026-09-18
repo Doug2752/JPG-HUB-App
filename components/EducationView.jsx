@@ -60,13 +60,13 @@ const EDU_CATEGORIES = [
       {
         num: 2,
         title: 'LIMITLESS — Operating Doctrine',
-        description: '',
+        description: 'Four tiers. One standard. No ceiling.',
         file: '/edu-docs/JPG-FD-LIM-001-EDU-WRK-v1.0.pdf',
       },
       {
         num: 3,
         title: 'The 3 P\'s',
-        description: 'The three foundational principles that define how JPG clients show up every day.',
+        description: 'Perspective, Passion, and Purpose — the three forces that define why you do what you do.',
         file: '/edu-docs/JPG-FD-011-EDU-The3Ps-WRK-v1_0.pdf',
       },
     ],
