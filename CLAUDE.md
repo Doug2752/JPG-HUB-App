@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.8 | **Date:** 09/15/2026
+**Version:** v2.9 | **Date:** 09/18/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -48,9 +48,10 @@ JPG-HUB-App/
 │   ├── ReportsView.jsx
 │   ├── EventsBoardView.jsx           # Full forum-style thread board. hub_events storage.
 │   ├── AgreementsView.jsx            # 4 active standard forms + optional form_007 (Promotional Discount Program Agreement). jpg_agreements_{username} storage. Prospect form_001 submission triggers credential generation + session upgrade. CoachDetailView, ClientAgreementsView, and Form007View are function components defined inside this file — not separate files. TI, CB, TA helper components defined at module scope (NOT inside Form007View — causes focus loss if defined inside).
-│   ├── EducationView.jsx             # Two-level nav. 5 categories, 12 docs.
+│   ├── EducationView.jsx             # Two-level nav. 5 categories, 13 docs.
 │   ├── ClientViewMode.jsx
 │   ├── PlaceholderView.jsx
+│   ├── BillingSetupView.jsx          # Coach-side billing setup. Props: { client, onSave, onBack }. Storage key: hub_billing_{username}. Renders inside SlidePanel BILLING tab.
 │   └── tabs/
 │       ├── MessagesTab.jsx           # Coach view: multi-client checkbox messaging. Client view: single thread full-width, SEND bar, handleClientSendMessage. Props include isClient and clientId.
 │       ├── AnnouncementsTab.jsx      # Coach view: list + form + detail panel. Client view: read-only sorted list. Props include isClient and clientId.
@@ -87,6 +88,7 @@ JPG-HUB-App/
 | hub_events | EventsBoardView | Array of event thread objects |
 | jpg_agreements_{username} | AgreementsView, SlidePanel, WheelView | Per-client agreement state — 4 active forms: form_001, form_002, form_003, form_005. Optional form_007 entry present only if coach sent it to that client. |
 | hub_comms_seen_{username} | CommunicationView (direct localStorage), WheelView | Per-client last-seen timestamps for unread tracking. Shape: { messages: isoString\|null, announcements: isoString\|null, scheduled: isoString\|null } |
+| hub_billing_{username} | BillingSetupView | Billing profile per client. Written on SAVE. |
 
 **RETIRED 08/28/2026:** hub_scheduled_completed — do not read or write. All scheduled data lives in hub_scheduled with status field.
 
@@ -267,13 +269,13 @@ handleToggleSpoke DOP/PIT branch (ADDED 09/07/2026 — BUG-HUB-01 fix): When fla
 
 ## EDUCATION SPOKE (EducationView.jsx)
 
-5 categories, 12 docs. PDFs in public/edu-docs/.
+5 categories, 13 docs. PDFs in public/edu-docs/.
 
 | id | Label | Docs |
 |---|---|---|
 | app_systems | APP OPERATING SYSTEMS | 4 |
 | training | TRAINING & PHYSICAL PERFORMANCE | 1 |
-| lifestyle | LIFESTYLE & BEHAVIOR | 2 |
+| lifestyle | LIFESTYLE & BEHAVIOR | 3 |
 | program_foundations | PROGRAM FOUNDATIONS | 5 |
 | industry_articles | CURRENT INDUSTRY ARTICLES | 0 (placeholder) |
 
