@@ -1,6 +1,6 @@
 # HUB — CLAUDE.md
 ## Workspace Hub — Claude Code Operating Reference
-**Version:** v2.9 | **Date:** 09/18/2026
+**Version:** v3.0 | **Date:** 09/18/2026
 **Repo:** Doug2752/JPG-HUB-App
 **Local:** C:\JPG-PROJECTS\JPG-HUB-App
 
@@ -47,7 +47,7 @@ JPG-HUB-App/
 │   ├── CommunicationView.jsx         # 282 lines. Owns all state. 3-tab bar. isClient role check. getSeen/saveSeen/computeUnread helpers — reads/writes hub_comms_seen_{username}. Gold dot on tab labels when unread. Passes isClient and clientId to all three tab components.
 │   ├── ReportsView.jsx
 │   ├── EventsBoardView.jsx           # Full forum-style thread board. hub_events storage.
-│   ├── AgreementsView.jsx            # 4 active standard forms + optional form_007 (Promotional Discount Program Agreement). jpg_agreements_{username} storage. Prospect form_001 submission triggers credential generation + session upgrade. CoachDetailView, ClientAgreementsView, and Form007View are function components defined inside this file — not separate files. TI, CB, TA helper components defined at module scope (NOT inside Form007View — causes focus loss if defined inside).
+│   ├── AgreementsView.jsx            # 4 active standard forms + optional form_007 (Promotional Discount Program Agreement). jpg_agreements_{username} storage. Prospect form_001 submission triggers credential generation + session upgrade. CoachDetailView, ClientAgreementsView, Form007View, and ClientBillingSection are function components defined inside this file — not separate files. ClientBillingSection renders below form rows in ClientAgreementsView — reads hub_billing_{username}, generates invoice table, read-only, renders nothing if record absent. TI, CB, TA helper components defined at module scope (NOT inside Form007View — causes focus loss if defined inside).
 │   ├── EducationView.jsx             # Two-level nav. 5 categories, 13 docs.
 │   ├── ClientViewMode.jsx
 │   ├── PlaceholderView.jsx
@@ -88,7 +88,7 @@ JPG-HUB-App/
 | hub_events | EventsBoardView | Array of event thread objects |
 | jpg_agreements_{username} | AgreementsView, SlidePanel, WheelView | Per-client agreement state — 4 active forms: form_001, form_002, form_003, form_005. Optional form_007 entry present only if coach sent it to that client. |
 | hub_comms_seen_{username} | CommunicationView (direct localStorage), WheelView | Per-client last-seen timestamps for unread tracking. Shape: { messages: isoString\|null, announcements: isoString\|null, scheduled: isoString\|null } |
-| hub_billing_{username} | BillingSetupView | Billing profile per client. Written on SAVE. |
+| hub_billing_{username} | BillingSetupView (write), ClientBillingSection (read) | Billing profile per client. Written by BillingSetupView on SAVE. Read by ClientBillingSection — read-only invoice table rendered in client agreements view. |
 
 **RETIRED 08/28/2026:** hub_scheduled_completed — do not read or write. All scheduled data lives in hub_scheduled with status field.
 
