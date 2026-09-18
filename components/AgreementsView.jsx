@@ -10,14 +10,6 @@ const FORMS = [
   { key: 'form_005', label: 'Photo / Testimonial Release' },
 ];
 
-const FORM_PDFS = {
-  form_001: '/agreement-forms/JPG-TK-001-ClientApplication-WRK-v2.0.pdf',
-  form_002: '/agreement-forms/JPG-TK-002-ProgramOverview-WRK-v2.0.pdf',
-  form_003: '/agreement-forms/JPG-TK-003-LiabilityWaiver-WRK-v1.0.pdf',
-  form_005: '/agreement-forms/JPG-TK-005-PhotoRelease-WRK-v1.0.pdf',
-  form_007: '/agreement-forms/JPG-TK-007-PromotionalAgreement-WRK-v1.0.pdf',
-};
-
 const FORM_EMAIL_SUBJECTS = {
   form_001: 'Jones Performance Group — Client Application',
   form_002: 'Jones Performance Group — Program Overview & Agreement',
@@ -1819,13 +1811,6 @@ function CoachAgreementsView() {
     setPromoExpiration('');
   }
 
-  const handleDownload = (formKey) => {
-    const link = document.createElement('a');
-    link.href = FORM_PDFS[formKey];
-    link.download = FORM_PDFS[formKey].split('/').pop();
-    link.click();
-  };
-
   // --- render ---
   return (
     <div style={{ padding: 24, minHeight: '100vh', background: DARKER }}>
@@ -1869,17 +1854,6 @@ function CoachAgreementsView() {
                 {form.label}
               </div>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-                {/* Download */}
-                <button
-                  onClick={() => handleDownload(form.key)}
-                  style={{
-                    background: 'none', border: `1px solid ${GOLD}`, color: GOLD,
-                    fontSize: 11, padding: '4px 8px', borderRadius: 4, cursor: 'pointer',
-                    whiteSpace: 'nowrap', minWidth: 110,
-                  }}
-                >
-                  DOWNLOAD PDF
-                </button>
                 {/* Send options toggle */}
                 <button
                   onClick={() => setExpandedFormSend(isOpen ? null : form.key)}
@@ -1947,12 +1921,6 @@ function CoachAgreementsView() {
             Promotional Discount Program Agreement
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-            <button
-              onClick={() => handleDownload('form_007')}
-              style={{ background: 'none', border: `1px solid ${GOLD}`, color: GOLD, fontSize: 11, padding: '4px 8px', borderRadius: 4, cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 110 }}
-            >
-              DOWNLOAD PDF
-            </button>
             <button
               onClick={() => setExpandedFormSend(expandedFormSend === 'form_007' ? null : 'form_007')}
               style={{ background: GOLD, border: 'none', color: '#000', fontWeight: 700, fontSize: 11, padding: '4px 8px', borderRadius: 4, cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 128 }}
