@@ -183,7 +183,7 @@ export default function MessagesTab({ user, clients, threads, setThreads, checke
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
       <div style={{
-        width: '100%', background: DARKER, borderTop: `1px solid ${GOLD}`,
+        width: '100%', background: DARKER, borderTop: `1px solid ${BORDER_DK}`,
         padding: '8px 20px', boxSizing: 'border-box', flexShrink: 0,
       }}>
         <span style={{ color: TEXT_DIM, fontSize: 11, fontStyle: 'italic', letterSpacing: '0.5px' }}>

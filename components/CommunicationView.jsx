@@ -79,7 +79,7 @@ const checkboxCheckedStyle = {
   border: `2px solid ${GOLD}`, background: GOLD,
 };
 
-export default function CommunicationView({ user }) {
+export default function CommunicationView({ user, onBack }) {
   const isClient = user?.role === 'client';
   const [activeTab, setActiveTab] = useState('messages');
   const [unreadMessages, setUnreadMessages] = useState(false);
@@ -169,8 +169,9 @@ export default function CommunicationView({ user }) {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {onBack && <button onClick={onBack} style={{ background: 'transparent', border: '1px solid #C9A84C', color: '#C9A84C', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', margin: '10px 0 14px 16px', alignSelf: 'flex-start' }}>← BACK</button>}
       <div style={{
-        display: 'flex', gap: 0, borderBottom: `1px solid ${BORDER_DK}`,
+        display: 'flex', gap: 0,
         background: DARKER, flexShrink: 0,
       }}>
         {TABS.map(tab => {

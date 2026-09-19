@@ -68,7 +68,7 @@ export default function HUBApp() {
   function renderView() {
     if (activeView === 'wheel')         return <WheelView hubUser={user} role={user.role === 'prospect' ? 'client' : user.role} onNavigate={handleViewChange} />;
     if (activeView === 'clients')      return <ClientsView key={clientRosterKey} onOpenPanel={setPanelClient} />;
-    if (activeView === 'communication') return <CommunicationView user={user} />;
+    if (activeView === 'communication') return <CommunicationView user={user} onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'fullprofile')   return <FullProfileView client={selectedProfileClient} onBack={handleBackFromProfile} />;
     if (activeView === 'reports')    return <ReportsView user={user} />;
     if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
