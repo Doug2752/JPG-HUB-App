@@ -241,9 +241,9 @@ export default function WheelView({ hubUser, role, onNavigate }) {
         <line x1="360" y1="360" x2="631"  y2="448" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="528"  y2="591" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="360"  y2="645" stroke="#333" strokeWidth="1.5"/>
-        <line x1="360" y1="360" x2="192"  y2="591" stroke="#333" strokeWidth="1.5"/>
-        <line x1="360" y1="360" x2="89"   y2="448" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="89"   y2="272" stroke="#333" strokeWidth="1.5"/>
+        <line x1="360" y1="360" x2="89"   y2="448" stroke="#333" strokeWidth="1.5"/>
+        <line x1="360" y1="360" x2="192"  y2="591" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="192"  y2="129" stroke="#333" strokeWidth="1.5"/>
 
         {/* HUB CENTER */}
@@ -310,10 +310,10 @@ export default function WheelView({ hubUser, role, onNavigate }) {
 
         {/* EVENTS BOARD */}
         <g style={spokeStyle('eventsboard', hubUser, role)} onClick={() => spokeClick('eventsboard', hubUser, role, onNavigate)}>
-          <circle cx="192" cy="591" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
-          <text x="192" y="576" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EVENTS</text>
-          <text x="192" y="596" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">BOARD</text>
-          <text x="192" y="611" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">COMMUNITY</text>
+          <circle cx="89" cy="272" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
+          <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EVENTS</text>
+          <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">BOARD</text>
+          <text x="89" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">COMMUNITY</text>
         </g>
 
         {/* TRACKING & TECHNOLOGY */}
@@ -334,10 +334,10 @@ export default function WheelView({ hubUser, role, onNavigate }) {
 
         {/* RESOURCES VAULT */}
         <g style={spokeStyle('resources', hubUser, role)} onClick={() => spokeClick('resources', hubUser, role, onNavigate)}>
-          <circle cx="89" cy="272" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
-          <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">FUTURE</text>
-          <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">BACKEND</text>
-          <text x="89" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">ADDITION</text>
+          <circle cx="192" cy="591" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
+          <text x="192" y="576" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">FUTURE</text>
+          <text x="192" y="596" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">BACKEND</text>
+          <text x="192" y="611" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">ADDITION</text>
         </g>
 
       </svg>
