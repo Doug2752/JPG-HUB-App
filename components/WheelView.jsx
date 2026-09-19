@@ -241,8 +241,8 @@ export default function WheelView({ hubUser, role, onNavigate }) {
         <line x1="360" y1="360" x2="631"  y2="448" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="528"  y2="591" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="360"  y2="645" stroke="#333" strokeWidth="1.5"/>
-        <line x1="360" y1="360" x2="89"   y2="272" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="89"   y2="448" stroke="#333" strokeWidth="1.5"/>
+        <line x1="360" y1="360" x2="89"   y2="272" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="192"  y2="591" stroke="#333" strokeWidth="1.5"/>
         <line x1="360" y1="360" x2="192"  y2="129" stroke="#333" strokeWidth="1.5"/>
 
@@ -310,18 +310,18 @@ export default function WheelView({ hubUser, role, onNavigate }) {
 
         {/* EVENTS BOARD */}
         <g style={spokeStyle('eventsboard', hubUser, role)} onClick={() => spokeClick('eventsboard', hubUser, role, onNavigate)}>
-          <circle cx="89" cy="272" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
-          <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EVENTS</text>
-          <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">BOARD</text>
-          <text x="89" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">COMMUNITY</text>
+          <circle cx="89" cy="448" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
+          <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">EVENTS</text>
+          <text x="89" y="453" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">BOARD</text>
+          <text x="89" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">COMMUNITY</text>
         </g>
 
         {/* TRACKING & TECHNOLOGY */}
         <g style={spokeStyle('daily', hubUser, role)} onClick={() => spokeClick('daily', hubUser, role, onNavigate)}>
-          <circle cx="89" cy="448" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
-          <text x="89" y="433" textAnchor="middle" fill="#B8860B" fontSize="7"  fontWeight="700" letterSpacing="1.5" fontFamily="Lato">RECOMMENDATIONS</text>
-          <text x="89" y="451" textAnchor="middle" fill="#fff"    fontSize="11" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">& TECHNOLOGY</text>
-          <text x="89" y="468" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">TOOLS</text>
+          <circle cx="89" cy="272" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
+          <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="7"  fontWeight="700" letterSpacing="1.5" fontFamily="Lato">RECOMMENDATIONS</text>
+          <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="11" fontWeight="900" letterSpacing="1.5" fontFamily="Lato">& TECHNOLOGY</text>
+          <text x="89" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">TOOLS</text>
         </g>
 
         {/* EDUCATION REFERENCE */}
