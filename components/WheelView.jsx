@@ -335,9 +335,9 @@ export default function WheelView({ hubUser, role, onNavigate }) {
         {/* RESOURCES VAULT */}
         <g style={spokeStyle('resources', hubUser, role)} onClick={() => spokeClick('resources', hubUser, role, onNavigate)}>
           <circle cx="89" cy="272" r="62" fill="#0F2238" stroke="#6B5E2E" strokeWidth="2"/>
-          <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">RESOURCES</text>
-          <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">VAULT</text>
-          <text x="89" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">DOWNLOADS</text>
+          <text x="89" y="257" textAnchor="middle" fill="#B8860B" fontSize="10" fontWeight="700" letterSpacing="2" fontFamily="Lato">FUTURE</text>
+          <text x="89" y="277" textAnchor="middle" fill="#fff"    fontSize="13" fontWeight="900" letterSpacing="2" fontFamily="Lato">BACKEND</text>
+          <text x="89" y="292" textAnchor="middle" fill="#bbb"    fontSize="9"  letterSpacing="1.5" fontFamily="Lato">ADDITION</text>
         </g>
 
       </svg>

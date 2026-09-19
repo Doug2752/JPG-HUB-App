@@ -93,141 +93,181 @@ const EDU_CATEGORIES = [
 
 const titleStyle = { color: GOLD, fontWeight: 700, fontSize: 20, letterSpacing: '3px' };
 
-export default function EducationView() {
+const backBtnStyle = {
+  background: 'transparent', border: `1px solid ${GOLD}`, color: GOLD,
+  fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4,
+  cursor: 'pointer', fontFamily: 'inherit',
+};
+
+const TABS = ['categories', 'downloads'];
+
+export default function EducationView({ user, onBack }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [hoveredKey, setHoveredKey] = useState(null);
-
-  if (selectedCategory === null) {
-    return (
-      <div style={{ padding: 28, overflowY: 'auto', flex: 1 }}>
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ ...titleStyle, marginBottom: 8 }}>
-            EDUCATIONAL REFERENCE DOCUMENTS
-          </div>
-          <div style={{ color: TEXT_DIM, fontSize: 12, fontStyle: 'italic', marginBottom: 16 }}>
-            Select a category to view documents.
-          </div>
-          <div style={{ height: 1, background: GOLD, opacity: 0.6 }} />
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 16,
-        }}>
-          {EDU_CATEGORIES.map(cat => {
-            const isHovered = hoveredKey === cat.id;
-            const count = cat.docs.length;
-            return (
-              <div
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat)}
-                onMouseEnter={() => setHoveredKey(cat.id)}
-                onMouseLeave={() => setHoveredKey(null)}
-                style={{
-                  background: DARK,
-                  border: `1px solid ${isHovered ? GOLD : BORDER_DK}`,
-                  borderRadius: 6,
-                  padding: '22px 26px',
-                  cursor: 'pointer',
-                  filter: isHovered ? 'brightness(1.1)' : 'none',
-                  transition: 'border-color 0.15s, filter 0.15s',
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                <div style={{ color: GOLD, fontWeight: 700, fontSize: 14, letterSpacing: '2px', marginBottom: 8 }}>
-                  {cat.label}
-                </div>
-                <div style={{ color: TEXT_DIM, fontSize: 13, lineHeight: 1.5, flex: 1 }}>
-                  {cat.description}
-                </div>
-                <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, marginTop: 12 }}>
-                  {count} document{count !== 1 ? 's' : ''}
-                </div>
-                <div style={{ color: GOLD, fontSize: 11, fontWeight: 700, marginTop: 4 }}>
-                  VIEW →
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
+  const [activeTab, setActiveTab] = useState('categories');
 
   return (
-    <div style={{ padding: 28, overflowY: 'auto', flex: 1 }}>
-      <div style={{ marginBottom: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={titleStyle}>
-            EDUCATIONAL REFERENCE DOCUMENTS
-          </div>
-          <button
-            onClick={() => setSelectedCategory(null)}
-            style={{
-              background: 'transparent',
-              border: `1px solid ${GOLD}`,
-              color: GOLD,
-              fontSize: 11,
-              fontWeight: 700,
-              padding: '5px 14px',
-              borderRadius: 4,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            ← BACK
-          </button>
-        </div>
-        <div style={{ color: GOLD, fontWeight: 700, fontSize: 14, letterSpacing: '2px', marginTop: 16 }}>
-          {selectedCategory.label}
-        </div>
-        <div style={{ height: 1, background: GOLD, opacity: 0.6, marginTop: 12, marginBottom: 20 }} />
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: 12,
-      }}>
-        {selectedCategory.docs.map(doc => {
-          const hoverKey = selectedCategory.id + '_' + doc.num;
-          const isHovered = hoveredKey === hoverKey;
-          return (
-            <div
-              key={hoverKey}
-              onClick={() => window.open(doc.file, '_blank')}
-              onMouseEnter={() => setHoveredKey(hoverKey)}
-              onMouseLeave={() => setHoveredKey(null)}
+      {/* ── Header: back button + tab bar ────────────────────── */}
+      <div style={{ flexShrink: 0 }}>
+        {onBack && (
+          <div style={{ padding: '12px 28px 8px' }}>
+            <button onClick={onBack} style={backBtnStyle}>← BACK</button>
+          </div>
+        )}
+        <div style={{ display: 'flex', borderBottom: `1px solid ${BORDER_DK}` }}>
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => { setActiveTab(tab); setSelectedCategory(null); }}
               style={{
-                background: DARK,
-                border: `1px solid ${isHovered ? GOLD : BORDER_DK}`,
-                borderRadius: 6,
-                padding: '18px 22px',
-                cursor: 'pointer',
-                filter: isHovered ? 'brightness(1.1)' : 'none',
-                transition: 'border-color 0.15s, filter 0.15s',
-                display: 'flex',
-                flexDirection: 'column',
+                padding: '10px 24px', fontSize: 11, fontWeight: 700,
+                letterSpacing: '2px', border: 'none', cursor: 'pointer',
+                fontFamily: 'inherit', background: 'transparent',
+                color: activeTab === tab ? GOLD : TEXT_DIM,
+                borderBottom: activeTab === tab ? `2px solid ${GOLD}` : '2px solid transparent',
               }}
             >
-              <div style={{ color: TEXT_DIM, fontSize: 10, fontWeight: 700, letterSpacing: '1px' }}>
-                Document {doc.num}
-              </div>
-              <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, marginTop: 4, marginBottom: 6 }}>
-                {doc.title}
-              </div>
-              <div style={{ color: TEXT_DIM, fontSize: 12, lineHeight: 1.5, flex: 1 }}>
-                {doc.description}
-              </div>
-              <div style={{ color: GOLD, fontSize: 11, fontWeight: 700, marginTop: 10 }}>
-                OPEN PDF →
-              </div>
-            </div>
-          );
-        })}
+              {tab.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* ── DOWNLOADS tab ────────────────────────────────────── */}
+      {activeTab === 'downloads' && (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ color: TEXT_DIM, fontSize: 14, fontStyle: 'italic' }}>
+            Downloads coming soon.
+          </div>
+        </div>
+      )}
+
+      {/* ── CATEGORIES tab: category grid ────────────────────── */}
+      {activeTab === 'categories' && selectedCategory === null && (
+        <div style={{ padding: 28, overflowY: 'auto', flex: 1 }}>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ ...titleStyle, marginBottom: 8 }}>
+              EDUCATIONAL REFERENCE DOCUMENTS
+            </div>
+            <div style={{ color: TEXT_DIM, fontSize: 12, fontStyle: 'italic', marginBottom: 16 }}>
+              Select a category to view documents.
+            </div>
+            <div style={{ height: 1, background: GOLD, opacity: 0.6 }} />
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: 16,
+          }}>
+            {EDU_CATEGORIES.map(cat => {
+              const isHovered = hoveredKey === cat.id;
+              const count = cat.docs.length;
+              return (
+                <div
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat)}
+                  onMouseEnter={() => setHoveredKey(cat.id)}
+                  onMouseLeave={() => setHoveredKey(null)}
+                  style={{
+                    background: DARK,
+                    border: `1px solid ${isHovered ? GOLD : BORDER_DK}`,
+                    borderRadius: 6,
+                    padding: '22px 26px',
+                    cursor: 'pointer',
+                    filter: isHovered ? 'brightness(1.1)' : 'none',
+                    transition: 'border-color 0.15s, filter 0.15s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <div style={{ color: GOLD, fontWeight: 700, fontSize: 14, letterSpacing: '2px', marginBottom: 8 }}>
+                    {cat.label}
+                  </div>
+                  <div style={{ color: TEXT_DIM, fontSize: 13, lineHeight: 1.5, flex: 1 }}>
+                    {cat.description}
+                  </div>
+                  <div style={{ color: TEXT_DIM, fontSize: 11, fontWeight: 700, marginTop: 12 }}>
+                    {count} document{count !== 1 ? 's' : ''}
+                  </div>
+                  <div style={{ color: GOLD, fontSize: 11, fontWeight: 700, marginTop: 4 }}>
+                    VIEW →
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── CATEGORIES tab: docs list ─────────────────────────── */}
+      {activeTab === 'categories' && selectedCategory !== null && (
+        <div style={{ padding: 28, overflowY: 'auto', flex: 1 }}>
+          <div style={{ marginBottom: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={titleStyle}>
+                EDUCATIONAL REFERENCE DOCUMENTS
+              </div>
+              <button
+                onClick={() => setSelectedCategory(null)}
+                style={backBtnStyle}
+              >
+                ← BACK
+              </button>
+            </div>
+            <div style={{ color: GOLD, fontWeight: 700, fontSize: 14, letterSpacing: '2px', marginTop: 16 }}>
+              {selectedCategory.label}
+            </div>
+            <div style={{ height: 1, background: GOLD, opacity: 0.6, marginTop: 12, marginBottom: 20 }} />
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: 12,
+          }}>
+            {selectedCategory.docs.map(doc => {
+              const hoverKey = selectedCategory.id + '_' + doc.num;
+              const isHovered = hoveredKey === hoverKey;
+              return (
+                <div
+                  key={hoverKey}
+                  onClick={() => window.open(doc.file, '_blank')}
+                  onMouseEnter={() => setHoveredKey(hoverKey)}
+                  onMouseLeave={() => setHoveredKey(null)}
+                  style={{
+                    background: DARK,
+                    border: `1px solid ${isHovered ? GOLD : BORDER_DK}`,
+                    borderRadius: 6,
+                    padding: '18px 22px',
+                    cursor: 'pointer',
+                    filter: isHovered ? 'brightness(1.1)' : 'none',
+                    transition: 'border-color 0.15s, filter 0.15s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <div style={{ color: TEXT_DIM, fontSize: 10, fontWeight: 700, letterSpacing: '1px' }}>
+                    Document {doc.num}
+                  </div>
+                  <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, marginTop: 4, marginBottom: 6 }}>
+                    {doc.title}
+                  </div>
+                  <div style={{ color: TEXT_DIM, fontSize: 12, lineHeight: 1.5, flex: 1 }}>
+                    {doc.description}
+                  </div>
+                  <div style={{ color: GOLD, fontSize: 11, fontWeight: 700, marginTop: 10 }}>
+                    OPEN PDF →
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
