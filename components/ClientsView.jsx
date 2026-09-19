@@ -28,7 +28,7 @@ const inputStyle = {
 
 const labelStyle = { fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: '1px', marginBottom: 4, display: 'block' };
 
-export default function ClientsView({ onOpenPanel }) {
+export default function ClientsView({ onOpenPanel, onBack }) {
   const [clients, setClients] = useState([]);
   const [hoveredRow, setHoveredRow] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -74,7 +74,9 @@ export default function ClientsView({ onOpenPanel }) {
   }
 
   return (
-    <div style={S.clientsScroll}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+      {onBack && <button onClick={onBack} style={{ background: 'transparent', border: '1px solid #C9A84C', color: '#C9A84C', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', margin: '10px 0 24px 16px', alignSelf: 'flex-start' }}>← BACK</button>}
+      <div style={S.clientsScroll}>
       <div style={S.pageHdr}>
         <h2 style={S.pageHdrH2}>ACTIVE CLIENTS</h2>
         <p style={S.pageHdrP}>Select a client for quick reference. Open full profile for complete detail.</p>
@@ -270,6 +272,7 @@ export default function ClientsView({ onOpenPanel }) {
           })}
         </div>
       ) : null}
+      </div>
     </div>
   );
 }
