@@ -16,7 +16,7 @@ const FIELDS = [
   { key: 'tutorialLink',          label: 'TUTORIAL / LEARN MORE' },
 ];
 
-export default function TrackingTechView({ user }) {
+export default function TrackingTechView({ user, onBack }) {
   const [activeTab, setActiveTab] = useState('devices');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
@@ -384,6 +384,7 @@ export default function TrackingTechView({ user }) {
 
   return (
     <div style={{ padding: 28, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {onBack && <button onClick={onBack} style={{ background: 'transparent', border: '1px solid #C9A84C', color: '#C9A84C', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', margin: '0 0 24px 0', alignSelf: 'flex-start' }}>← BACK</button>}
       <div style={{ marginBottom: 20 }}>
         <div style={{ ...titleStyle, marginBottom: 16 }}>RECOMMENDATIONS & TECHNOLOGY TOOLS</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>

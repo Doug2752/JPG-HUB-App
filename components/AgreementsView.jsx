@@ -1654,7 +1654,7 @@ function ClientBillingSection({ username }) {
 
 // ── Client agreements list ───────────────────────────────────────
 
-function ClientAgreementsView({ user, onSessionUpgrade }) {
+function ClientAgreementsView({ user, onSessionUpgrade, onBack }) {
   const [activeForm, setActiveForm] = useState(null);
   const [prospectCredentials, setProspectCredentials] = useState(null);
   const [showCredentialBanner, setShowCredentialBanner] = useState(false);
@@ -1692,7 +1692,8 @@ function ClientAgreementsView({ user, onSessionUpgrade }) {
   }
 
   return (
-    <div style={{ padding: 24, minHeight: '100vh', background: DARKER }}>
+    <div style={{ padding: 24, minHeight: '100vh', background: DARKER, display: 'flex', flexDirection: 'column' }}>
+      {onBack && <button onClick={onBack} style={{ background: 'transparent', border: '1px solid #C9A84C', color: '#C9A84C', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', margin: '0 0 24px 0', alignSelf: 'flex-start' }}>← BACK</button>}
       {showCredentialBanner && prospectCredentials && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -1888,7 +1889,7 @@ function CoachDetailView({ client, onBack }) {
 
 // ── Coach roster view ────────────────────────────────────────────
 
-function CoachAgreementsView() {
+function CoachAgreementsView({ onBack }) {
   const [selectedClient, setSelectedClient] = useState(null);
   const [expandedFormSend, setExpandedFormSend] = useState(null);
   const [emailInputs, setEmailInputs] = useState({});
@@ -1961,7 +1962,8 @@ function CoachAgreementsView() {
 
   // --- render ---
   return (
-    <div style={{ padding: 24, minHeight: '100vh', background: DARKER }}>
+    <div style={{ padding: 24, minHeight: '100vh', background: DARKER, display: 'flex', flexDirection: 'column' }}>
+      {onBack && <button onClick={onBack} style={{ background: 'transparent', border: '1px solid #C9A84C', color: '#C9A84C', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', margin: '0 0 24px 0', alignSelf: 'flex-start' }}>← BACK</button>}
 
       {/* ── FORMS SECTION ── */}
       <div style={{
@@ -2211,7 +2213,7 @@ const backBtnStyle = {
 
 // ── Root export ──────────────────────────────────────────────────
 
-export default function AgreementsView({ user, onSessionUpgrade }) {
-  if (user.role === 'coach') return <CoachAgreementsView />;
-  return <ClientAgreementsView user={user} onSessionUpgrade={onSessionUpgrade} />;
+export default function AgreementsView({ user, onSessionUpgrade, onBack }) {
+  if (user.role === 'coach') return <CoachAgreementsView onBack={onBack} />;
+  return <ClientAgreementsView user={user} onSessionUpgrade={onSessionUpgrade} onBack={onBack} />;
 }
