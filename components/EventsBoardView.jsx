@@ -111,7 +111,7 @@ function ThreadRow({ thread, isSelected, onClick }) {
   );
 }
 
-export default function EventsBoardView({ user }) {
+export default function EventsBoardView({ user, onBack }) {
   const [threads, setThreads] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [showNewForm, setShowNewForm] = useState(false);
@@ -235,7 +235,9 @@ export default function EventsBoardView({ user }) {
   const canDelete = selected && (isCoach || selected.created_by === user.username);
 
   return (
-    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+      {onBack && <button onClick={onBack} style={{ background: 'transparent', border: '1px solid #C9A84C', color: '#C9A84C', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', margin: '10px 0 24px 16px', alignSelf: 'flex-start' }}>← BACK</button>}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
       {/* ── LEFT PANEL ── */}
       <div style={{
         width: 340, flexShrink: 0, borderRight: `1px solid ${BORDER_DK}`,
@@ -513,6 +515,7 @@ export default function EventsBoardView({ user }) {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }
