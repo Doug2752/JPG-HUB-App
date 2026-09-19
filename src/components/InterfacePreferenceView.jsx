@@ -123,7 +123,7 @@ function saveInterfacePreference(username, value) {
   }
 }
 
-export default function InterfacePreferenceView({ user }) {
+export default function InterfacePreferenceView({ user, onBack }) {
   const [selectedInterface, setSelectedInterface] = useState(null);
 
   useEffect(() => {
@@ -153,7 +153,8 @@ export default function InterfacePreferenceView({ user }) {
   }
 
   return (
-    <div style={{ overflowY: 'auto', flex: 1 }}>
+    <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {onBack && <button onClick={onBack} style={{ background: 'transparent', border: '1px solid #C9A84C', color: '#C9A84C', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', margin: '10px 0 24px 16px', alignSelf: 'flex-start' }}>← BACK</button>}
       <div style={brandBar}>
         <div style={brandTitle}>APP INTERFACE PREFERENCE</div>
       </div>

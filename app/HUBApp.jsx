@@ -76,7 +76,7 @@ export default function HUBApp() {
     if (activeView === 'agreements') return <AgreementsView user={user} onNavigate={setActiveView} onSessionUpgrade={upgradeSession} />;
     if (activeView === 'edu')        return <EducationView user={user} onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'tracker')    return <TrackingTechView user={user} />;
-    if (activeView === 'interface')  return <InterfacePreferenceView user={user} />;
+    if (activeView === 'interface')  return <InterfacePreferenceView user={user} onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'clientview') return <ClientViewMode key="clientview" />;
     return null;
   }
