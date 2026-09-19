@@ -10,7 +10,7 @@ const REPORT_METRICS = [
   'Thankful For Completion',
 ];
 
-export default function ReportsView({ user }) {
+export default function ReportsView({ user, onBack }) {
   const [selectedClient, setSelectedClient] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
 
@@ -22,105 +22,106 @@ export default function ReportsView({ user }) {
     clients = [];
   }
 
-  if (clients.length === 0) {
-    return (
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#fff', fontSize: 14, letterSpacing: '1px' }}>No clients enrolled.</div>
-      </div>
-    );
-  }
-
-  if (selectedClient) {
-    const fullName = (selectedClient.first_name + ' ' + selectedClient.last_name).toUpperCase();
-    return (
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
-        <button
-          onClick={() => setSelectedClient(null)}
-          style={{
-            background: 'none', border: 'none', color: GOLD,
-            cursor: 'pointer', fontSize: 14, fontFamily: 'inherit',
-            padding: 0, marginBottom: 20,
-          }}
-        >
-          ← Back to Reports
-        </button>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 0 }}>
-          <div style={{ color: '#fff', fontWeight: 700, fontSize: 20 }}>{fullName}</div>
-          <div style={{
-            background: GOLD, color: '#000', fontWeight: 700, fontSize: 12,
-            padding: '3px 10px', borderRadius: 12, letterSpacing: '1px',
-          }}>
-            {(selectedClient.tier_name || 'Apprentice').toUpperCase()}
-          </div>
-        </div>
-
-        <div style={{ borderBottom: `1px solid ${BORDER_DK}`, margin: '12px 0' }} />
-
-        {REPORT_METRICS.map(label => (
-          <div key={label} style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '8px 0', borderBottom: `1px solid ${BORDER_DK}`,
-          }}>
-            <span style={{ color: TEXT_DIM, fontSize: 13 }}>{label}</span>
-            <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>—</span>
-          </div>
-        ))}
-
-        <button
-          disabled
-          style={{
-            width: '100%', background: 'transparent', color: GOLD,
-            border: `1px solid ${GOLD}`, padding: 10, borderRadius: 4,
-            fontWeight: 700, fontSize: 12, letterSpacing: '1px',
-            cursor: 'not-allowed', opacity: 0.45, marginTop: 20,
-            fontFamily: 'inherit',
-          }}
-        >
-          VIEW DAILY DETAIL
-        </button>
-
-        <div style={{
-          textAlign: 'center', color: TEXT_DIM, fontSize: 11,
-          fontStyle: 'italic', marginTop: 8,
-        }}>
-          Full data available after backend migration.
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
-      <div style={{ color: '#fff', fontWeight: 700, fontSize: 20, marginBottom: 24 }}>REPORTS</div>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+      {onBack && <button onClick={onBack} style={{ background: 'transparent', border: '1px solid #C9A84C', color: '#C9A84C', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', margin: '10px 0 24px 16px', alignSelf: 'flex-start' }}>← BACK</button>}
 
-      {clients.map(c => {
-        const fullName = (c.first_name + ' ' + c.last_name).toUpperCase();
-        const isHovered = hoveredRow === c.id;
+      {clients.length === 0 ? (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ color: '#fff', fontSize: 14, letterSpacing: '1px' }}>No clients enrolled.</div>
+        </div>
+
+      ) : selectedClient ? (() => {
+        const fullName = (selectedClient.first_name + ' ' + selectedClient.last_name).toUpperCase();
         return (
-          <div
-            key={c.id}
-            onClick={() => setSelectedClient(c)}
-            onMouseEnter={() => setHoveredRow(c.id)}
-            onMouseLeave={() => setHoveredRow(null)}
-            style={{
-              background: DARKER, border: `1px solid ${GOLD}`, borderRadius: 6,
-              padding: '14px 20px', marginBottom: 10, cursor: 'pointer',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              filter: isHovered ? 'brightness(1.15)' : 'none',
-              transition: 'filter 0.1s',
-            }}
-          >
-            <div style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{fullName}</div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
+            <button
+              onClick={() => setSelectedClient(null)}
+              style={{
+                background: 'none', border: 'none', color: GOLD,
+                cursor: 'pointer', fontSize: 14, fontFamily: 'inherit',
+                padding: 0, marginBottom: 20,
+              }}
+            >
+              ← Back to Reports
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 0 }}>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 20 }}>{fullName}</div>
+              <div style={{
+                background: GOLD, color: '#000', fontWeight: 700, fontSize: 12,
+                padding: '3px 10px', borderRadius: 12, letterSpacing: '1px',
+              }}>
+                {(selectedClient.tier_name || 'Apprentice').toUpperCase()}
+              </div>
+            </div>
+
+            <div style={{ borderBottom: `1px solid ${BORDER_DK}`, margin: '12px 0' }} />
+
+            {REPORT_METRICS.map(label => (
+              <div key={label} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '8px 0', borderBottom: `1px solid ${BORDER_DK}`,
+              }}>
+                <span style={{ color: TEXT_DIM, fontSize: 13 }}>{label}</span>
+                <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>—</span>
+              </div>
+            ))}
+
+            <button
+              disabled
+              style={{
+                width: '100%', background: 'transparent', color: GOLD,
+                border: `1px solid ${GOLD}`, padding: 10, borderRadius: 4,
+                fontWeight: 700, fontSize: 12, letterSpacing: '1px',
+                cursor: 'not-allowed', opacity: 0.45, marginTop: 20,
+                fontFamily: 'inherit',
+              }}
+            >
+              VIEW DAILY DETAIL
+            </button>
+
             <div style={{
-              background: GOLD, color: '#000', fontWeight: 700, fontSize: 12,
-              padding: '3px 10px', borderRadius: 12,
+              textAlign: 'center', color: TEXT_DIM, fontSize: 11,
+              fontStyle: 'italic', marginTop: 8,
             }}>
-              {(c.tier_name || 'Apprentice').toUpperCase()}
+              Full data available after backend migration.
             </div>
           </div>
         );
-      })}
+      })() : (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: 20, marginBottom: 24 }}>REPORTS</div>
+
+          {clients.map(c => {
+            const fullName = (c.first_name + ' ' + c.last_name).toUpperCase();
+            const isHovered = hoveredRow === c.id;
+            return (
+              <div
+                key={c.id}
+                onClick={() => setSelectedClient(c)}
+                onMouseEnter={() => setHoveredRow(c.id)}
+                onMouseLeave={() => setHoveredRow(null)}
+                style={{
+                  background: DARKER, border: `1px solid ${GOLD}`, borderRadius: 6,
+                  padding: '14px 20px', marginBottom: 10, cursor: 'pointer',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  filter: isHovered ? 'brightness(1.15)' : 'none',
+                  transition: 'filter 0.1s',
+                }}
+              >
+                <div style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{fullName}</div>
+                <div style={{
+                  background: GOLD, color: '#000', fontWeight: 700, fontSize: 12,
+                  padding: '3px 10px', borderRadius: 12,
+                }}>
+                  {(c.tier_name || 'Apprentice').toUpperCase()}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

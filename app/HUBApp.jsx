@@ -70,7 +70,7 @@ export default function HUBApp() {
     if (activeView === 'clients')      return <ClientsView key={clientRosterKey} onOpenPanel={setPanelClient} />;
     if (activeView === 'communication') return <CommunicationView user={user} onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'fullprofile')   return <FullProfileView client={selectedProfileClient} onBack={handleBackFromProfile} />;
-    if (activeView === 'reports')    return <ReportsView user={user} />;
+    if (activeView === 'reports')    return <ReportsView user={user} onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
     if (activeView === 'eventsboard') return <EventsBoardView user={user} onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'agreements') return <AgreementsView user={user} onNavigate={setActiveView} onSessionUpgrade={upgradeSession} />;
