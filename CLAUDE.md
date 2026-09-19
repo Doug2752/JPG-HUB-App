@@ -6,6 +6,12 @@
 
 ---
 
+## SCOPE AND PURPOSE
+
+HUB is the coach-side and client-side control center for Jones Performance Group LLC. The wheel is the primary navigation hub — 10 spokes, each routing to a spoke view or external app. All spoke views accept an `onBack` prop wired to `handleViewChange('wheel')` in HUBApp. The Education spoke includes a Downloads tab (placeholder — no content wired). Wheel spoke positions reorganized: RECOMMENDATIONS & TECHNOLOGY (spokeId 'daily') at cx=89, cy=272; EVENTS BOARD (spokeId 'eventsboard') at cx=89, cy=448; FUTURE/BACKEND ADDITION (spokeId 'resources') at cx=192, cy=591.
+
+---
+
 ## CRITICAL RULES — READ FIRST
 
 1. **Never guess or assume** — read the actual file before stating anything about its contents.
@@ -44,22 +50,23 @@ JPG-HUB-App/
 │   ├── ClientsView.jsx
 │   ├── SlidePanel.jsx                # 420px right panel. APPROVE/REVOKE APPROVAL button. Agreements gating on 4 spokes. 10 SPOKE_LABELS entries.
 │   ├── FullProfileView.jsx           # 5-section read-only profile. USERNAME and PASSWORD rendered in PROGRAM STATUS section. APP INTERFACE PREFERENCE row with coach override dropdown — saves immediately via updateClient (ADDED 08/28/2026). useState/useEffect hooks before early return (hooks-order fix 08/28/2026).
-│   ├── CommunicationView.jsx         # 282 lines. Owns all state. 3-tab bar. isClient role check. getSeen/saveSeen/computeUnread helpers — reads/writes hub_comms_seen_{username}. Gold dot on tab labels when unread. Passes isClient and clientId to all three tab components.
+│   ├── CommunicationView.jsx         # 282 lines. Owns all state. 3-tab bar. isClient role check. getSeen/saveSeen/computeUnread helpers — reads/writes hub_comms_seen_{username}. Gold dot on tab labels when unread. Passes isClient and clientId to all three tab components. Tab bar container borderBottom REMOVED (09/19/2026). Props: { user, onBack }.
 │   ├── ReportsView.jsx
 │   ├── EventsBoardView.jsx           # Full forum-style thread board. hub_events storage.
 │   ├── AgreementsView.jsx            # 4 active standard forms + optional form_007 (Promotional Discount Program Agreement). jpg_agreements_{username} storage. Prospect form_001 submission triggers credential generation + session upgrade. CoachDetailView, ClientAgreementsView, Form007View, and ClientBillingSection are function components defined inside this file — not separate files. ClientBillingSection renders below form rows in ClientAgreementsView — reads hub_billing_{username}, generates invoice table, read-only, renders nothing if record absent. TI, CB, TA helper components defined at module scope (NOT inside Form007View — causes focus loss if defined inside).
-│   ├── EducationView.jsx             # Two-level nav. 5 categories, 13 docs.
+│   ├── EducationView.jsx             # Two-level nav. 5 categories, 13 docs. Props: { user, onBack }. TABS: ['categories', 'downloads']. Downloads tab renders "Downloads coming soon." — no content wired.
 │   ├── ClientViewMode.jsx
 │   ├── PlaceholderView.jsx
+│   ├── TK007GeneratorView.jsx        # Coach-only PDF generator for TK-007 Promotional Discount Program Agreement. Located in components/ (NOT src/components/). Imported in AgreementsView.jsx as './TK007GeneratorView'.
 │   ├── BillingSetupView.jsx          # Coach-side billing setup. Props: { client, onSave, onBack }. Storage key: hub_billing_{username}. Renders inside SlidePanel BILLING tab.
 │   └── tabs/
-│       ├── MessagesTab.jsx           # Coach view: multi-client checkbox messaging. Client view: single thread full-width, SEND bar, handleClientSendMessage. Props include isClient and clientId.
+│       ├── MessagesTab.jsx           # Coach view: multi-client checkbox messaging. Client view: single thread full-width, SEND bar, handleClientSendMessage. Props include isClient and clientId. Instruction bar borderTop changed from GOLD to BORDER_DK at all three instances (09/19/2026).
 │       ├── AnnouncementsTab.jsx      # Coach view: list + form + detail panel. Client view: read-only sorted list. Props include isClient and clientId.
 │       └── ScheduledTab.jsx          # Full status system (UPDATED 08/28/2026). STATUS_BORDER constant. All items remain in hub_scheduled with status field (pending/completed/cancelled/rescheduled). hub_scheduled_completed RETIRED. handleComplete/handleCancel rewritten to update in place. StatusLegend multi-select filter in coach and client views. Full border cards, marginBottom 8, borderRadius 5, sort descending. Status badge inline with title. Type badge nowrap. Online Video label updated.
 ├── src/
 │   ├── components/
 │   │   ├── TrackingTechView.jsx      # Three-tab spoke view. Non-standard import path — cleanup at migration.
-│   │   └── InterfacePreferenceView.jsx  # Phase Two COMPLETE (UPDATED 08/28/2026). Full selection logic — OBT-style BrandBar, explainer block, three interface cards (Open/Guided/Structured), hub_clients read/write for interface_preference field, default-to-structured when field absent, StatusLegend multi-select filter. Props: { user }.
+│   │   └── InterfacePreferenceView.jsx  # Phase Two COMPLETE (UPDATED 08/28/2026). Full selection logic — OBT-style BrandBar, explainer block, three interface cards (Open/Guided/Structured), hub_clients read/write for interface_preference field, default-to-structured when field absent, StatusLegend multi-select filter. Props: { user, onBack }.
 │   └── data/
 │       └── trackingTechData.js       # TRACKING_TECH_DATA export. 816 lines. No localStorage.
 ├── utils/
@@ -70,9 +77,10 @@ JPG-HUB-App/
 │   └── storage.js                    # getSession, saveSession, logoutService
 ├── public/
 │   ├── jpglogo.png                   # Center circle logo — replace with transparent PNG when available
-│   ├── agreement-forms/              # 5 PDFs: form_001, form_002, form_003, form_005, form_007 (Promotional Discount Program Agreement)
+│   ├── agreement-forms/              # PDFs on disk: TK-001, TK-002, TK-003, TK-004 (legacy — retired, do not reference), TK-005. No TK-006. No TK-007 PDF — generated dynamically via pdf-lib in TK007GeneratorView.
 │   └── edu-docs/                     # 12 education PDFs
 └── CLAUDE.md
+JPG-HUB-App-main/                     # Legacy archive folder in repo root — do not modify contents.
 
 ---
 
@@ -233,6 +241,14 @@ Spokes: edu, eventsboard, daily, resources
 
 All strokes: strokeWidth 2, solid. No dashed lines on any active spoke.
 
+**Left-side spoke positions (UPDATED 09/19/2026):**
+| spokeId | Label | cx | cy |
+|---|---|---|---|
+| daily | RECOMMENDATIONS & TECHNOLOGY / TOOLS | 89 | 272 |
+| eventsboard | EVENTS BOARD / COMMUNITY | 89 | 448 |
+| resources | FUTURE / BACKEND / ADDITION | 192 | 591 |
+| interface | APP INTERFACE PREFERENCE | 360 | 645 (unchanged) |
+
 ---
 
 ## AGREEMENTS GATING (confirmed in code 08/25/2026)
@@ -281,6 +297,12 @@ handleToggleSpoke DOP/PIT branch (ADDED 09/07/2026 — BUG-HUB-01 fix): When fla
 
 Adding docs: one object to category docs array. No component rebuild needed.
 
+**Component details (UPDATED 09/19/2026):**
+Signature: `{ user, onBack }`. Wired in HUBApp.jsx: `onBack={() => handleViewChange('wheel')}`.
+`TABS` constant: `['categories', 'downloads']`. `activeTab` state: `useState('categories')`.
+Downloads tab: renders centered italic "Downloads coming soon." — no content wired yet.
+Back button: `{onBack && <button onClick={onBack} style={backBtnStyle}>← BACK</button>}`.
+
 ---
 
 ## TRACKING & TECHNOLOGY SPOKE (TrackingTechView.jsx + trackingTechData.js)
@@ -297,7 +319,7 @@ No localStorage. Gated behind agreements completion.
 ## INTERFACE PREFERENCE SPOKE (InterfacePreferenceView.jsx — UPDATED 09/07/2026)
 
 Phase Two build COMPLETE. Full selection logic built.
-Props: { user }.
+Props: { user, onBack }. Wired in HUBApp.jsx: `onBack={() => handleViewChange('wheel')}`.
 Storage: reads and writes hub_clients — field: interface_preference (open|guided|structured|null).
 Default: 'structured' when field is null or absent — display default only, no write on init.
 Three interface cards: Open, Guided, Structured. OBT-style BrandBar. Explainer block.
@@ -339,7 +361,7 @@ SCHED_TYPES: 'Online Video (Teams / Zoom)' renamed to 'Online Video'.
 
 ## TK-007 PROMOTIONAL AGREEMENT GENERATOR (ADDED 09/14/2026)
 
-**Component:** `src/components/TK007GeneratorView.jsx`
+**Component:** `components/TK007GeneratorView.jsx` — located in components/ NOT src/components/. Import in AgreementsView.jsx: `import TK007GeneratorView from './TK007GeneratorView'`
 
 **Purpose:** Coach-only component. Generates a configured TK-007 Promotional Discount Program Agreement PDF for a specific client. Client never sees other promo types — only the selected type renders in Sections 5 and 6.
 
@@ -439,6 +461,31 @@ All five client-facing form views are function components defined inside `compon
 
 ---
 
+## BACK BUTTON STANDARD (ADDED 09/19/2026)
+
+All spoke views accept an `onBack` prop. HUBApp.jsx wires each to `() => handleViewChange('wheel')`.
+
+**Components wired (lines 70–80 of HUBApp renderView):**
+- `AgreementsView` — passes `onBack` to both `CoachAgreementsView` and `ClientAgreementsView`. Back button in form-list view of each. Internal form detail paths use their own `onBack={() => setActiveForm(null)}` — independent.
+- `ClientsView { onOpenPanel, onBack }`
+- `ClientViewMode { onBack }`
+- `CommunicationView { user, onBack }`
+- `EventsBoardView { user, onBack }`
+- `PlaceholderView { icon, label, sub, onBack }` — Settings view
+- `ReportsView { user, onBack }`
+- `InterfacePreferenceView { user, onBack }`
+- `TrackingTechView { user, onBack }`
+- `EducationView { user, onBack }`
+
+**Exception:** `FullProfileView` uses `onBack={handleBackFromProfile}` (navigates to 'clients', not wheel) — correct behavior, not a gap. `WheelView` has no onBack — it is the wheel.
+
+**Back button style (standard):**
+`background: 'transparent', border: '1px solid #C9A84C', color: '#C9A84C', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', alignSelf: 'flex-start'`
+
+Margin varies: most use `margin: '10px 0 24px 16px'` | AgreementsView and TrackingTechView use `margin: '0 0 24px 0'` | CommunicationView uses `margin: '10px 0 14px 16px'` | PlaceholderView uses `margin: '10px 0 0 16px'`
+
+---
+
 ## PHASE GATING RULES
 
 getCyclePhase(hubUser) — reads hub_clients, computes cycleDay from tracking_start_date.
@@ -478,5 +525,6 @@ isSpokeUnlocked() — prospect short-circuit first, then phase gate (dop/pit onl
 
 | Version | Date | Summary |
 |---|---|---|
+| v2.9 | 09/19/2026 | Back button added to all spoke views — BACK BUTTON STANDARD section added. EducationView Downloads tab added (placeholder). WheelView spoke positions reorganized: daily cx=89 cy=272, eventsboard cx=89 cy=448, resources cx=192 cy=591. TK007GeneratorView.jsx location corrected to components/ (not src/components/). CommunicationView tab bar borderBottom removed. MessagesTab instruction bar borderTop changed from GOLD to BORDER_DK. SCOPE AND PURPOSE section added. CLAUDE.md discrepancies resolved. |
 | v2.8 | 09/15/2026 | All five client-facing form views built and wired — Form007View, Form002View, Form001View, Form005View, Form003View. All five bypass ClientFormView generic renderer via routing guards. Form001View owns prospect upgrade flow end-to-end via handleForm001Upgrade two-arg wrapper. handleFormSubmitted simplified to single-line setActiveForm(null). DYNAMIC FORM COMPONENTS section added. |
 | v2.7 | 09/14/2026 | TK-007 generator added — TK007GeneratorView.jsx new component. pdf-lib 1.17.1 installed. Coach-side PDF generation with promo type suppression. localStorage write to jpg_agreements_{username} form_007 sent state. Logo asset added to src/assets/jpglogo.png. AgreementsView.jsx import and render block added in CoachDetailView. |
