@@ -71,7 +71,7 @@ export default function HUBApp() {
     if (activeView === 'communication') return <CommunicationView user={user} onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'fullprofile')   return <FullProfileView client={selectedProfileClient} onBack={handleBackFromProfile} />;
     if (activeView === 'reports')    return <ReportsView user={user} onBack={() => handleViewChange('wheel')} />;
-    if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" />;
+    if (activeView === 'settings')   return <PlaceholderView icon="⚙" label="SETTINGS" sub="Under development" onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'eventsboard') return <EventsBoardView user={user} onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'agreements') return <AgreementsView user={user} onNavigate={setActiveView} onSessionUpgrade={upgradeSession} onBack={() => handleViewChange('wheel')} />;
     if (activeView === 'edu')        return <EducationView user={user} onBack={() => handleViewChange('wheel')} />;
